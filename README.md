@@ -46,7 +46,5 @@ HaskLedger will bring substantial value to the Cardano community by enhancing sc
 
 ## Conclusion
 
-## Conclusion
-
 HaskLedger represents a significant advancement in the development of scalable, secure, and efficient sidechain solutions for Cardano. By combining technologies with rigorous design principles, we aim to deliver a robust framework that enhances smart contract execution and blockchain interoperability. We encourage developers and blockchain enthusiasts to explore HaskLedger, contribute to its growth, and join us in pushing the boundaries of decentralized technology. 
 
