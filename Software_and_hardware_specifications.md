@@ -1,32 +1,101 @@
 # Software and Hardware Specifications
 
-The HaskLedger project, with its foundation in Haskell, introduces a multifaceted approach to enhancing smart contract development and execution within the Cardano ecosystem. This section delves into the detailed software and hardware specifications that underpin HaskLedger, illustrating how each component contributes to the project's overarching goals of security, efficiency, and scalability.
+# 1. **Core Components**
 
-## Software Specifications
+- **Cardano Integration Layer**
+  - **Purpose:** Interfaces with Cardano's main chain to handle transaction validation and communication.
+  - **Dependencies:** Cardano-node, Ouroboros protocol
+  - **Features:** 
+    - Seamless interaction with Cardano nodes
+    - Transaction validation and consensus processing
 
-### Haskell-Based EDSL Design:
+- **Unikernel Environment**
+  - **Purpose:** Runs optimized, secure sidechain applications and smart contracts.
+  - **Dependencies:** MirageOS, Solo5
+  - **Features:**
+    - Lightweight and secure execution environment
+    - Reduced overhead compared to traditional VMs
 
-- **Core Language:** Haskell serves as the backbone for HaskLedger, chosen for its strong static typing and higher-order functions. These features facilitate the creation of smart contracts that are inherently more secure and efficient.
-- **Integration with Cardano Blockchain:** HaskLedger is intricately designed to compile down to Plutus Core or equivalent, ensuring seamless integration and full compatibility with the Cardano infrastructure. This strategic alignment enables HaskLedger smart contracts to leverage Cardano's robust features while enhancing their scalability and interoperability.
+- **Virtual Machine (VM) in Haskell/GHC**
+  - **Purpose:** Executes high-level sidechain applications and consensus algorithms.
+  - **Dependencies:** GHC (Glasgow Haskell Compiler), Haskell libraries
+  - **Features:**
+    - Functional programming capabilities
+    - Support for high-level application logic
 
-### Development Tools and Environments:
+- **Rust Libraries and Contracts**
+  - **Purpose:** Develop system contracts and libraries ensuring memory safety and concurrency management.
+  - **Dependencies:** Rust programming language, Cargo package manager
+  - **Features:**
+    - Safe and efficient contract development
+    - Support for concurrency and parallelism
 
-- **Qubes OS:** Selected for its strong security properties, Qubes OS uses Xen virtualization technology to isolate different components of the development environment, reducing the risk of cross-compromise.
-- **NixOS and Unikernels:** These technologies are employed to create a reproducible and secure build environment. NixOS's deterministic builds and clean dependency management, combined with the minimal attack surface provided by Unikernels, ensure that smart contracts developed with HaskLedger are secure and efficient.
+- **Haskell Contract Modules**
+  - **Purpose:** Implement business logic and protocol mechanisms.
+  - **Dependencies:** Haskell language
+  - **Features:**
+    - Strong typing and functional programming
+    - Contract-based verification
 
-## Hardware Specifications
+- **Qubes OS Integration**
+  - **Purpose:** Provides a secure interface for managing the sidechain.
+  - **Dependencies:** Qubes OS, Whonix
+  - **Features:**
+    - Secure and isolated user interactions
+    - Compartmentalized application management
 
-### Optimization for Open-Source Hardware:
+#### 2. **Development Tools and Libraries**
 
-- **RISC-V and Pine64 Platforms:** HaskLedger is optimized for these open-source hardware platforms, expanding the ecosystem for Cardano smart contracts. Cross-compilation techniques and specific optimizations are utilized to ensure that smart contracts can run efficiently across these platforms, promoting decentralization and accessibility.
+- **Nix**
+  - **Purpose:** Ensure reproducibility and consistency in builds.
+  - **Dependencies:** Nix package manager
+  - **Features:**
+    - Declarative package management
+    - Reproducible builds and environments
 
-### Innovative Features and Techniques
+- **Symbolic Execution Tools**
+  - **Purpose:** Verify the correctness of smart contracts and sidechain operations.
+  - **Dependencies:** Haskell symbolic execution libraries
+  - **Features:**
+    - Verification of runtime behaviors
+    - Detection of potential vulnerabilities
 
-- **Parallel Processing:** Leveraging Haskell's concurrency and parallelism capabilities to improve the execution efficiency of smart contracts, particularly for applications requiring high throughput.
-- **Resource-Efficient Execution:** The project focuses on minimizing resource consumption through lazy evaluation strategies and efficient memory management, reducing the cost of transactions on the blockchain.
-- **Formal Verification:** By supporting formal verification methods, HaskLedger enables developers to prove the correctness of their smart contracts mathematically, enhancing the security and reliability of financial applications on the Cardano blockchain.
+### Hardware Specifications
 
-### Deployment and Integration
+#### 1. **Processor**
+  - **Type:** RISC-V based processors
+  - **Features:**
+    - Customizable Instruction Set Architecture (ISA)
+    - Support for parallel processing
 
-- **CI/CD Integration:** Incorporating Nix into continuous integration and deployment pipelines ensures consistent builds and testing, facilitating smooth transitions from development to deployment.
-- **Cross-Platform Deployment:** Utilizing Nix’s cross-compilation features allows for deploying smart contracts across various architectures, enhancing the portability and flexibility of HaskLedger-developed applications.
+#### 2. **Memory**
+  - **Type:** DDR4 RAM
+  - **Capacity:** Minimum 8 GB recommended
+  - **Features:**
+    - High-speed data access
+    - Support for concurrent operations
+
+#### 3. **Storage**
+  - **Type:** SSD
+  - **Capacity:** Minimum 256 GB recommended
+  - **Features:**
+    - Fast read/write speeds
+    - Reliable data storage
+
+#### 4. **Networking**
+  - **Type:** Gigabit Ethernet
+  - **Features:**
+    - High-speed network connectivity
+    - Reliable communication between nodes
+
+#### 5. **Additional Hardware**
+  - **TPM (Trusted Platform Module)**
+    - **Purpose:** Enhance security by storing cryptographic keys and performing secure operations.
+  - **GPU (Graphics Processing Unit)**
+    - **Purpose:** Accelerate parallel processing tasks where applicable
+    - **Features:** Support for high-performance computation
+
+### Deployment Environment
+
+- **Operating System:** NuttX-OS for real-time operations
+- **Hardware Interface:** Custom-built RISC-V boards, compatible with NuttX-OS
