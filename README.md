@@ -2,51 +2,15 @@
 
 ## Overview
 
-The Plutus platform on Cardano, while robust and innovative, does face certain challenges and limitations. Understanding these issues is key to developing solutions like HaskLedger that aim to enhance the Cardano ecosystem. Some of the notable challenges include scalability, hardware compatibility, complexity in smart contract development, resource efficiency, state management, data handling, developer onboarding, and interoperability. 
+HaskLedger is a sidechain solution designed to enhance scalability, security, and performance for smart contracts on the Cardano blockchain. By leveraging advanced hardware and software concepts, HaskLedger aims to provide a robust and efficient framework for executing decentralized applications.
 
-## Challenges
+## Features
 
-### Scalability
-
-The primary challenge with the Plutus platform is scalability, particularly in handling a growing number of smart contracts and transactions efficiently. As the adoption of Cardano grows, the demand for higher transaction throughput becomes more pressing.
-
-### Hardware Compatibility
-
-Plutus smart contracts may face compatibility issues with certain Instruction Set Architectures (ISAs), hindering their execution and deployment on various hardware platforms.
-
-### Complexity in Smart Contract Development
-
-Developing smart contracts on Plutus requires a good understanding of Haskell and blockchain technology, which can be a barrier for new developers.
-
-### Resource Efficiency
-
-Plutus smart contracts need to be repurposed for improved resource efficiency, particularly in terms of on-chain storage and computational requirements.
-
-### State Management and Data Handling
-
-Managing state and data within Plutus smart contracts can be challenging, especially for complex applications that require interaction with off-chain data.
-
-### Developer Onboarding and Tooling
-
-There's a need for more comprehensive development tools and resources for Plutus to enhance the developer experience and accelerate application development.
-
-### Interoperability and Integration
-
-Ensuring seamless interaction with other systems both within and outside the Cardano ecosystem is essential for wider adoption.
-
-## Solution: HaskLedger
-
-### Key Features
-
-- **Enhancing Scalability:** Utilizing Haskell's capabilities for efficient parallel processing to handle higher transaction throughput.
-- **Resolving Hardware Compatibility:** Optimizing EDSL for open-source hardware platforms like RISC-V and Pine64.
-- **Simplifying Smart Contract Development:** Embedding the EDSL within Haskell for a more intuitive environment.
-- **Optimizing Resource Efficiency:** Focusing on creating resource-efficient smart contracts to reduce execution costs.
-- **Enhancing Security:** Utilizing Haskell's strongly typed guarantees and functional programming paradigm for improved security.
-- **Effective State Management and Data Handling:** Offering sophisticated mechanisms for managing state and data within smart contracts.
-- **Improving Developer Onboarding and Tooling:** Providing better documentation, debugging tools, and integrated development environments.
-- **Facilitating Interoperability and Integration:** Designing HaskLedger to seamlessly interact with other systems and blockchains.
-
+- **Scalable Smart Contracts:** Efficient execution of complex smart contracts on the Cardano sidechain.
+- **Enhanced Security:** Advanced symbolic execution and formal verification of contracts.
+- **Modular Architecture:** Multi-layered design for flexibility and performance optimization.
+- **Interoperability:** Seamless integration with Cardano’s infrastructure and support for diverse hardware platforms.
+  
 ### Technical Overview
 
 - **Embedded Domain-Specific Language (EDSL) Design:** Leverages Haskell's functional programming features for secure and efficient smart contract development.
@@ -63,17 +27,26 @@ Ensuring seamless interaction with other systems both within and outside the Car
 - **Wider Hardware Support:** Designed to work efficiently across different types of computer hardware.
 - **Sustainable Development:** Ensures the Cardano ecosystem remains robust and adaptable to future needs and technologies.
 
+## Architecture
+
+HaskLedger’s architecture is designed to leverage existing Cardano protocols while introducing innovations for improved performance and security. Key components include:
+
+- **Cardano Integration Layer:** Interfaces with Cardano’s main chain for transaction validation and communication.
+- **RISC-V Hardware Layer:** Provides a flexible and open ISA for hardware interactions.
+- **NuttX-OS Layer:** Manages real-time operations and hardware resources.
+- **Unikernel Layer:** Runs optimized, secure applications and smart contracts.
+- **Haskell/GHC VM Layer:** Virtualizes high-level application execution and consensus algorithms.
+- **Rust Libraries:** Develops system contracts and libraries for safe and efficient execution.
+- **Haskell Application Layer:** Implements business logic and protocol mechanisms.
+- **Qubes OS Layer:** Provides a secure and compartmentalized user interface.
+
 ### Positive Impact
 
 HaskLedger will bring substantial value to the Cardano community by enhancing scalability, lowering entry barriers for developers, improving security, and fostering community empowerment and engagement.
 
-### Capability & Feasibility
-
-- **Commitment to Collaboration:** Actively engaging with the Cardano community and incorporating feedback.
-- **Risk Management:** Identifying and mitigating technical, financial, and project-related risks.
-- **Open-Source Principles:** Commitment to transparency, collaboration, and accessibility.
-- **Roadmap:** Detailed plan for development, testing, community engagement, and implementation.
+## Conclusion
 
 ## Conclusion
 
-HaskLedger represents a significant step towards overcoming the challenges faced by the Plutus platform on Cardano. With its innovative features and collaborative approach, HaskLedger aims to enhance scalability, efficiency, and security while empowering developers and fostering community growth within the Cardano ecosystem.
+HaskLedger represents a significant advancement in the development of scalable, secure, and efficient sidechain solutions for Cardano. By combining technologies with rigorous design principles, we aim to deliver a robust framework that enhances smart contract execution and blockchain interoperability. We encourage developers and blockchain enthusiasts to explore HaskLedger, contribute to its growth, and join us in pushing the boundaries of decentralized technology. 
+
