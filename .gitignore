@@ -1,0 +1,9 @@
+dist-newstyle/
+result
+result-*
+.direnv/
+haskledger/deploy/keys/
+haskledger/deploy/tx/
+
+
+

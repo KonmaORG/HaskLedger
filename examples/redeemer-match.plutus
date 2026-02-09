@@ -1,0 +1,5 @@
+{
+    "type": "PlutusScriptV3",
+    "description": "Generated with c2uplc",
+    "cborHex": "58290101002320013232001498cdc1a4004666ae68cdc39bad357426ae88d55cf1baa00148151200248001"
+}

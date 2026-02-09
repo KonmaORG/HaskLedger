@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Bash please don't do stupid things
+set -euxo pipefail
+
+# Word splitting here is intentional
+ormolu --mode=check $(find src test -name "*.hs")
+
+cabal-gild --mode=check --io=covenant.cabal

@@ -1,0 +1,133 @@
+cabal-version: 3.0
+name: haskledger
+version: 0.1.0.0
+synopsis: Haskell eDSL for writing Cardano smart contracts
+description:
+  A type-safe Haskell eDSL for writing Cardano smart contracts.
+  Features operator overloading, native integer literals, composable
+  abstractions over Plutus Data encoding, and a multi-stage compilation
+  pipeline to UPLC via Covenant IR and c2uplc.
+
+license: Apache-2.0
+license-file: ../LICENSE
+author: KonmaORG
+homepage: https://github.com/KonmaORG/HaskLedger
+bug-reports: https://github.com/KonmaORG/HaskLedger/issues
+build-type: Simple
+
+-- Common settings matching covenant's configuration
+common lang
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wredundant-bang-patterns
+    -Wredundant-strictness-flags
+    -Wmissing-deriving-strategies
+    -haddock
+
+  default-extensions:
+    BangPatterns
+    BinaryLiterals
+    DataKinds
+    DeriveTraversable
+    DerivingVia
+    DuplicateRecordFields
+    EmptyCase
+    FlexibleContexts
+    FlexibleInstances
+    GeneralizedNewtypeDeriving
+    HexFloatLiterals
+    ImportQualifiedPost
+    InstanceSigs
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    NoFieldSelectors
+    NoStarIsType
+    NumericUnderscores
+    OverloadedLabels
+    OverloadedLists
+    OverloadedStrings
+    PackageImports
+    ScopedTypeVariables
+    StandaloneDeriving
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    UndecidableInstances
+
+  build-depends: base >=4.19.0.0 && <5
+  default-language: Haskell2010
+
+-- Primary library
+library
+  import: lang
+  hs-source-dirs: src
+  exposed-modules:
+    HaskLedger
+    HaskLedger.Contract
+    HaskLedger.Combinators
+    HaskLedger.Internal
+    HaskLedger.Compile
+
+  build-depends:
+    containers >=0.6.8 && <0.8,
+    covenant ==1.3.0,
+    directory,
+    filepath,
+    optics-core,
+    process,
+    transformers >=0.6.1.0 && <0.7.0.0,
+    vector,
+
+-- Test common settings
+common test-lang
+  import: lang
+  ghc-options:
+    -O2
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
+
+  build-depends:
+    c2uplc,
+    containers >=0.6.8 && <0.8,
+    covenant ==1.3.0,
+    haskledger,
+    optics-core,
+    plutus-core ==1.51.0.0,
+    tasty ==1.5.3,
+    tasty-hunit ==0.10.2,
+    tasty-quickcheck ==0.11.1,
+    vector,
+
+-- Test suite
+test-suite haskledger-tests
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test
+  other-modules:
+    TestHelper
+    Test.Compile
+    Test.Contract
+    Test.Combinators
+    Test.Internal
+    Test.Examples
+
+-- Example contracts executable
+executable haskledger-examples
+  import: lang
+  main-is: Main.hs
+  hs-source-dirs: examples
+  other-modules:
+    AlwaysSucceeds,
+    Deadline,
+    GuardedDeadline,
+    RedeemerMatch,
+  build-depends:
+    base >=4.19.0.0 && <5,
+    haskledger,
+  build-tool-depends:
+    c2uplc:c2uplc,
