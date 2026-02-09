@@ -23,6 +23,30 @@ module HaskLedger.Combinators
     andBool,
     orBool,
     notBool,
+    asByteString,
+    mkByteStringData,
+    mkIntData,
+    equalsByteString,
+    lessThanByteString,
+    lessThanEqualsByteString,
+    appendByteString,
+    lengthByteString,
+    indexByteString,
+    consByteString,
+    sha2_256,
+    blake2b_256,
+    equalsData,
+    serialiseData,
+    isNullList,
+    consList,
+    chooseList,
+    asList,
+    asMap,
+    quotientInt,
+    remainderInt,
+    modInt,
+    traceMsg,
+    mkString,
   )
 where
 
@@ -35,14 +59,19 @@ import Covenant.ASG
     builtin3,
     lit,
   )
-import Covenant.Constant (AConstant (ABoolean, AnInteger))
+import Covenant.Constant (AConstant (ABoolean, AString, AnInteger))
 import Covenant.DeBruijn (DeBruijn (Z))
 import Covenant.Index (ix0)
 import Covenant.Prim
-  ( OneArgFunc (UnIData),
-    ThreeArgFunc (IfThenElse),
-    TwoArgFunc (AddInteger, EqualsInteger, LessThanEqualsInteger, LessThanInteger),
+  ( OneArgFunc (BData, Blake2b_256, IData, LengthOfByteString, NullList,
+                Sha2_256, SerialiseData, UnBData, UnIData, UnListData, UnMapData),
+    ThreeArgFunc (ChooseList, IfThenElse),
+    TwoArgFunc (AddInteger, AppendByteString, ConsByteString, EqualsByteString,
+                EqualsData, EqualsInteger, IndexByteString, LessThanByteString,
+                LessThanEqualsByteString, LessThanEqualsInteger, LessThanInteger,
+                MkCons, ModInteger, QuotientInteger, RemainderInteger, Trace),
   )
+import Data.Text (Text)
 import HaskLedger.Contract (Condition, Contract, Expr)
 import HaskLedger.Internal
   ( headList,
@@ -187,3 +216,146 @@ notBool condM = do
   f <- AnId <$> lit (ABoolean False)
   ite <- builtin3 IfThenElse
   AnId <$> app' ite [cond, f, t]
+
+asByteString :: Contract Expr -> Contract Expr
+asByteString datM = do
+  dat <- datM
+  f <- builtin1 UnBData
+  AnId <$> app' f [dat]
+
+mkByteStringData :: Contract Expr -> Contract Expr
+mkByteStringData bsM = do
+  bs <- bsM
+  f <- builtin1 BData
+  AnId <$> app' f [bs]
+
+mkIntData :: Contract Expr -> Contract Expr
+mkIntData nM = do
+  n <- nM
+  f <- builtin1 IData
+  AnId <$> app' f [n]
+
+lengthByteString :: Contract Expr -> Contract Expr
+lengthByteString bsM = do
+  bs <- bsM
+  f <- builtin1 LengthOfByteString
+  AnId <$> app' f [bs]
+
+sha2_256 :: Contract Expr -> Contract Expr
+sha2_256 bsM = do
+  bs <- bsM
+  f <- builtin1 Sha2_256
+  AnId <$> app' f [bs]
+
+blake2b_256 :: Contract Expr -> Contract Expr
+blake2b_256 bsM = do
+  bs <- bsM
+  f <- builtin1 Blake2b_256
+  AnId <$> app' f [bs]
+
+serialiseData :: Contract Expr -> Contract Expr
+serialiseData datM = do
+  dat <- datM
+  f <- builtin1 SerialiseData
+  AnId <$> app' f [dat]
+
+asList :: Contract Expr -> Contract Expr
+asList datM = do
+  dat <- datM
+  f <- builtin1 UnListData
+  AnId <$> app' f [dat]
+
+asMap :: Contract Expr -> Contract Expr
+asMap datM = do
+  dat <- datM
+  f <- builtin1 UnMapData
+  AnId <$> app' f [dat]
+
+isNullList :: Contract Expr -> Contract Condition
+isNullList listM = do
+  l <- listM
+  f <- builtin1 NullList
+  AnId <$> app' f [l]
+
+equalsByteString :: Contract Expr -> Contract Expr -> Contract Condition
+equalsByteString lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 EqualsByteString
+  AnId <$> app' op [l, r]
+
+lessThanByteString :: Contract Expr -> Contract Expr -> Contract Condition
+lessThanByteString lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 LessThanByteString
+  AnId <$> app' op [l, r]
+
+lessThanEqualsByteString :: Contract Expr -> Contract Expr -> Contract Condition
+lessThanEqualsByteString lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 LessThanEqualsByteString
+  AnId <$> app' op [l, r]
+
+equalsData :: Contract Expr -> Contract Expr -> Contract Condition
+equalsData lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 EqualsData
+  AnId <$> app' op [l, r]
+
+appendByteString :: Contract Expr -> Contract Expr -> Contract Expr
+appendByteString lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 AppendByteString
+  AnId <$> app' op [l, r]
+
+indexByteString :: Contract Expr -> Contract Expr -> Contract Expr
+indexByteString bsM iM = do
+  bs <- bsM; i <- iM
+  op <- builtin2 IndexByteString
+  AnId <$> app' op [bs, i]
+
+consByteString :: Contract Expr -> Contract Expr -> Contract Expr
+consByteString byteM bsM = do
+  b <- byteM; bs <- bsM
+  op <- builtin2 ConsByteString
+  AnId <$> app' op [b, bs]
+
+consList :: Contract Expr -> Contract Expr -> Contract Expr
+consList elemM listM = do
+  e <- elemM; l <- listM
+  op <- builtin2 MkCons
+  AnId <$> app' op [e, l]
+
+quotientInt :: Contract Expr -> Contract Expr -> Contract Expr
+quotientInt lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 QuotientInteger
+  AnId <$> app' op [l, r]
+
+remainderInt :: Contract Expr -> Contract Expr -> Contract Expr
+remainderInt lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 RemainderInteger
+  AnId <$> app' op [l, r]
+
+modInt :: Contract Expr -> Contract Expr -> Contract Expr
+modInt lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 ModInteger
+  AnId <$> app' op [l, r]
+
+traceMsg :: Contract Expr -> Contract Expr -> Contract Expr
+traceMsg msgM valM = do
+  msg <- msgM; val <- valM
+  op <- builtin2 Trace
+  AnId <$> app' op [msg, val]
+
+-- Both branches are evaluated eagerly (strict, like IfThenElse in UPLC).
+-- Fine for plain values; don't pass error expressions as branches.
+chooseList :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
+chooseList listM nilM consM = do
+  l <- listM; n <- nilM; c <- consM
+  op <- builtin3 ChooseList
+  AnId <$> app' op [l, n, c]
+
+mkString :: Text -> Contract Expr
+mkString s = AnId <$> lit (AString s)

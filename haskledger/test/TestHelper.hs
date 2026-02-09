@@ -16,9 +16,12 @@ module TestHelper
   , mkDeadlineCtx
   , mkNegInfCtx
   , mkPosInfLowerCtx
+  , mkByteStringCtx
+  , mkListCtx
   )
 where
 
+import Data.ByteString (ByteString)
 import Covenant.ASG (ASG (ASG), defaultDatatypes, runASGBuilder)
 import Covenant.CodeGen (compile, evalTerm)
 import Covenant.Data (DatatypeInfo (DatatypeInfo))
@@ -132,3 +135,15 @@ mkDeadlineCtx r closed ms =
         (if closed then mkClosedLowerBound ms else mkOpenLowerBound ms)
         mkPosInfUpperBound))
     (I r)
+
+mkByteStringCtx :: ByteString -> Data
+mkByteStringCtx bs =
+  mkScriptContext
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (B bs)
+
+mkListCtx :: [Data] -> Data
+mkListCtx xs =
+  mkScriptContext
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (List xs)
