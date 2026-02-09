@@ -1,11 +1,11 @@
-{- HLINT ignore "Use if" -}
 {-# LANGUAGE OverloadedLists #-}
 {- HLINT ignore "Use if" -}
+{- HLINT ignore "Use camelCase" -}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StrictData #-}
 
-module Covenant.Transform.Common (
-    TyFixerFnData (..),
+module Covenant.Transform.Common
+  ( TyFixerFnData (..),
     TyFixerNodeKind (..),
     TyFixerDataBundle (..),
     tyFixerFnTy,
@@ -30,79 +30,47 @@ module Covenant.Transform.Common (
     genFiniteListEliminator,
     pCaseConstrData,
     BuiltinFnData (..),
-    -- re-exports from Schema
-    TypeSchema (..),
-    schemaFnArgs,
-    schemaFnType,
-    mkTypeSchema,
-) where
+  )
+where
 
-import Data.Map (Map)
-import Data.Map qualified as M
-
-import Data.Vector (Vector)
-import Data.Vector qualified as Vector
-
-import Control.Monad.RWS.Strict (MonadState (put), RWS, ask, runRWS)
-
-import Covenant.ASG (
-    Id,
- )
-import Covenant.Type (
-    AbstractTy (BoundAt),
-    BuiltinFlatT,
-    CompT (CompN),
-    CompTBody (ArgsAndResult),
-    DataEncoding,
-    TyName (TyName),
-    ValT (Abstraction, BuiltinFlat, ThunkT),
- )
-
-import Control.Monad.Reader (MonadReader)
-import Control.Monad.State.Strict (MonadState (get))
-import Covenant.Data (DatatypeInfo)
 import Covenant.DeBruijn (DeBruijn (Z))
-import Covenant.Index (Count, Index, intCount, intIndex)
-
-import Covenant.ArgDict (pValT, pVec)
-import Covenant.ExtendedASG
-import Covenant.MockPlutus (
-    PlutusTerm,
-    pApp,
+import Covenant.ExtendedASG (MonadASG, nextId)
+import Covenant.Index (Count, intCount, intIndex)
+import Covenant.Plutus
+  ( pApp,
     pCase,
     pFst,
     pLam,
     pSnd,
     pVar,
-    ppTerm,
-    prettyPTerm,
     unConstrData,
     (#),
- )
+  )
 import Covenant.Test (Id (UnsafeMkId))
-import Covenant.Transform.Schema
-import Covenant.Transform.TyUtils (idToName)
-import Data.Bifunctor (Bifunctor (bimap, second))
-import Data.Foldable (
-    foldl',
- )
+import Covenant.Transform.Schema (TypeSchema)
+import Covenant.Type
+  ( AbstractTy (BoundAt),
+    CompT (CompN),
+    CompTBody (ArgsAndResult),
+    DataEncoding,
+    TyName,
+    ValT (Abstraction, ThunkT),
+  )
+import Data.Foldable
+  ( foldl',
+  )
 import Data.Kind (Type)
 import Data.Maybe (fromJust)
 import Data.Text (Text)
 import Data.Text qualified as T
-
--- import Debug.Trace (traceM)
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
 import Optics.Core (preview, review)
-import PlutusCore.Name.Unique (
-    Name (Name),
+import PlutusCore.Name.Unique
+  ( Name (Name),
     Unique (Unique),
- )
-
-traceM :: forall m. (Monad m) => String -> m ()
-traceM _ = pure ()
-
-prettyMap' :: (Show k, Show v) => Map k v -> String
-prettyMap' = M.foldrWithKey (\k v acc -> show k <> " := " <> show v <> "\n" <> acc) "\n"
+  )
+import UntypedPlutusCore (DefaultFun, DefaultUni, Term)
 
 {- This records the information we need for our "mock" functions for catamorphisms/datatype intro/datatype elimination
 
@@ -133,21 +101,21 @@ prettyMap' = M.foldrWithKey (\k v acc -> show k <> " := " <> show v <> "\n" <> a
      In the constructor forms (or at least the ones for non-nullary constructors), the extra arg will be an `I` or `B` wrapper.
 -}
 data TyFixerFnData
-    = TyFixerFnData
-        { mfTyName :: TyName
-        , mfEncoding :: DataEncoding
-        , mfPolyType :: CompT AbstractTy
-        , mfCompiled :: PlutusTerm
-        , mfTypeSchema :: TypeSchema
-        , mfFunName :: Text
-        , mfNodeKind :: TyFixerNodeKind
-        }
-    | BuiltinTyFixer (CompT AbstractTy) BuiltinFnData
+  = TyFixerFnData
+      { mfTyName :: TyName,
+        mfEncoding :: DataEncoding,
+        mfPolyType :: CompT AbstractTy,
+        mfCompiled :: Term Name DefaultUni DefaultFun (),
+        mfTypeSchema :: TypeSchema,
+        mfFunName :: Text,
+        mfNodeKind :: TyFixerNodeKind
+      }
+  | BuiltinTyFixer (CompT AbstractTy) BuiltinFnData
 
 tyFixerFnTy :: TyFixerFnData -> CompT AbstractTy
 tyFixerFnTy = \case
-    TyFixerFnData _ _ ty _ _ _ _ -> ty
-    BuiltinTyFixer ty _ -> ty
+  TyFixerFnData _ _ ty _ _ _ _ -> ty
+  BuiltinTyFixer ty _ -> ty
 
 -- BuiltinFnData holds the information we need to compile every "compiler primitive" non-atomic datatype.
 -- This is needed in large part because we cannot generate a corresponding Plutus Term for parametric
@@ -156,30 +124,30 @@ tyFixerFnTy = \case
 -- We don't need to stash any information inside of these. We just need to know which Ids point at which of them,
 -- and have a computation type we can use for analysis.
 data BuiltinFnData
-    = -- Constructors
-      List_Cons
-    | List_Nil
-    | Data_I
-    | Data_B
-    | Data_List
-    | Data_Map
-    | Data_Constr
-    | Pair_Pair
-    | Map_Map
-    | -- Catamorphisms
-      Integer_Nat_Cata
-    | Integer_Neg_Cata
-    | List_Cata
-    | ByteString_Cata
-    | -- Eliminators
-      List_Match
-    | Pair_Match
-    | Map_Match
-    | Data_Match
-    deriving stock (Show, Eq)
+  = -- Constructors
+    List_Cons
+  | List_Nil
+  | Data_I
+  | Data_B
+  | Data_List
+  | Data_Map
+  | Data_Constr
+  | Pair_Pair
+  | Map_Map
+  | -- Catamorphisms
+    Integer_Nat_Cata
+  | Integer_Neg_Cata
+  | List_Cata
+  | ByteString_Cata
+  | -- Eliminators
+    List_Match
+  | Pair_Match
+  | Map_Match
+  | Data_Match
+  deriving stock (Show, Eq)
 
 data TyFixerNodeKind = MatchNode | IntroNode | CataNode
-    deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord)
 
 {- Need some kind of structured container for holding the results of our
    generated data for functionalized type fixers.
@@ -190,44 +158,44 @@ data TyFixerNodeKind = MatchNode | IntroNode | CataNode
 
 -}
 data TyFixerDataBundle
-    = TyFixerDataBundle
-    { introData :: Vector TyFixerFnData
-    , matchData :: Maybe TyFixerFnData
-    , cataData :: Maybe TyFixerFnData
-    }
+  = TyFixerDataBundle
+  { introData :: Vector TyFixerFnData,
+    matchData :: Maybe TyFixerFnData,
+    cataData :: Maybe TyFixerFnData
+  }
 
 freshName :: (MonadASG m) => m Name
 freshName = do
-    UnsafeMkId w <- nextId
-    let textPart = "var_" <> T.pack (show w)
-        asName = Name textPart (Unique $ fromIntegral w)
-    pure asName
+  UnsafeMkId w <- nextId
+  let textPart = "var_" <> T.pack (show w)
+      asName = Name textPart (Unique $ fromIntegral w)
+  pure asName
 
 freshNamePrefix :: (MonadASG m) => Text -> m Name
 freshNamePrefix nameBase = do
-    UnsafeMkId w <- nextId
-    let textPart = nameBase <> "_" <> T.pack (show w)
-    pure $ Name textPart (Unique $ fromIntegral w)
+  UnsafeMkId w <- nextId
+  let textPart = nameBase <> "_" <> T.pack (show w)
+  pure $ Name textPart (Unique $ fromIntegral w)
 
 genLambdaArgNames ::
-    forall (m :: Type -> Type) (a :: Type).
-    (MonadASG m) =>
-    Text ->
-    Vector a ->
-    m (Vector Name)
+  forall (m :: Type -> Type) (a :: Type).
+  (MonadASG m) =>
+  Text ->
+  Vector a ->
+  m (Vector Name)
 genLambdaArgNames nameBase = Vector.imapM genTermVarName
   where
     genTermVarName :: Int -> a -> m Name
     genTermVarName pos _ = do
-        UnsafeMkId i <- nextId
-        let textPart = nameBase <> "_arg" <> T.pack (show pos)
-            uniquePart = Unique (fromIntegral i)
-        pure $ Name textPart uniquePart
+      UnsafeMkId i <- nextId
+      let textPart = nameBase <> "_arg" <> T.pack (show pos)
+          uniquePart = Unique (fromIntegral i)
+      pure $ Name textPart uniquePart
 
 countToTyVars :: Count "tyvar" -> Vector (ValT AbstractTy)
 countToTyVars cnt
-    | cntI == 0 = mempty
-    | otherwise = mkTV <$> Vector.fromList [0 .. (cntI - 1)]
+  | cntI == 0 = mempty
+  | otherwise = mkTV <$> Vector.fromList [0 .. (cntI - 1)]
   where
     cntI :: Int
     cntI = review intCount cnt
@@ -237,114 +205,135 @@ countToTyVars cnt
 
 -- We could probably steal the plutarch typeclass trick to get arbitrary embedded lambdas... but
 -- that's overkill here
-pFreshLam :: (MonadASG m) => (PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pFreshLam ::
+  (MonadASG m) =>
+  (Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam f = do
-    varName <- freshName
-    let argVar = pVar varName
-    pLam varName <$> f argVar
+  varName <- freshName
+  let argVar = pVar varName
+  pLam varName <$> f argVar
 
-pFreshLam' :: (MonadASG m) => Text -> (PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pFreshLam' ::
+  (MonadASG m) =>
+  Text ->
+  (Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam' nm f = do
-    varName <- freshNamePrefix nm
-    let argVar = pVar varName
-    pLam varName <$> f argVar
+  varName <- freshNamePrefix nm
+  let argVar = pVar varName
+  pLam varName <$> f argVar
 
-pFreshLam2 :: (MonadASG m) => (PlutusTerm -> PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pFreshLam2 ::
+  (MonadASG m) =>
+  (Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam2 f = do
-    varName1 <- freshName
-    varName2 <- freshName
-    let argVar1 = pVar varName1
-        argVar2 = pVar varName2
-    body <- f argVar1 argVar2
-    pure $ pLam varName1 (pLam varName2 body)
+  varName1 <- freshName
+  varName2 <- freshName
+  let argVar1 = pVar varName1
+      argVar2 = pVar varName2
+  body <- f argVar1 argVar2
+  pure $ pLam varName1 (pLam varName2 body)
 
 pFreshLam2' ::
-    (MonadASG m) =>
-    Text ->
-    Text ->
-    (PlutusTerm -> PlutusTerm -> m PlutusTerm) ->
-    m PlutusTerm
+  (MonadASG m) =>
+  Text ->
+  Text ->
+  (Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam2' vn1 vn2 f = do
-    varName1 <- freshNamePrefix vn1
-    varName2 <- freshNamePrefix vn2
-    let argVar1 = pVar varName1
-        argVar2 = pVar varName2
-    body <- f argVar1 argVar2
-    pure $ pLam varName1 (pLam varName2 body)
+  varName1 <- freshNamePrefix vn1
+  varName2 <- freshNamePrefix vn2
+  let argVar1 = pVar varName1
+      argVar2 = pVar varName2
+  body <- f argVar1 argVar2
+  pure $ pLam varName1 (pLam varName2 body)
 
-pFreshLam3 :: (MonadASG m) => (PlutusTerm -> PlutusTerm -> PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pFreshLam3 ::
+  (MonadASG m) =>
+  (Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam3 f = do
-    v1 <- freshName
-    v2 <- freshName
-    v3 <- freshName
-    let arg1 = pVar v1
-        arg2 = pVar v2
-        arg3 = pVar v3
-    body <- f arg1 arg2 arg3
-    pure $ pLam v1 (pLam v2 (pLam v3 body))
+  v1 <- freshName
+  v2 <- freshName
+  v3 <- freshName
+  let arg1 = pVar v1
+      arg2 = pVar v2
+      arg3 = pVar v3
+  body <- f arg1 arg2 arg3
+  pure $ pLam v1 (pLam v2 (pLam v3 body))
 
 pFreshLam3' ::
-    (MonadASG m) =>
-    Text ->
-    Text ->
-    Text ->
-    (PlutusTerm -> PlutusTerm -> PlutusTerm -> m PlutusTerm) ->
-    m PlutusTerm
+  (MonadASG m) =>
+  Text ->
+  Text ->
+  Text ->
+  (Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pFreshLam3' vn1 vn2 vn3 f = do
-    v1 <- freshNamePrefix vn1
-    v2 <- freshNamePrefix vn2
-    v3 <- freshNamePrefix vn3
-    let arg1 = pVar v1
-        arg2 = pVar v2
-        arg3 = pVar v3
-    body <- f arg1 arg2 arg3
-    pure $ pLam v1 (pLam v2 (pLam v3 body))
+  v1 <- freshNamePrefix vn1
+  v2 <- freshNamePrefix vn2
+  v3 <- freshNamePrefix vn3
+  let arg1 = pVar v1
+      arg2 = pVar v2
+      arg3 = pVar v3
+  body <- f arg1 arg2 arg3
+  pure $ pLam v1 (pLam v2 (pLam v3 body))
 
 -- This will be useful eventually
-pLetM :: (MonadASG m) => PlutusTerm -> (PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pLetM ::
+  (MonadASG m) =>
+  Term Name DefaultUni DefaultFun () ->
+  (Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pLetM toBind withBind = do
-    f <- pFreshLam withBind
-    pure $ f `pApp` toBind
+  f <- pFreshLam withBind
+  pure $ f `pApp` toBind
 
-pLetM' :: (MonadASG m) => Text -> PlutusTerm -> (PlutusTerm -> m PlutusTerm) -> m PlutusTerm
+pLetM' ::
+  (MonadASG m) =>
+  Text ->
+  Term Name DefaultUni DefaultFun () ->
+  (Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pLetM' nm toBind withBind = do
-    f <- pFreshLam' nm withBind
-    pure $ f `pApp` toBind
+  f <- pFreshLam' nm withBind
+  pure $ f `pApp` toBind
 
--- REVIEW: I can't remember whether Koz said to use a hoisted or non-hoisted fix -_-
 pFix ::
-    forall (m :: Type -> Type).
-    (MonadASG m) =>
-    PlutusTerm ->
-    m PlutusTerm
+  forall (m :: Type -> Type).
+  (MonadASG m) =>
+  Term Name DefaultUni DefaultFun () ->
+  m (Term Name DefaultUni DefaultFun ())
 pFix f = do
-    g <- pFreshLam' "fix_x" $ \r -> pure (r # r)
-    h <- pFreshLam' "fix_y" (\r -> pure $ f # (r # r))
-    pure $ g # h
+  g <- pFreshLam' "fix_x" $ \r -> pure (r # r)
+  h <- pFreshLam' "fix_y" (\r -> pure $ f # (r # r))
+  pure $ g # h
 
 pFix' ::
-    forall (m :: Type -> Type).
-    (MonadASG m) =>
-    m PlutusTerm
+  forall (m :: Type -> Type).
+  (MonadASG m) =>
+  m (Term Name DefaultUni DefaultFun ())
 pFix' = pFreshLam' "fix_f" $ \f -> do
-    g <- pFreshLam' "fix_x" $ \r -> pure (r # r)
-    h <- pFreshLam' "fix_y" (\r -> pure $ f # (r # r))
-    pure $ g # h
+  g <- pFreshLam' "fix_x" $ \r -> pure (r # r)
+  h <- pFreshLam' "fix_y" (\r -> pure $ f # (r # r))
+  pure $ g # h
 
 -- This is for casing on a list that is known to NOT BE EMPTY
 pCaseList ::
-    forall (m :: Type -> Type).
-    (MonadASG m) =>
-    PlutusTerm ->
-    (PlutusTerm -> PlutusTerm -> m PlutusTerm) ->
-    m PlutusTerm
+  forall (m :: Type -> Type).
+  (MonadASG m) =>
+  Term Name DefaultUni DefaultFun () ->
+  (Term Name DefaultUni DefaultFun () -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) ->
+  m (Term Name DefaultUni DefaultFun ())
 pCaseList xs f = pCase xs . Vector.singleton <$> pFreshLam2 f
 
 -- Used to resolve some annoying inconsistencies we don't have time to fix now
 unsafeUnThunk :: ValT AbstractTy -> CompT AbstractTy
 unsafeUnThunk = \case
-    ThunkT compTy -> compTy
-    other -> error $ "Tried to un-thunk a non-thunk value: " <> show other
+  ThunkT compTy -> compTy
+  other -> error $ "Tried to un-thunk a non-thunk value: " <> show other
 
 {- Does this, basically:
 
@@ -354,67 +343,59 @@ unsafeUnThunk = \case
 
 -}
 pCaseListWith ::
-    forall (a :: Type) (m :: Type -> Type).
-    (MonadASG m) =>
-    [a] -> -- Usually a list of types representing the known structure of the list
-    (a -> PlutusTerm -> m PlutusTerm) -> -- what do we do with the head of the list?
-    ([PlutusTerm] -> m PlutusTerm) -> -- what do we do with all of the list elements at the end?
-    PlutusTerm -> -- a list-typed plutus term
-    m PlutusTerm
+  forall (a :: Type) (m :: Type -> Type).
+  (MonadASG m) =>
+  [a] -> -- Usually a list of types representing the known structure of the list
+  (a -> Term Name DefaultUni DefaultFun () -> m (Term Name DefaultUni DefaultFun ())) -> -- what do we do with the head of the list?
+  ([Term Name DefaultUni DefaultFun ()] -> m (Term Name DefaultUni DefaultFun ())) -> -- what do we do with all of the list elements at the end?
+  Term Name DefaultUni DefaultFun () -> -- a list-typed plutus term
+  m (Term Name DefaultUni DefaultFun ())
 pCaseListWith [] _ withElems _ = withElems [] -- only thing we can do
 pCaseListWith (x : xs) withHead withElems aList = go [] aList x xs
   where
-    go :: [PlutusTerm] -> PlutusTerm -> a -> [a] -> m PlutusTerm
+    go ::
+      [Term Name DefaultUni DefaultFun ()] ->
+      Term Name DefaultUni DefaultFun () ->
+      a ->
+      [a] ->
+      m (Term Name DefaultUni DefaultFun ())
     go termAcc remList t [] = pCaseList remList $ \y _ys -> do
-        yTerm <- withHead t y
-        let args = termAcc <> [yTerm]
-        withElems args
+      yTerm <- withHead t y
+      let args = termAcc <> [yTerm]
+      withElems args
     go termAcc remList t (tx : ts) = pCaseList remList $ \y ys -> do
-        yTerm <- withHead t y
-        let termAcc' = termAcc <> [yTerm]
-        go termAcc' ys tx ts
+      yTerm <- withHead t y
+      let termAcc' = termAcc <> [yTerm]
+      go termAcc' ys tx ts
 
 genFiniteListEliminator ::
-    forall m.
-    (MonadASG m) =>
-    -- a Plutus term representing the branch/arm handler
-    PlutusTerm ->
-    -- The list (usually a scrutinee for Enums or the Plutus list of ctor args for a Constr encoded thing)
-    PlutusTerm ->
-    -- Looks up the projection/embedding/"self" function.
-    (ValT AbstractTy -> m (Maybe PlutusTerm)) ->
-    -- The statically known types of all of the list elements
-    [ValT AbstractTy] ->
-    m PlutusTerm
+  forall m.
+  (MonadASG m) =>
+  -- a Plutus term representing the branch/arm handler
+  Term Name DefaultUni DefaultFun () ->
+  -- The list (usually a scrutinee for Enums or the Plutus list of ctor args for a Constr encoded thing)
+  Term Name DefaultUni DefaultFun () ->
+  -- Looks up the projection/embedding/"self" function.
+  (ValT AbstractTy -> m (Maybe (Term Name DefaultUni DefaultFun ()))) ->
+  -- The statically known types of all of the list elements
+  [ValT AbstractTy] ->
+  m (Term Name DefaultUni DefaultFun ())
 genFiniteListEliminator branchHandler aList resolveProjection elTys =
-    pCaseListWith elTys withHead finalizer aList
+  pCaseListWith elTys withHead finalizer aList
   where
-    withHead :: ValT AbstractTy -> PlutusTerm -> m PlutusTerm
+    withHead ::
+      ValT AbstractTy ->
+      Term Name DefaultUni DefaultFun () ->
+      m (Term Name DefaultUni DefaultFun ())
     withHead ty headEl =
-        resolveProjection ty >>= \case
-            Just projVar -> do
-                let result = pApp projVar headEl
-                let msg =
-                        "\nresolveProjection SUCCESS\n  ty: "
-                            <> pValT ty
-                            <> "\n  term: "
-                            <> ppTerm headEl
-                            <> "\n  result: "
-                            <> ppTerm result
-                traceM msg
-                pure $ pApp projVar headEl
-            Nothing -> do
-                let msg =
-                        "\nresolveProjection FAIL\n  ty: "
-                            <> pValT ty
-                            <> "\n  term: "
-                            <> ppTerm headEl
-                            <> "\n  result: "
-                            <> ppTerm headEl
-                traceM msg
-                pure headEl
-
-    finalizer :: [PlutusTerm] -> m PlutusTerm
+      resolveProjection ty >>= \case
+        Just projVar -> do
+          let result = pApp projVar headEl
+          pure result
+        Nothing -> pure headEl
+    finalizer ::
+      [Term Name DefaultUni DefaultFun ()] ->
+      m (Term Name DefaultUni DefaultFun ())
     finalizer = pure . foldl' pApp branchHandler
 
 {- This is a convenience helper for generating case expressions over constructor encoded datatypes which
@@ -443,31 +424,24 @@ genFiniteListEliminator branchHandler aList resolveProjection elTys =
 
 -}
 pCaseConstrData ::
-    forall m.
-    (MonadASG m) =>
-    -- The scrutinee to case on. Needs to be ConstrData encoded PlutusData
-    PlutusTerm ->
-    -- A vector of types for each branch handler (in BB fn signature order)
-    -- plus the corresponding handler (it will always be a variable)
-    Vector (ValT AbstractTy, PlutusTerm) ->
-    -- A function which selects unwrappers (or self recursive calls)
-    -- for a given type variable.
-    (ValT AbstractTy -> m (Maybe PlutusTerm)) ->
-    m PlutusTerm
+  forall m.
+  (MonadASG m) =>
+  -- The scrutinee to case on. Needs to be ConstrData encoded PlutusData
+  Term Name DefaultUni DefaultFun () ->
+  -- A vector of types for each branch handler (in BB fn signature order)
+  -- plus the corresponding handler (it will always be a variable)
+  Vector (ValT AbstractTy, Term Name DefaultUni DefaultFun ()) ->
+  -- A function which selects unwrappers (or self recursive calls)
+  -- for a given type variable.
+  (ValT AbstractTy -> m (Maybe (Term Name DefaultUni DefaultFun ()))) ->
+  m (Term Name DefaultUni DefaultFun ())
 pCaseConstrData scrutinee typedHandlers lookupShim = do
-    plcHandlers <- Vector.forM typedHandlers $ \(hTy, handler) -> do
-        let hArgs = case hTy of
-                ThunkT (CompN _ (ArgsAndResult args _)) -> Vector.toList args
-                _ -> []
-        genFiniteListEliminator handler ctorArgs lookupShim hArgs
-    traceM $
-        "\npCaseConstrData: \n  scrut: "
-            <> ppTerm scrutinee
-            <> "\n  typedHandlers: "
-            <> show (bimap pValT ppTerm <$> typedHandlers)
-            <> "\n  resolvedHandlers: "
-            <> pVec ppTerm plcHandlers
-    pure $ pCase ctorIx plcHandlers
+  plcHandlers <- Vector.forM typedHandlers $ \(hTy, handler) -> do
+    let hArgs = case hTy of
+          ThunkT (CompN _ (ArgsAndResult args _)) -> Vector.toList args
+          _ -> []
+    genFiniteListEliminator handler ctorArgs lookupShim hArgs
+  pure $ pCase ctorIx plcHandlers
   where
     constrDataPair = unConstrData scrutinee
     ctorIx = pFst constrDataPair
@@ -481,22 +455,22 @@ pCaseConstrData scrutinee typedHandlers lookupShim = do
          probably do a lot better than this somehow? But this is the *easiest* way I can think of.
 
 genFiniteListEliminator :: -- The branch handler function as a plutus term
-    PlutusTerm ->
+    Term Name DefaultUni DefaultFun () ->
     -- The scrutinee (or the argument list for a Constr-encoded data thing)
-    PlutusTerm ->
+    Term Name DefaultUni DefaultFun () ->
     -- Looks up the right projection function
-    (ValT AbstractTy -> Maybe PlutusTerm) ->
+    (ValT AbstractTy -> Maybe Term Name DefaultUni DefaultFun ()) ->
     -- The types of the list elements
     [ValT AbstractTy] ->
-    PlutusTerm
+    Term Name DefaultUni DefaultFun ()
 genFiniteListEliminator branchHandler scrutinee resolveProjection elTys =
     foldl' pApp branchHandler $ genFiniteListElimArgs scrutinee elTys
   where
     genFiniteListElimArgs :: -- The "remainder" of the list (usually an application of tail to the original scrutinee)
-        PlutusTerm ->
+        Term Name DefaultUni DefaultFun () ->
         -- the types of the remainder of the list
         [ValT AbstractTy] ->
-        [PlutusTerm]
+        [Term Name DefaultUni DefaultFun ()]
     genFiniteListElimArgs remList [] = [] -- nothing left to do
     -- \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
     -- FIXME/TODO/REVIEW/BUG: THIS WONT WORK!!! Inside the handlers the DeBruijn index will always

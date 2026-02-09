@@ -24,10 +24,15 @@ common lang
   ghc-options:
     -Wredundant-strictness-flags
     -Wmissing-deriving-strategies
+    -Woperator-whitespace
+    -Wambiguous-fields
+    -Wmisplaced-pragmas
+    -Wall
+    -Wmissing-import-lists
+    -Wcompat
+    -Wredundant-bang-patterns
+    -Wmissing-export-lists
 
-  -- -Woperator-whitespace -Wambiguous-fields -Wmisplaced-pragmas -Wall
-  -- -Wcompat -Wredundant-bang-patterns -Wmissing-export-lists
-  -- -Wmissing-import-lists
   default-extensions:
     BangPatterns
     BinaryLiterals
@@ -87,6 +92,7 @@ common test-lang
 
   build-depends:
     QuickCheck,
+    bimap,
     c2uplc,
     containers >=0.6.8 && <0.8,
     covenant ==1.3.0,
@@ -121,9 +127,8 @@ library
     Covenant.CodeGen
     Covenant.CodeGen.Common
     Covenant.CodeGen.Stubs
-    Covenant.Concretify
     Covenant.ExtendedASG
-    Covenant.MockPlutus
+    Covenant.Plutus
     Covenant.Transform
     Covenant.Transform.Cata
     Covenant.Transform.Common

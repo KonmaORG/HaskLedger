@@ -23,16 +23,20 @@ import Covenant.ASG (ASG (ASG), defaultDatatypes, runASGBuilder)
 import Covenant.CodeGen (compile, evalTerm)
 import Covenant.Data (DatatypeInfo (DatatypeInfo))
 import Covenant.JSON (CompilationUnit (CompilationUnit), Version (Version))
-import Covenant.MockPlutus (PlutusTerm, pApp)
+import Covenant.Plutus (pApp)
 import Covenant.Type (AbstractTy, DataDeclaration, TyName)
 import Data.Map qualified as Map
 import Data.Set qualified as Set
 import Data.Vector qualified as Vector
 import HaskLedger.Contract (Validator (Validator))
 import Optics.Core (view)
+import PlutusCore (Name)
 import PlutusCore.Data (Data (Constr, I, List, Map, B))
 import PlutusCore.MkPlc (mkConstant)
 import Test.Tasty.HUnit (assertFailure, Assertion)
+import UntypedPlutusCore (DefaultFun, DefaultUni, Term)
+
+type PlutusTerm = Term Name DefaultUni DefaultFun ()
 
 -- Same filtering as HaskLedger.Compile.safeLedgerDecls (not exported)
 builtinTypeNames :: Set.Set TyName

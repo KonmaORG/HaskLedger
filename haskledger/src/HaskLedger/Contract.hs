@@ -19,17 +19,20 @@ import Covenant.ASG
     app',
     builtin2,
     builtin3,
+    err,
+    force,
     lam,
     lit,
+    thunk,
   )
 import Covenant.Constant (AConstant (AUnit, AnInteger))
 import Covenant.Prim
   ( ThreeArgFunc (IfThenElse),
-    TwoArgFunc (AddInteger, ChooseUnit, DivideInteger, MultiplyInteger, SubtractInteger),
+    TwoArgFunc (AddInteger, ChooseUnit, MultiplyInteger, SubtractInteger),
   )
 import Covenant.Type
   ( AbstractTy,
-    BuiltinFlatT (IntegerT, UnitT),
+    BuiltinFlatT (UnitT),
     CompT (Comp0),
     CompTBody (ReturnT, (:--:>)),
     ValT (BuiltinFlat, Datatype),
@@ -82,19 +85,19 @@ validator name body =
 pass :: Contract Expr
 pass = AnId <$> lit AUnit
 
--- | Crashes via division-by-zero when the condition is false.
+-- | If the condition is false, error out. Branches wrapped in lambdas
+-- and thunked so IfThenElse doesn't eagerly evaluate the error path.
 require :: String -> Contract Condition -> Contract Expr
 require _label condM = do
   cond <- condM
-  one <- lit (AnInteger 1)
-  zero <- lit (AnInteger 0)
+  let branchT = Comp0 $ BuiltinFlat UnitT :--:> ReturnT (BuiltinFlat UnitT)
+  okBranch  <- thunk =<< lam branchT (AnId <$> lit AUnit)
+  errBranch <- thunk =<< lam branchT (AnId <$> err)
   ite <- builtin3 IfThenElse
-  denom <- app' ite [cond, AnId one, AnId zero]
-  div' <- builtin2 DivideInteger
-  res <- app' div' [AnId one, AnId denom]
-  let wrapT = Comp0 $ BuiltinFlat IntegerT :--:> ReturnT (BuiltinFlat UnitT)
-  w <- lam wrapT (AnId <$> lit AUnit)
-  AnId <$> app' w [AnId res]
+  selected <- app' ite [cond, AnId okBranch, AnId errBranch]
+  forced <- force (AnId selected)
+  unit <- lit AUnit
+  AnId <$> app' forced [AnId unit]
 
 -- | Checks all conditions left to right; first failure aborts.
 requireAll :: [(String, Contract Condition)] -> Contract Expr

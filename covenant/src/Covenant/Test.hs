@@ -79,6 +79,7 @@ module Covenant.Test
     -- FIXME: Don't have have to do this right
     ValNodeInfo (..),
     CompNodeInfo (..),
+    ledgerTypes,
   )
 where
 
@@ -117,6 +118,7 @@ import Covenant.Internal.KindCheck
 import Covenant.Internal.Ledger
   ( CtorBuilder (Ctor),
     DeclBuilder (Decl),
+    ledgerTypes,
     list,
     maybeT,
     mkDecl,
