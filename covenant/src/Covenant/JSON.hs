@@ -647,9 +647,9 @@ decodeInternalStrategy =
   caseOnTag
     [ "InternalListStrat" :=> constM InternalListStrat,
       "InternalPairStrat" :=> constM InternalPairStrat,
-      "InternalDataStrat" :=> constM InternalDataStrat,
       "InternalAssocMapStrat" :=> constM InternalAssocMapStrat,
-      "InternalOpaqueStrat" :=> constM InternalOpaqueStrat
+      "InternalOpaqueStrat" :=> constM InternalOpaqueStrat,
+      "InternalDataStrat" :=> constM InternalDataStrat
     ]
 
 {- PlutusDataConstructor encodes as a typical enumeration type:
