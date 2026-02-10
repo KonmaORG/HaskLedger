@@ -85,8 +85,9 @@ validator name body =
 pass :: Contract Expr
 pass = AnId <$> lit AUnit
 
--- | If the condition is false, error out. Branches wrapped in lambdas
--- and thunked so IfThenElse doesn't eagerly evaluate the error path.
+-- | If the condition is false, error out.
+-- Branches wrapped in lambdas and thunked so IfThenElse doesn't
+-- eagerly evaluate the error path.
 require :: String -> Contract Condition -> Contract Expr
 require _label condM = do
   cond <- condM

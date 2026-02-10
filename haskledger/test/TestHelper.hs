@@ -24,15 +24,11 @@ where
 import Data.ByteString (ByteString)
 import Covenant.ASG (ASG (ASG), defaultDatatypes, runASGBuilder)
 import Covenant.CodeGen (compile, evalTerm)
-import Covenant.Data (DatatypeInfo (DatatypeInfo))
 import Covenant.JSON (CompilationUnit (CompilationUnit), Version (Version))
 import Covenant.Plutus (pApp)
-import Covenant.Type (AbstractTy, DataDeclaration, TyName)
-import Data.Map qualified as Map
-import Data.Set qualified as Set
 import Data.Vector qualified as Vector
+import HaskLedger.Compile (safeLedgerDecls)
 import HaskLedger.Contract (Validator (Validator))
-import Optics.Core (view)
 import PlutusCore (Name)
 import PlutusCore.Data (Data (Constr, I, List, Map, B))
 import PlutusCore.MkPlc (mkConstant)
@@ -40,18 +36,6 @@ import Test.Tasty.HUnit (assertFailure, Assertion)
 import UntypedPlutusCore (DefaultFun, DefaultUni, Term)
 
 type PlutusTerm = Term Name DefaultUni DefaultFun ()
-
--- Same filtering as HaskLedger.Compile.safeLedgerDecls (not exported)
-builtinTypeNames :: Set.Set TyName
-builtinTypeNames = Set.fromList ["Data", "List", "Pair", "Map"]
-
-safeLedgerDecls :: [DataDeclaration AbstractTy]
-safeLedgerDecls =
-  [ decl
-  | DatatypeInfo decl _ _ isBF <- Map.elems defaultDatatypes
-  , not isBF
-  , view #datatypeName decl `Set.member` builtinTypeNames
-  ]
 
 compileContract :: Validator -> Either String PlutusTerm
 compileContract (Validator _name builder) =
@@ -124,7 +108,7 @@ mkNegInfCtx = mkSimpleCtx
 mkPosInfLowerCtx :: Integer -> Data
 mkPosInfLowerCtx r =
   mkScriptContext
-    (mkTxInfo (mkValidRange (Constr 0 [Constr 2 [], Constr 1 []]) mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkPosInfUpperBound mkPosInfUpperBound))
     (I r)
 
 mkDeadlineCtx :: Integer -> Bool -> Integer -> Data

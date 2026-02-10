@@ -136,21 +136,21 @@ tests = testGroup "Combinators"
       ]
   , testGroup "Arithmetic extended"
       [ testCase "quotientInt 7 2 == 3" $
-          ok2 (quotientInt (mkInt 7) (mkInt 2) .== mkInt 3)
+          ok (quotientInt (mkInt 7) (mkInt 2) .== mkInt 3)
       , testCase "remainderInt 7 2 == 1" $
-          ok2 (remainderInt (mkInt 7) (mkInt 2) .== mkInt 1)
+          ok (remainderInt (mkInt 7) (mkInt 2) .== mkInt 1)
       , testCase "modInt 7 2 == 1" $
-          ok2 (modInt (mkInt 7) (mkInt 2) .== mkInt 1)
+          ok (modInt (mkInt 7) (mkInt 2) .== mkInt 1)
       , testCase "quotientInt (-7) 2 == -3" $
-          ok2 (quotientInt (mkInt (-7)) (mkInt 2) .== mkInt (-3))
+          ok (quotientInt (mkInt (-7)) (mkInt 2) .== mkInt (-3))
       , testCase "remainderInt (-7) 2 == -1" $
-          ok2 (remainderInt (mkInt (-7)) (mkInt 2) .== mkInt (-1))
+          ok (remainderInt (mkInt (-7)) (mkInt 2) .== mkInt (-1))
       , testCase "modInt (-7) 2 == 1" $
-          ok2 (modInt (mkInt (-7)) (mkInt 2) .== mkInt 1)
+          ok (modInt (mkInt (-7)) (mkInt 2) .== mkInt 1)
       ]
   , testGroup "Trace"
       [ testCase "traceMsg passes value through" $
-          ok2 (traceMsg (mkString "debug") (mkInt 42) .== mkInt 42)
+          ok (traceMsg (mkString "debug") (mkInt 42) .== mkInt 42)
       ]
   ]
   where
@@ -160,7 +160,6 @@ tests = testGroup "Combinators"
     falseC = mkInt 1 .== mkInt 0
     ok  c = assertEvalSuccess "b" $ evalValidator (validator "t" $ require "b" c) (mkSimpleCtx 0)
     bad c = assertEvalFailure "b" $ evalValidator (validator "t" $ require "b" c) (mkSimpleCtx 0)
-    ok2 c = assertEvalSuccess "a" $ evalValidator (validator "t" $ require "a" c) (mkSimpleCtx 0)
 
 mkOpTests ::
   (Contract Expr -> Contract Expr -> Contract Condition) ->

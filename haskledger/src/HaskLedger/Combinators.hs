@@ -47,6 +47,10 @@ module HaskLedger.Combinators
     modInt,
     traceMsg,
     mkString,
+    mkByteString,
+    emptyByteString,
+    mkBool,
+    mkUnit,
   )
 where
 
@@ -59,7 +63,7 @@ import Covenant.ASG
     builtin3,
     lit,
   )
-import Covenant.Constant (AConstant (ABoolean, AString, AnInteger))
+import Covenant.Constant (AConstant (ABoolean, AByteString, AString, AnInteger))
 import Covenant.DeBruijn (DeBruijn (Z))
 import Covenant.Index (ix0)
 import Covenant.Prim
@@ -71,8 +75,9 @@ import Covenant.Prim
                 LessThanEqualsByteString, LessThanEqualsInteger, LessThanInteger,
                 MkCons, ModInteger, QuotientInteger, RemainderInteger, Trace),
   )
+import Data.ByteString (ByteString)
 import Data.Text (Text)
-import HaskLedger.Contract (Condition, Contract, Expr)
+import HaskLedger.Contract (Condition, Contract, Expr, pass)
 import HaskLedger.Internal
   ( headList,
     nthField,
@@ -181,7 +186,7 @@ after rangeM deadlineM = do
 
   -- closure: Constr 1 [] = closed, Constr 0 [] = open
   tag <- unconstrTag cl
-  one <- AnId <$> lit (AnInteger 1)
+  one <- mkInt 1
   eq <- builtin2 EqualsInteger
   closed <- AnId <$> app' eq [tag, one]
 
@@ -198,22 +203,22 @@ after rangeM deadlineM = do
 andBool :: Contract Condition -> Contract Condition -> Contract Condition
 andBool lM rM = do
   l <- lM; r <- rM
-  falseLit <- AnId <$> lit (ABoolean False)
+  falseLit <- mkBool False
   ite <- builtin3 IfThenElse
   AnId <$> app' ite [l, r, falseLit]
 
 orBool :: Contract Condition -> Contract Condition -> Contract Condition
 orBool lM rM = do
   l <- lM; r <- rM
-  trueLit <- AnId <$> lit (ABoolean True)
+  trueLit <- mkBool True
   ite <- builtin3 IfThenElse
   AnId <$> app' ite [l, trueLit, r]
 
 notBool :: Contract Condition -> Contract Condition
 notBool condM = do
   cond <- condM
-  t <- AnId <$> lit (ABoolean True)
-  f <- AnId <$> lit (ABoolean False)
+  t <- mkBool True
+  f <- mkBool False
   ite <- builtin3 IfThenElse
   AnId <$> app' ite [cond, f, t]
 
@@ -359,3 +364,15 @@ chooseList listM nilM consM = do
 
 mkString :: Text -> Contract Expr
 mkString s = AnId <$> lit (AString s)
+
+mkByteString :: ByteString -> Contract Expr
+mkByteString bs = AnId <$> lit (AByteString bs)
+
+emptyByteString :: Contract Expr
+emptyByteString = mkByteString ""
+
+mkBool :: Bool -> Contract Expr
+mkBool b = AnId <$> lit (ABoolean b)
+
+mkUnit :: Contract Expr
+mkUnit = pass

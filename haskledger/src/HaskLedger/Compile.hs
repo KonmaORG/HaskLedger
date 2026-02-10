@@ -2,6 +2,7 @@ module HaskLedger.Compile
   ( compileToEnvelope,
     compileValidator,
     compileToJSON,
+    safeLedgerDecls,
   )
 where
 
