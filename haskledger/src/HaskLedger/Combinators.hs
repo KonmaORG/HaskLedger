@@ -73,6 +73,25 @@ module HaskLedger.Combinators
     emptyByteString,
     mkBool,
     mkUnit,
+    blake2b_224,
+    keccak_256,
+    sha3_256,
+    ripemd_160,
+    constrData,
+    mkPairData,
+    mapData,
+    listData,
+    chooseData,
+    integerToByteString,
+    byteStringToInteger,
+    bls12_381_G1_uncompress,
+    bls12_381_G2_uncompress,
+    bls12_381_G1_add,
+    bls12_381_G2_add,
+    bls12_381_G1_scalarMul,
+    bls12_381_G2_scalarMul,
+    bls12_381_millerLoop,
+    bls12_381_finalVerify,
   )
 where
 
@@ -83,19 +102,27 @@ import Covenant.ASG
     builtin1,
     builtin2,
     builtin3,
+    builtin6,
     lit,
   )
 import Covenant.Constant (AConstant (ABoolean, AByteString, AString, AnInteger))
 import Covenant.DeBruijn (DeBruijn (Z))
 import Covenant.Index (ix0)
 import Covenant.Prim
-  ( OneArgFunc (BData, Blake2b_256, IData, LengthOfByteString, NullList,
-                Sha2_256, SerialiseData, UnBData, UnIData, UnListData, UnMapData),
-    ThreeArgFunc (ChooseList, IfThenElse),
-    TwoArgFunc (AddInteger, AppendByteString, ConsByteString, EqualsByteString,
-                EqualsData, EqualsInteger, IndexByteString, LessThanByteString,
+  ( OneArgFunc (BData, Blake2b_224, Blake2b_256, BLS12_381_G1_uncompress,
+                BLS12_381_G2_uncompress, IData, Keccak_256, LengthOfByteString,
+                ListData, MapData, NullList, Ripemd_160, SerialiseData,
+                Sha2_256, Sha3_256, UnBData, UnIData, UnListData, UnMapData),
+    SixArgFunc (ChooseData),
+    ThreeArgFunc (ChooseList, IfThenElse, IntegerToByteString),
+    TwoArgFunc (AddInteger, AppendByteString, BLS12_381_G1_add,
+                BLS12_381_G1_scalarMul, BLS12_381_G2_add, BLS12_381_G2_scalarMul,
+                BLS12_381_finalVerify, BLS12_381_millerLoop, ByteStringToInteger,
+                ConsByteString, ConstrData, EqualsByteString, EqualsData,
+                EqualsInteger, IndexByteString, LessThanByteString,
                 LessThanEqualsByteString, LessThanEqualsInteger, LessThanInteger,
-                MkCons, ModInteger, QuotientInteger, RemainderInteger, Trace),
+                MkCons, MkPairData, ModInteger, QuotientInteger, RemainderInteger,
+                Trace),
   )
 import Data.ByteString (ByteString)
 import Data.Text (Text)
@@ -552,3 +579,122 @@ mkBool b = AnId <$> lit (ABoolean b)
 
 mkUnit :: Contract Expr
 mkUnit = pass
+
+blake2b_224 :: Contract Expr -> Contract Expr
+blake2b_224 bsM = do
+  bs <- bsM
+  f <- builtin1 Blake2b_224
+  AnId <$> app' f [bs]
+
+keccak_256 :: Contract Expr -> Contract Expr
+keccak_256 bsM = do
+  bs <- bsM
+  f <- builtin1 Keccak_256
+  AnId <$> app' f [bs]
+
+sha3_256 :: Contract Expr -> Contract Expr
+sha3_256 bsM = do
+  bs <- bsM
+  f <- builtin1 Sha3_256
+  AnId <$> app' f [bs]
+
+ripemd_160 :: Contract Expr -> Contract Expr
+ripemd_160 bsM = do
+  bs <- bsM
+  f <- builtin1 Ripemd_160
+  AnId <$> app' f [bs]
+
+constrData :: Contract Expr -> Contract Expr -> Contract Expr
+constrData tagM fieldsM = do
+  t <- tagM; fs <- fieldsM
+  op <- builtin2 ConstrData
+  AnId <$> app' op [t, fs]
+
+mkPairData :: Contract Expr -> Contract Expr -> Contract Expr
+mkPairData fstM sndM = do
+  a <- fstM; b <- sndM
+  op <- builtin2 MkPairData
+  AnId <$> app' op [a, b]
+
+mapData :: Contract Expr -> Contract Expr
+mapData pairsM = do
+  ps <- pairsM
+  f <- builtin1 MapData
+  AnId <$> app' f [ps]
+
+listData :: Contract Expr -> Contract Expr
+listData itemsM = do
+  xs <- itemsM
+  f <- builtin1 ListData
+  AnId <$> app' f [xs]
+
+-- All 6 branches evaluated eagerly (strict). Order: data, constr, map, list, int, bs.
+chooseData :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
+           -> Contract Expr -> Contract Expr -> Contract Expr
+chooseData datM constrM mp listM intM bsM = do
+  d <- datM; c <- constrM; m <- mp; l <- listM; i <- intM; b <- bsM
+  op <- builtin6 ChooseData
+  AnId <$> app' op [d, c, m, l, i, b]
+
+-- First arg is endianness: mkBool True = big-endian, mkBool False = little-endian.
+-- Second arg is the desired output width (0 = minimal).
+integerToByteString :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
+integerToByteString endianM widthM nM = do
+  e <- endianM; w <- widthM; n <- nM
+  op <- builtin3 IntegerToByteString
+  AnId <$> app' op [e, w, n]
+
+byteStringToInteger :: Contract Expr -> Contract Expr -> Contract Expr
+byteStringToInteger endianM bsM = do
+  e <- endianM; bs <- bsM
+  op <- builtin2 ByteStringToInteger
+  AnId <$> app' op [e, bs]
+
+bls12_381_G1_uncompress :: Contract Expr -> Contract Expr
+bls12_381_G1_uncompress bsM = do
+  bs <- bsM
+  f <- builtin1 BLS12_381_G1_uncompress
+  AnId <$> app' f [bs]
+
+bls12_381_G2_uncompress :: Contract Expr -> Contract Expr
+bls12_381_G2_uncompress bsM = do
+  bs <- bsM
+  f <- builtin1 BLS12_381_G2_uncompress
+  AnId <$> app' f [bs]
+
+bls12_381_G1_add :: Contract Expr -> Contract Expr -> Contract Expr
+bls12_381_G1_add lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 BLS12_381_G1_add
+  AnId <$> app' op [l, r]
+
+bls12_381_G2_add :: Contract Expr -> Contract Expr -> Contract Expr
+bls12_381_G2_add lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 BLS12_381_G2_add
+  AnId <$> app' op [l, r]
+
+bls12_381_G1_scalarMul :: Contract Expr -> Contract Expr -> Contract Expr
+bls12_381_G1_scalarMul kM ptM = do
+  k <- kM; pt <- ptM
+  op <- builtin2 BLS12_381_G1_scalarMul
+  AnId <$> app' op [k, pt]
+
+bls12_381_G2_scalarMul :: Contract Expr -> Contract Expr -> Contract Expr
+bls12_381_G2_scalarMul kM ptM = do
+  k <- kM; pt <- ptM
+  op <- builtin2 BLS12_381_G2_scalarMul
+  AnId <$> app' op [k, pt]
+
+bls12_381_millerLoop :: Contract Expr -> Contract Expr -> Contract Expr
+bls12_381_millerLoop g1M g2M = do
+  g1 <- g1M; g2 <- g2M
+  op <- builtin2 BLS12_381_millerLoop
+  AnId <$> app' op [g1, g2]
+
+-- Returns a Condition (Bool), not an Expr.
+bls12_381_finalVerify :: Contract Expr -> Contract Expr -> Contract Condition
+bls12_381_finalVerify lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 BLS12_381_finalVerify
+  AnId <$> app' op [l, r]
