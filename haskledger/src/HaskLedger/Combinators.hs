@@ -29,6 +29,12 @@ module HaskLedger.Combinators
     verifyEd25519,
     verifyEcdsa,
     verifySchnorr,
+    mkNothing,
+    mkJust,
+    mkNil,
+    mkCons,
+    mkPair,
+    matchBool,
     (.==),
     (./=),
     (.<),
@@ -107,11 +113,16 @@ import Covenant.ASG
     builtin2,
     builtin3,
     builtin6,
+    ctor,
+    ctor',
     lit,
   )
 import Covenant.Constant (AConstant (ABoolean, AByteString, AString, AnInteger))
 import Covenant.DeBruijn (DeBruijn (Z))
 import Covenant.Index (ix0)
+import Covenant.Type (dataTypeT)
+import Data.Vector qualified as Vector
+import Data.Wedge (Wedge (There))
 import Covenant.Prim
   ( OneArgFunc (BData, Blake2b_224, Blake2b_256, BLS12_381_G1_uncompress,
                 BLS12_381_G2_uncompress, IData, Keccak_256, LengthOfByteString,
@@ -136,6 +147,7 @@ import HaskLedger.Contract (Condition, Contract, Expr)
 import HaskLedger.Internal
   ( headList,
     nthField,
+    tailList,
     unconstrFields,
     unconstrTag,
   )
@@ -296,6 +308,46 @@ verifyEcdsa = liftBuiltin3 VerifyEcdsaSecp256k1Signature
 
 verifySchnorr :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
 verifySchnorr = liftBuiltin3 VerifySchnorrSecp256k1Signature
+
+-- Typed Nothing @Data. Uses ctor with concrete type param since there are no fields.
+mkNothing :: Contract Expr
+mkNothing = AnId <$> ctor "Maybe" "Nothing" mempty (Vector.singleton (There (dataTypeT "Data")))
+
+-- Typed Just x. ctor' infers type param from the field.
+mkJust :: Contract Expr -> Contract Expr
+mkJust xM = do
+  x <- xM
+  AnId <$> ctor' "Maybe" "Just" (Vector.singleton x)
+
+-- Typed empty list @Data. Uses ctor with concrete type param since there are no fields.
+mkNil :: Contract Expr
+mkNil = AnId <$> ctor "List" "Nil" mempty (Vector.singleton (There (dataTypeT "Data")))
+
+-- Typed cons. ctor' infers type param from head element.
+mkCons :: Contract Expr -> Contract Expr -> Contract Expr
+mkCons headM tailM = do
+  h <- headM; t <- tailM
+  AnId <$> ctor' "List" "Cons" (Vector.fromList [h, t])
+
+-- Typed pair construction.
+mkPair :: Contract Expr -> Contract Expr -> Contract Expr
+mkPair aM bM = do
+  a <- aM; b <- bM
+  AnId <$> ctor' "Pair" "Pair" (Vector.fromList [a, b])
+
+-- Dispatch on Bool. Uses IfThenElse directly (Bool is a builtin flat type).
+-- Both branches are strict (no thunking).
+matchBool
+  :: Contract Condition
+  -> Contract Expr
+  -> Contract Expr
+  -> Contract Expr
+matchBool condM trueBranch falseBranch = do
+  cond <- condM
+  t <- trueBranch
+  f <- falseBranch
+  ite <- builtin3 IfThenElse
+  AnId <$> app' ite [cond, t, f]
 
 (.==), (./=) :: Contract Expr -> Contract Expr -> Contract Condition
 (.==) = equalsInt

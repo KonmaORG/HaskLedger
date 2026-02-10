@@ -9,6 +9,7 @@ import Test.Examples qualified
 import Test.ExtendedBuiltins qualified
 import Test.Internal qualified
 import Test.SignatureVerification qualified
+import Test.PatternMatching qualified
 import Test.Literals qualified
 import Test.TxInfo qualified
 
@@ -23,4 +24,5 @@ main = defaultMain $ testGroup "HaskLedger"
   , Test.TxInfo.tests
   , Test.ExtendedBuiltins.tests
   , Test.SignatureVerification.tests
+  , Test.PatternMatching.tests
   ]

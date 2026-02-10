@@ -5,7 +5,7 @@ import Test.Tasty.HUnit (testCase)
 
 import PlutusCore.Data (Data (Constr, I, List, Map, B))
 
-import HaskLedger
+import HaskLedger hiding (mkNothing, mkJust)
 import TestHelper
 
 tests :: TestTree
