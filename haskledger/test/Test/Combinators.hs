@@ -60,7 +60,7 @@ tests = testGroup "Combinators"
       , testCase "open at deadline-2 fails" $
           assertEvalFailure "open-2" $ evalValidator v (mkDeadlineCtx 0 False (dl - 2))
       , testCase "NegInf crashes" $
-          assertEvalFailure "negInf" $ evalValidator v (mkNegInfCtx 0)
+          assertEvalFailure "negInf" $ evalValidator v (mkSimpleCtx 0)
       , testCase "PosInf lower crashes" $
           assertEvalFailure "posInf" $ evalValidator v (mkPosInfLowerCtx 0)
       ]

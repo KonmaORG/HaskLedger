@@ -31,7 +31,7 @@ tests = testGroup "Examples"
       , testCase "open at deadline-2 fails" $
           assertEvalFailure "open-2" $ evalValidator vDeadline (mkDeadlineCtx 0 False (dl - 2))
       , testCase "NegInf crashes" $
-          assertEvalFailure "negInf" $ evalValidator vDeadline (mkNegInfCtx 0)
+          assertEvalFailure "negInf" $ evalValidator vDeadline (mkSimpleCtx 0)
       ]
   , testGroup "guarded-deadline"
       [ testCase "both pass" $

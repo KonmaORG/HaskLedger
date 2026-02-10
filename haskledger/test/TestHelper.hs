@@ -11,11 +11,10 @@ module TestHelper
   , mkClosedLowerBound
   , mkOpenLowerBound
   , mkNegInfLowerBound
-  , mkPosInfUpperBound
+  , mkPosInfBound
   , mkFiniteExtended
   , mkSimpleCtx
   , mkDeadlineCtx
-  , mkNegInfCtx
   , mkPosInfLowerCtx
   , mkByteStringCtx
   , mkListCtx
@@ -118,22 +117,19 @@ mkOpenLowerBound ms = Constr 0 [mkFiniteExtended ms, Constr 0 []]
 mkNegInfLowerBound :: Data
 mkNegInfLowerBound = Constr 0 [Constr 0 [], Constr 1 []]
 
-mkPosInfUpperBound :: Data
-mkPosInfUpperBound = Constr 0 [Constr 2 [], Constr 1 []]
+mkPosInfBound :: Data
+mkPosInfBound = Constr 0 [Constr 2 [], Constr 1 []]
 
 mkSimpleCtx :: Integer -> Data
 mkSimpleCtx r =
   mkScriptContext
-    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
     (I r)
-
-mkNegInfCtx :: Integer -> Data
-mkNegInfCtx = mkSimpleCtx
 
 mkPosInfLowerCtx :: Integer -> Data
 mkPosInfLowerCtx r =
   mkScriptContext
-    (mkTxInfo (mkValidRange mkPosInfUpperBound mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkPosInfBound mkPosInfBound))
     (I r)
 
 mkDeadlineCtx :: Integer -> Bool -> Integer -> Data
@@ -142,25 +138,25 @@ mkDeadlineCtx r closed ms =
     (mkTxInfo
       (mkValidRange
         (if closed then mkClosedLowerBound ms else mkOpenLowerBound ms)
-        mkPosInfUpperBound))
+        mkPosInfBound))
     (I r)
 
 mkByteStringCtx :: ByteString -> Data
 mkByteStringCtx bs =
   mkScriptContext
-    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
     (B bs)
 
 mkListCtx :: [Data] -> Data
 mkListCtx xs =
   mkScriptContext
-    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
     (List xs)
 
 -- Default TxInfo with all 16 fields set to empty/zero values.
 -- Use mkTxInfoWith to override specific fields.
 defaultTxInfo :: Data
-defaultTxInfo = mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound)
+defaultTxInfo = mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound)
 
 -- Build a TxInfo replacing one field by index.
 -- The rest get default values.
@@ -178,7 +174,7 @@ mkTxInfoWith idx val = Constr 0 (replace idx val defaults)
       , Map []                                                   -- 4: mint (MintValue, newtype)
       , List []                                                  -- 5: certs
       , Map []                                                   -- 6: wdrl
-      , mkValidRange mkNegInfLowerBound mkPosInfUpperBound       -- 7: validRange
+      , mkValidRange mkNegInfLowerBound mkPosInfBound       -- 7: validRange
       , List []                                                  -- 8: signatories
       , Map []                                                   -- 9: redeemers
       , Map []                                                   -- 10: datums

@@ -1,13 +1,12 @@
 module HaskLedger.Compile
   ( compileToEnvelope,
-    compileValidator,
     compileToJSON,
     safeLedgerDecls,
   )
 where
 
 import Control.Monad.Trans.Except (runExceptT)
-import Covenant.ASG (ASG, CovenantError, defaultDatatypes, runASGBuilder)
+import Covenant.ASG (defaultDatatypes)
 import Covenant.Data (DatatypeInfo (DatatypeInfo))
 import Covenant.JSON (Version (Version), compileAndSerialize)
 import Covenant.Type (AbstractTy, DataDeclaration, TyName)
@@ -26,19 +25,17 @@ ledgerDecls =
   , not isBF
   ]
 
-builtinTypeNames :: Set.Set TyName
-builtinTypeNames = Set.fromList ["Data", "List", "Pair", "Map"]
+-- The Plutus-level data types that are built into the evaluator,
+-- not user-defined ledger types.
+plutusTypeNames :: Set.Set TyName
+plutusTypeNames = Set.fromList ["Data", "List", "Pair", "Map"]
 
 safeLedgerDecls :: [DataDeclaration AbstractTy]
 safeLedgerDecls =
   [ decl
   | decl <- ledgerDecls
-  , view #datatypeName decl `Set.member` builtinTypeNames
+  , view #datatypeName decl `Set.member` plutusTypeNames
   ]
-
-compileValidator :: Validator -> Either CovenantError ASG
-compileValidator (Validator _name builder) =
-  runASGBuilder defaultDatatypes builder
 
 compileToJSON :: FilePath -> Validator -> IO ()
 compileToJSON path (Validator name builder) = do

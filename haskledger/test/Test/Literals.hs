@@ -42,11 +42,11 @@ tests = testGroup "Literals"
             (validator "t" $ require "b" $ mkBool False)
             (mkSimpleCtx 0)
       ]
-  , testGroup "mkUnit"
-      [ testCase "mkUnit compiles" $
+  , testGroup "pass"
+      [ testCase "pass compiles" $
           assertCompiles "unit" $
             validator "t" $ do
-              _ <- mkUnit
+              _ <- pass
               pass
       ]
   ]

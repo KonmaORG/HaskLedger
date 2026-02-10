@@ -123,10 +123,11 @@ tests = testGroup "TxInfo field accessors"
                 (mkScriptContext (mkTxInfoWith 10 (Map [(B "hash1", I 99)])) (Map []))
           ]
       , testGroup "txId"
-          [ testCase "txId extracts hash" $
+          [ testCase "txId default is empty" $
+              -- defaultTxInfo has B "" at field 11, TxId is NewtypeData
               assertEvalSuccess "txid" $ evalValidator
                 (validator "t" $ require "id" $
-                  equalsData txId txId)
+                  equalsByteString (asByteString txId) (mkByteString ""))
                 (mkScriptContext defaultTxInfo (I 0))
           , testCase "txId with known hash" $
               -- TxId is NewtypeData, so just B "..." without constructor wrapper
@@ -190,31 +191,7 @@ tests = testGroup "TxInfo field accessors"
           ]
       ]
   , testGroup "TxOut fields"
-      [ testGroup "txOutAddress"
-          [ testCase "txOutAddress compiles" $
-              assertCompiles "addr" $
-                validator "t" $ require "a" $
-                  equalsData (txOutAddress theRedeemer) (txOutAddress theRedeemer)
-          ]
-      , testGroup "txOutValue"
-          [ testCase "txOutValue compiles" $
-              assertCompiles "val" $
-                validator "t" $ require "v" $
-                  equalsData (txOutValue theRedeemer) (txOutValue theRedeemer)
-          ]
-      , testGroup "txOutDatum"
-          [ testCase "txOutDatum compiles" $
-              assertCompiles "dat" $
-                validator "t" $ require "d" $
-                  equalsData (txOutDatum theRedeemer) (txOutDatum theRedeemer)
-          ]
-      , testGroup "txOutReferenceScript"
-          [ testCase "txOutReferenceScript compiles" $
-              assertCompiles "ref" $
-                validator "t" $ require "r" $
-                  equalsData (txOutReferenceScript theRedeemer) (txOutReferenceScript theRedeemer)
-          ]
-      , testGroup "TxOut field extraction via known Data"
+      [ testGroup "TxOut field extraction via known Data"
           -- Feed a TxOut as the redeemer, verify fields extract and are distinct
           [ testCase "extract address from TxOut redeemer" $
               assertEvalSuccess "addr" $ evalValidator
@@ -240,22 +217,14 @@ tests = testGroup "TxInfo field accessors"
       ]
   , testGroup "TxInInfo fields"
       [ testGroup "txInInfoOutRef"
-          [ testCase "txInInfoOutRef compiles" $
-              assertCompiles "outref" $
-                validator "t" $ require "o" $
-                  equalsData (txInInfoOutRef theRedeemer) (txInInfoOutRef theRedeemer)
-          , testCase "extract outref from TxInInfo redeemer" $
+          [ testCase "extract outref from TxInInfo redeemer" $
               assertEvalSuccess "outref" $ evalValidator
                 (validator "t" $ require "o" $
                   equalsData (txInInfoOutRef theRedeemer) (txInInfoOutRef theRedeemer))
                 (mkScriptContext defaultTxInfo sampleTxInInfo)
           ]
       , testGroup "txInInfoResolved"
-          [ testCase "txInInfoResolved compiles" $
-              assertCompiles "resolved" $
-                validator "t" $ require "r" $
-                  equalsData (txInInfoResolved theRedeemer) (txInInfoResolved theRedeemer)
-          , testCase "extract resolved from TxInInfo redeemer" $
+          [ testCase "extract resolved from TxInInfo redeemer" $
               assertEvalSuccess "resolved" $ evalValidator
                 (validator "t" $ require "r" $
                   equalsData (txInInfoResolved theRedeemer) (txInInfoResolved theRedeemer))
@@ -275,11 +244,12 @@ tests = testGroup "TxInfo field accessors"
               assertCompiles "info" $
                 validator "t" $ require "i" $
                   equalsData theScriptInfo theScriptInfo
-          , testCase "theScriptInfo extracts spending info" $
+          , testCase "theScriptInfo matches redeemer when equal" $
+              -- pass mkSpendingInfo as the redeemer so we can compare
               assertEvalSuccess "info" $ evalValidator
                 (validator "t" $ require "i" $
-                  equalsData theScriptInfo theScriptInfo)
-                (mkScriptContext defaultTxInfo (I 0))
+                  equalsData theScriptInfo theRedeemer)
+                (mkScriptContext defaultTxInfo mkSpendingInfo)
           ]
       ]
   ]

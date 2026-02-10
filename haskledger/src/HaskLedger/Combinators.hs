@@ -77,7 +77,6 @@ module HaskLedger.Combinators
     mkByteString,
     emptyByteString,
     mkBool,
-    mkUnit,
     blake2b_224,
     keccak_256,
     sha3_256,
@@ -133,7 +132,7 @@ import Covenant.Prim
   )
 import Data.ByteString (ByteString)
 import Data.Text (Text)
-import HaskLedger.Contract (Condition, Contract, Expr, pass)
+import HaskLedger.Contract (Condition, Contract, Expr)
 import HaskLedger.Internal
   ( headList,
     nthField,
@@ -144,6 +143,41 @@ import HaskLedger.Internal
 infix 4 .==, ./=, .<, .<=, .>, .>=
 infixr 3 .&&
 infixr 2 .||
+
+-- Lift a one-arg Covenant builtin into the monadic Contract world.
+liftBuiltin1 :: OneArgFunc -> Contract Expr -> Contract Expr
+liftBuiltin1 prim xM = do
+  x <- xM
+  f <- builtin1 prim
+  AnId <$> app' f [x]
+
+-- Same thing for two-arg builtins.
+liftBuiltin2 :: TwoArgFunc -> Contract Expr -> Contract Expr -> Contract Expr
+liftBuiltin2 prim lM rM = do
+  l <- lM; r <- rM
+  op <- builtin2 prim
+  AnId <$> app' op [l, r]
+
+-- And three-arg.
+liftBuiltin3 :: ThreeArgFunc -> Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
+liftBuiltin3 prim aM bM cM = do
+  a <- aM; b <- bM; c <- cM
+  op <- builtin3 prim
+  AnId <$> app' op [a, b, c]
+
+-- Grab field N from TxInfo (unconstr + nthField).
+txInfoField :: Int -> Contract Expr
+txInfoField n = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField n fs
+
+-- Grab field N from a Constr-encoded value (TxOut, TxInInfo, etc.).
+fieldOf :: Int -> Contract Expr -> Contract Expr
+fieldOf n valM = do
+  v <- valM
+  fs <- unconstrFields v
+  nthField n fs
 
 theRedeemer :: Contract Expr
 theRedeemer = redeemer scriptContext
@@ -156,157 +190,91 @@ txValidRange = validRange theTxInfo
 
 -- | Field 0 of TxInfo.
 txInputs :: Contract Expr
-txInputs = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 0 fs
+txInputs = txInfoField 0
 
 -- | Field 1 of TxInfo.
 txRefInputs :: Contract Expr
-txRefInputs = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 1 fs
+txRefInputs = txInfoField 1
 
 -- | Field 2 of TxInfo.
 txOutputs :: Contract Expr
-txOutputs = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 2 fs
+txOutputs = txInfoField 2
 
 -- | Field 3 of TxInfo.
 txFee :: Contract Expr
-txFee = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 3 fs
+txFee = txInfoField 3
 
 -- | Field 4 of TxInfo.
 txMint :: Contract Expr
-txMint = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 4 fs
+txMint = txInfoField 4
 
 -- | Field 5 of TxInfo.
 txCerts :: Contract Expr
-txCerts = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 5 fs
+txCerts = txInfoField 5
 
 -- | Field 6 of TxInfo.
 txWithdrawals :: Contract Expr
-txWithdrawals = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 6 fs
+txWithdrawals = txInfoField 6
 
 -- | Field 8 of TxInfo.
 txSignatories :: Contract Expr
-txSignatories = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 8 fs
+txSignatories = txInfoField 8
 
 -- | Field 9 of TxInfo.
 txRedeemers :: Contract Expr
-txRedeemers = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 9 fs
+txRedeemers = txInfoField 9
 
 -- | Field 10 of TxInfo.
 txDatums :: Contract Expr
-txDatums = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 10 fs
+txDatums = txInfoField 10
 
 -- | Field 11 of TxInfo.
 txId :: Contract Expr
-txId = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 11 fs
+txId = txInfoField 11
 
 -- | Field 12 of TxInfo.
 txVotes :: Contract Expr
-txVotes = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 12 fs
+txVotes = txInfoField 12
 
 -- | Field 13 of TxInfo.
 txProposals :: Contract Expr
-txProposals = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 13 fs
+txProposals = txInfoField 13
 
 -- | Field 14 of TxInfo.
 txCurrentTreasuryAmount :: Contract Expr
-txCurrentTreasuryAmount = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 14 fs
+txCurrentTreasuryAmount = txInfoField 14
 
 -- | Field 15 of TxInfo.
 txTreasuryDonation :: Contract Expr
-txTreasuryDonation = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField 15 fs
+txTreasuryDonation = txInfoField 15
 
 -- | Field 0 of TxOut.
 txOutAddress :: Contract Expr -> Contract Expr
-txOutAddress outM = do
-  out <- outM
-  fs <- unconstrFields out
-  nthField 0 fs
+txOutAddress = fieldOf 0
 
 -- | Field 1 of TxOut.
 txOutValue :: Contract Expr -> Contract Expr
-txOutValue outM = do
-  out <- outM
-  fs <- unconstrFields out
-  nthField 1 fs
+txOutValue = fieldOf 1
 
 -- | Field 2 of TxOut.
 txOutDatum :: Contract Expr -> Contract Expr
-txOutDatum outM = do
-  out <- outM
-  fs <- unconstrFields out
-  nthField 2 fs
+txOutDatum = fieldOf 2
 
 -- | Field 3 of TxOut.
 txOutReferenceScript :: Contract Expr -> Contract Expr
-txOutReferenceScript outM = do
-  out <- outM
-  fs <- unconstrFields out
-  nthField 3 fs
+txOutReferenceScript = fieldOf 3
 
 -- | Field 0 of TxInInfo.
 txInInfoOutRef :: Contract Expr -> Contract Expr
-txInInfoOutRef inM = do
-  inp <- inM
-  fs <- unconstrFields inp
-  nthField 0 fs
+txInInfoOutRef = fieldOf 0
 
 -- | Field 1 of TxInInfo.
 txInInfoResolved :: Contract Expr -> Contract Expr
-txInInfoResolved inM = do
-  inp <- inM
-  fs <- unconstrFields inp
-  nthField 1 fs
+txInInfoResolved = fieldOf 1
 
 -- | Field 2 of ScriptContext -- the script purpose info.
 theScriptInfo :: Contract Expr
-theScriptInfo = do
-  ctx <- scriptContext
-  fs <- unconstrFields ctx
-  nthField 2 fs
+theScriptInfo = fieldOf 2 scriptContext
 
 -- | Check that a PubKeyHash matches the first signatory.
 signedBy :: Contract Expr -> Contract Condition
@@ -321,22 +289,13 @@ signedByAt idx pkhM = do
   equalsData (pure target) (pure pkh)
 
 verifyEd25519 :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
-verifyEd25519 vkM msgM sigM = do
-  vk <- vkM; msg <- msgM; sig <- sigM
-  op <- builtin3 VerifyEd25519Signature
-  AnId <$> app' op [vk, msg, sig]
+verifyEd25519 = liftBuiltin3 VerifyEd25519Signature
 
 verifyEcdsa :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
-verifyEcdsa vkM msgM sigM = do
-  vk <- vkM; msg <- msgM; sig <- sigM
-  op <- builtin3 VerifyEcdsaSecp256k1Signature
-  AnId <$> app' op [vk, msg, sig]
+verifyEcdsa = liftBuiltin3 VerifyEcdsaSecp256k1Signature
 
 verifySchnorr :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
-verifySchnorr vkM msgM sigM = do
-  vk <- vkM; msg <- msgM; sig <- sigM
-  op <- builtin3 VerifySchnorrSecp256k1Signature
-  AnId <$> app' op [vk, msg, sig]
+verifySchnorr = liftBuiltin3 VerifySchnorrSecp256k1Signature
 
 (.==), (./=) :: Contract Expr -> Contract Expr -> Contract Condition
 (.==) = equalsInt
@@ -358,50 +317,29 @@ scriptContext :: Contract Expr
 scriptContext = AnArg <$> arg Z ix0
 
 txInfo :: Contract Expr -> Contract Expr
-txInfo ctxM = do
-  ctx <- ctxM
-  fs <- unconstrFields ctx
-  nthField 0 fs
+txInfo = fieldOf 0
 
 redeemer :: Contract Expr -> Contract Expr
-redeemer ctxM = do
-  ctx <- ctxM
-  fs <- unconstrFields ctx
-  nthField 1 fs
+redeemer = fieldOf 1
 
 -- | Field 7 of TxInfo.
 validRange :: Contract Expr -> Contract Expr
-validRange infoM = do
-  info <- infoM
-  fs <- unconstrFields info
-  nthField 7 fs
+validRange = fieldOf 7
 
 asInt :: Contract Expr -> Contract Expr
-asInt datM = do
-  dat <- datM
-  f <- builtin1 UnIData
-  AnId <$> app' f [dat]
+asInt = liftBuiltin1 UnIData
 
 mkInt :: Integer -> Contract Expr
 mkInt n = AnId <$> lit (AnInteger n)
 
 equalsInt :: Contract Expr -> Contract Expr -> Contract Condition
-equalsInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 EqualsInteger
-  AnId <$> app' op [l, r]
+equalsInt = liftBuiltin2 EqualsInteger
 
 lessThanInt :: Contract Expr -> Contract Expr -> Contract Condition
-lessThanInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 LessThanInteger
-  AnId <$> app' op [l, r]
+lessThanInt = liftBuiltin2 LessThanInteger
 
 lessThanEqInt :: Contract Expr -> Contract Expr -> Contract Condition
-lessThanEqInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 LessThanEqualsInteger
-  AnId <$> app' op [l, r]
+lessThanEqInt = liftBuiltin2 LessThanEqualsInteger
 
 -- | Checks that a validity range starts at or after a POSIX deadline (milliseconds).
 -- Closed bounds use @<=@, open bounds compare against @time + 1@.
@@ -463,144 +401,75 @@ notBool condM = do
   AnId <$> app' ite [cond, f, t]
 
 asByteString :: Contract Expr -> Contract Expr
-asByteString datM = do
-  dat <- datM
-  f <- builtin1 UnBData
-  AnId <$> app' f [dat]
+asByteString = liftBuiltin1 UnBData
 
 mkByteStringData :: Contract Expr -> Contract Expr
-mkByteStringData bsM = do
-  bs <- bsM
-  f <- builtin1 BData
-  AnId <$> app' f [bs]
+mkByteStringData = liftBuiltin1 BData
 
 mkIntData :: Contract Expr -> Contract Expr
-mkIntData nM = do
-  n <- nM
-  f <- builtin1 IData
-  AnId <$> app' f [n]
+mkIntData = liftBuiltin1 IData
 
 lengthByteString :: Contract Expr -> Contract Expr
-lengthByteString bsM = do
-  bs <- bsM
-  f <- builtin1 LengthOfByteString
-  AnId <$> app' f [bs]
+lengthByteString = liftBuiltin1 LengthOfByteString
 
 sha2_256 :: Contract Expr -> Contract Expr
-sha2_256 bsM = do
-  bs <- bsM
-  f <- builtin1 Sha2_256
-  AnId <$> app' f [bs]
+sha2_256 = liftBuiltin1 Sha2_256
 
 blake2b_256 :: Contract Expr -> Contract Expr
-blake2b_256 bsM = do
-  bs <- bsM
-  f <- builtin1 Blake2b_256
-  AnId <$> app' f [bs]
+blake2b_256 = liftBuiltin1 Blake2b_256
 
 serialiseData :: Contract Expr -> Contract Expr
-serialiseData datM = do
-  dat <- datM
-  f <- builtin1 SerialiseData
-  AnId <$> app' f [dat]
+serialiseData = liftBuiltin1 SerialiseData
 
 asList :: Contract Expr -> Contract Expr
-asList datM = do
-  dat <- datM
-  f <- builtin1 UnListData
-  AnId <$> app' f [dat]
+asList = liftBuiltin1 UnListData
 
 asMap :: Contract Expr -> Contract Expr
-asMap datM = do
-  dat <- datM
-  f <- builtin1 UnMapData
-  AnId <$> app' f [dat]
+asMap = liftBuiltin1 UnMapData
 
 isNullList :: Contract Expr -> Contract Condition
-isNullList listM = do
-  l <- listM
-  f <- builtin1 NullList
-  AnId <$> app' f [l]
+isNullList = liftBuiltin1 NullList
 
 equalsByteString :: Contract Expr -> Contract Expr -> Contract Condition
-equalsByteString lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 EqualsByteString
-  AnId <$> app' op [l, r]
+equalsByteString = liftBuiltin2 EqualsByteString
 
 lessThanByteString :: Contract Expr -> Contract Expr -> Contract Condition
-lessThanByteString lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 LessThanByteString
-  AnId <$> app' op [l, r]
+lessThanByteString = liftBuiltin2 LessThanByteString
 
 lessThanEqualsByteString :: Contract Expr -> Contract Expr -> Contract Condition
-lessThanEqualsByteString lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 LessThanEqualsByteString
-  AnId <$> app' op [l, r]
+lessThanEqualsByteString = liftBuiltin2 LessThanEqualsByteString
 
 equalsData :: Contract Expr -> Contract Expr -> Contract Condition
-equalsData lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 EqualsData
-  AnId <$> app' op [l, r]
+equalsData = liftBuiltin2 EqualsData
 
 appendByteString :: Contract Expr -> Contract Expr -> Contract Expr
-appendByteString lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 AppendByteString
-  AnId <$> app' op [l, r]
+appendByteString = liftBuiltin2 AppendByteString
 
 indexByteString :: Contract Expr -> Contract Expr -> Contract Expr
-indexByteString bsM iM = do
-  bs <- bsM; i <- iM
-  op <- builtin2 IndexByteString
-  AnId <$> app' op [bs, i]
+indexByteString = liftBuiltin2 IndexByteString
 
 consByteString :: Contract Expr -> Contract Expr -> Contract Expr
-consByteString byteM bsM = do
-  b <- byteM; bs <- bsM
-  op <- builtin2 ConsByteString
-  AnId <$> app' op [b, bs]
+consByteString = liftBuiltin2 ConsByteString
 
 consList :: Contract Expr -> Contract Expr -> Contract Expr
-consList elemM listM = do
-  e <- elemM; l <- listM
-  op <- builtin2 MkCons
-  AnId <$> app' op [e, l]
+consList = liftBuiltin2 MkCons
 
 quotientInt :: Contract Expr -> Contract Expr -> Contract Expr
-quotientInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 QuotientInteger
-  AnId <$> app' op [l, r]
+quotientInt = liftBuiltin2 QuotientInteger
 
 remainderInt :: Contract Expr -> Contract Expr -> Contract Expr
-remainderInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 RemainderInteger
-  AnId <$> app' op [l, r]
+remainderInt = liftBuiltin2 RemainderInteger
 
 modInt :: Contract Expr -> Contract Expr -> Contract Expr
-modInt lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 ModInteger
-  AnId <$> app' op [l, r]
+modInt = liftBuiltin2 ModInteger
 
 traceMsg :: Contract Expr -> Contract Expr -> Contract Expr
-traceMsg msgM valM = do
-  msg <- msgM; val <- valM
-  op <- builtin2 Trace
-  AnId <$> app' op [msg, val]
+traceMsg = liftBuiltin2 Trace
 
 -- Both branches are evaluated eagerly (strict, like IfThenElse in UPLC).
 -- Fine for plain values; don't pass error expressions as branches.
 chooseList :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
-chooseList listM nilM consM = do
-  l <- listM; n <- nilM; c <- consM
-  op <- builtin3 ChooseList
-  AnId <$> app' op [l, n, c]
+chooseList = liftBuiltin3 ChooseList
 
 mkString :: Text -> Contract Expr
 mkString s = AnId <$> lit (AString s)
@@ -614,56 +483,29 @@ emptyByteString = mkByteString ""
 mkBool :: Bool -> Contract Expr
 mkBool b = AnId <$> lit (ABoolean b)
 
-mkUnit :: Contract Expr
-mkUnit = pass
-
 blake2b_224 :: Contract Expr -> Contract Expr
-blake2b_224 bsM = do
-  bs <- bsM
-  f <- builtin1 Blake2b_224
-  AnId <$> app' f [bs]
+blake2b_224 = liftBuiltin1 Blake2b_224
 
 keccak_256 :: Contract Expr -> Contract Expr
-keccak_256 bsM = do
-  bs <- bsM
-  f <- builtin1 Keccak_256
-  AnId <$> app' f [bs]
+keccak_256 = liftBuiltin1 Keccak_256
 
 sha3_256 :: Contract Expr -> Contract Expr
-sha3_256 bsM = do
-  bs <- bsM
-  f <- builtin1 Sha3_256
-  AnId <$> app' f [bs]
+sha3_256 = liftBuiltin1 Sha3_256
 
 ripemd_160 :: Contract Expr -> Contract Expr
-ripemd_160 bsM = do
-  bs <- bsM
-  f <- builtin1 Ripemd_160
-  AnId <$> app' f [bs]
+ripemd_160 = liftBuiltin1 Ripemd_160
 
 constrData :: Contract Expr -> Contract Expr -> Contract Expr
-constrData tagM fieldsM = do
-  t <- tagM; fs <- fieldsM
-  op <- builtin2 ConstrData
-  AnId <$> app' op [t, fs]
+constrData = liftBuiltin2 ConstrData
 
 mkPairData :: Contract Expr -> Contract Expr -> Contract Expr
-mkPairData fstM sndM = do
-  a <- fstM; b <- sndM
-  op <- builtin2 MkPairData
-  AnId <$> app' op [a, b]
+mkPairData = liftBuiltin2 MkPairData
 
 mapData :: Contract Expr -> Contract Expr
-mapData pairsM = do
-  ps <- pairsM
-  f <- builtin1 MapData
-  AnId <$> app' f [ps]
+mapData = liftBuiltin1 MapData
 
 listData :: Contract Expr -> Contract Expr
-listData itemsM = do
-  xs <- itemsM
-  f <- builtin1 ListData
-  AnId <$> app' f [xs]
+listData = liftBuiltin1 ListData
 
 -- All 6 branches evaluated eagerly (strict). Order: data, constr, map, list, int, bs.
 chooseData :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
@@ -676,62 +518,32 @@ chooseData datM constrM mp listM intM bsM = do
 -- First arg is endianness: mkBool True = big-endian, mkBool False = little-endian.
 -- Second arg is the desired output width (0 = minimal).
 integerToByteString :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
-integerToByteString endianM widthM nM = do
-  e <- endianM; w <- widthM; n <- nM
-  op <- builtin3 IntegerToByteString
-  AnId <$> app' op [e, w, n]
+integerToByteString = liftBuiltin3 IntegerToByteString
 
 byteStringToInteger :: Contract Expr -> Contract Expr -> Contract Expr
-byteStringToInteger endianM bsM = do
-  e <- endianM; bs <- bsM
-  op <- builtin2 ByteStringToInteger
-  AnId <$> app' op [e, bs]
+byteStringToInteger = liftBuiltin2 ByteStringToInteger
 
 bls12_381_G1_uncompress :: Contract Expr -> Contract Expr
-bls12_381_G1_uncompress bsM = do
-  bs <- bsM
-  f <- builtin1 BLS12_381_G1_uncompress
-  AnId <$> app' f [bs]
+bls12_381_G1_uncompress = liftBuiltin1 BLS12_381_G1_uncompress
 
 bls12_381_G2_uncompress :: Contract Expr -> Contract Expr
-bls12_381_G2_uncompress bsM = do
-  bs <- bsM
-  f <- builtin1 BLS12_381_G2_uncompress
-  AnId <$> app' f [bs]
+bls12_381_G2_uncompress = liftBuiltin1 BLS12_381_G2_uncompress
 
 bls12_381_G1_add :: Contract Expr -> Contract Expr -> Contract Expr
-bls12_381_G1_add lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 BLS12_381_G1_add
-  AnId <$> app' op [l, r]
+bls12_381_G1_add = liftBuiltin2 BLS12_381_G1_add
 
 bls12_381_G2_add :: Contract Expr -> Contract Expr -> Contract Expr
-bls12_381_G2_add lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 BLS12_381_G2_add
-  AnId <$> app' op [l, r]
+bls12_381_G2_add = liftBuiltin2 BLS12_381_G2_add
 
 bls12_381_G1_scalarMul :: Contract Expr -> Contract Expr -> Contract Expr
-bls12_381_G1_scalarMul kM ptM = do
-  k <- kM; pt <- ptM
-  op <- builtin2 BLS12_381_G1_scalarMul
-  AnId <$> app' op [k, pt]
+bls12_381_G1_scalarMul = liftBuiltin2 BLS12_381_G1_scalarMul
 
 bls12_381_G2_scalarMul :: Contract Expr -> Contract Expr -> Contract Expr
-bls12_381_G2_scalarMul kM ptM = do
-  k <- kM; pt <- ptM
-  op <- builtin2 BLS12_381_G2_scalarMul
-  AnId <$> app' op [k, pt]
+bls12_381_G2_scalarMul = liftBuiltin2 BLS12_381_G2_scalarMul
 
 bls12_381_millerLoop :: Contract Expr -> Contract Expr -> Contract Expr
-bls12_381_millerLoop g1M g2M = do
-  g1 <- g1M; g2 <- g2M
-  op <- builtin2 BLS12_381_millerLoop
-  AnId <$> app' op [g1, g2]
+bls12_381_millerLoop = liftBuiltin2 BLS12_381_millerLoop
 
 -- Returns a Condition (Bool), not an Expr.
 bls12_381_finalVerify :: Contract Expr -> Contract Expr -> Contract Condition
-bls12_381_finalVerify lM rM = do
-  l <- lM; r <- rM
-  op <- builtin2 BLS12_381_finalVerify
-  AnId <$> app' op [l, r]
+bls12_381_finalVerify = liftBuiltin2 BLS12_381_finalVerify
