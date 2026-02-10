@@ -8,6 +8,7 @@ import Test.Contract qualified
 import Test.Examples qualified
 import Test.Internal qualified
 import Test.Literals qualified
+import Test.TxInfo qualified
 
 main :: IO ()
 main = defaultMain $ testGroup "HaskLedger"
@@ -17,4 +18,5 @@ main = defaultMain $ testGroup "HaskLedger"
   , Test.Internal.tests
   , Test.Literals.tests
   , Test.Examples.tests
+  , Test.TxInfo.tests
   ]

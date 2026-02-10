@@ -2,6 +2,28 @@ module HaskLedger.Combinators
   ( theRedeemer,
     theTxInfo,
     txValidRange,
+    txInputs,
+    txRefInputs,
+    txOutputs,
+    txFee,
+    txMint,
+    txCerts,
+    txWithdrawals,
+    txSignatories,
+    txRedeemers,
+    txDatums,
+    txId,
+    txVotes,
+    txProposals,
+    txCurrentTreasuryAmount,
+    txTreasuryDonation,
+    txOutAddress,
+    txOutValue,
+    txOutDatum,
+    txOutReferenceScript,
+    txInInfoOutRef,
+    txInInfoResolved,
+    theScriptInfo,
     (.==),
     (./=),
     (.<),
@@ -97,6 +119,160 @@ theTxInfo = txInfo scriptContext
 
 txValidRange :: Contract Expr
 txValidRange = validRange theTxInfo
+
+-- | Field 0 of TxInfo.
+txInputs :: Contract Expr
+txInputs = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 0 fs
+
+-- | Field 1 of TxInfo.
+txRefInputs :: Contract Expr
+txRefInputs = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 1 fs
+
+-- | Field 2 of TxInfo.
+txOutputs :: Contract Expr
+txOutputs = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 2 fs
+
+-- | Field 3 of TxInfo.
+txFee :: Contract Expr
+txFee = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 3 fs
+
+-- | Field 4 of TxInfo.
+txMint :: Contract Expr
+txMint = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 4 fs
+
+-- | Field 5 of TxInfo.
+txCerts :: Contract Expr
+txCerts = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 5 fs
+
+-- | Field 6 of TxInfo.
+txWithdrawals :: Contract Expr
+txWithdrawals = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 6 fs
+
+-- | Field 8 of TxInfo.
+txSignatories :: Contract Expr
+txSignatories = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 8 fs
+
+-- | Field 9 of TxInfo.
+txRedeemers :: Contract Expr
+txRedeemers = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 9 fs
+
+-- | Field 10 of TxInfo.
+txDatums :: Contract Expr
+txDatums = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 10 fs
+
+-- | Field 11 of TxInfo.
+txId :: Contract Expr
+txId = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 11 fs
+
+-- | Field 12 of TxInfo.
+txVotes :: Contract Expr
+txVotes = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 12 fs
+
+-- | Field 13 of TxInfo.
+txProposals :: Contract Expr
+txProposals = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 13 fs
+
+-- | Field 14 of TxInfo.
+txCurrentTreasuryAmount :: Contract Expr
+txCurrentTreasuryAmount = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 14 fs
+
+-- | Field 15 of TxInfo.
+txTreasuryDonation :: Contract Expr
+txTreasuryDonation = do
+  info <- theTxInfo
+  fs <- unconstrFields info
+  nthField 15 fs
+
+-- | Field 0 of TxOut.
+txOutAddress :: Contract Expr -> Contract Expr
+txOutAddress outM = do
+  out <- outM
+  fs <- unconstrFields out
+  nthField 0 fs
+
+-- | Field 1 of TxOut.
+txOutValue :: Contract Expr -> Contract Expr
+txOutValue outM = do
+  out <- outM
+  fs <- unconstrFields out
+  nthField 1 fs
+
+-- | Field 2 of TxOut.
+txOutDatum :: Contract Expr -> Contract Expr
+txOutDatum outM = do
+  out <- outM
+  fs <- unconstrFields out
+  nthField 2 fs
+
+-- | Field 3 of TxOut.
+txOutReferenceScript :: Contract Expr -> Contract Expr
+txOutReferenceScript outM = do
+  out <- outM
+  fs <- unconstrFields out
+  nthField 3 fs
+
+-- | Field 0 of TxInInfo.
+txInInfoOutRef :: Contract Expr -> Contract Expr
+txInInfoOutRef inM = do
+  inp <- inM
+  fs <- unconstrFields inp
+  nthField 0 fs
+
+-- | Field 1 of TxInInfo.
+txInInfoResolved :: Contract Expr -> Contract Expr
+txInInfoResolved inM = do
+  inp <- inM
+  fs <- unconstrFields inp
+  nthField 1 fs
+
+-- | Field 2 of ScriptContext -- the script purpose info.
+theScriptInfo :: Contract Expr
+theScriptInfo = do
+  ctx <- scriptContext
+  fs <- unconstrFields ctx
+  nthField 2 fs
 
 (.==), (./=) :: Contract Expr -> Contract Expr -> Contract Condition
 (.==) = equalsInt
