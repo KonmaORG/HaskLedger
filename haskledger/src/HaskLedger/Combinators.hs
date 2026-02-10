@@ -24,6 +24,11 @@ module HaskLedger.Combinators
     txInInfoOutRef,
     txInInfoResolved,
     theScriptInfo,
+    signedBy,
+    signedByAt,
+    verifyEd25519,
+    verifyEcdsa,
+    verifySchnorr,
     (.==),
     (./=),
     (.<),
@@ -114,7 +119,9 @@ import Covenant.Prim
                 ListData, MapData, NullList, Ripemd_160, SerialiseData,
                 Sha2_256, Sha3_256, UnBData, UnIData, UnListData, UnMapData),
     SixArgFunc (ChooseData),
-    ThreeArgFunc (ChooseList, IfThenElse, IntegerToByteString),
+    ThreeArgFunc (ChooseList, IfThenElse, IntegerToByteString,
+                  VerifyEcdsaSecp256k1Signature, VerifyEd25519Signature,
+                  VerifySchnorrSecp256k1Signature),
     TwoArgFunc (AddInteger, AppendByteString, BLS12_381_G1_add,
                 BLS12_381_G1_scalarMul, BLS12_381_G2_add, BLS12_381_G2_scalarMul,
                 BLS12_381_finalVerify, BLS12_381_millerLoop, ByteStringToInteger,
@@ -300,6 +307,36 @@ theScriptInfo = do
   ctx <- scriptContext
   fs <- unconstrFields ctx
   nthField 2 fs
+
+-- | Check that a PubKeyHash matches the first signatory.
+signedBy :: Contract Expr -> Contract Condition
+signedBy pkhM = signedByAt 0 pkhM
+
+-- | Check that a PubKeyHash matches the Nth signatory (0-indexed).
+signedByAt :: Int -> Contract Expr -> Contract Condition
+signedByAt idx pkhM = do
+  pkh <- pkhM
+  sigs <- asList txSignatories
+  target <- nthField idx sigs
+  equalsData (pure target) (pure pkh)
+
+verifyEd25519 :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
+verifyEd25519 vkM msgM sigM = do
+  vk <- vkM; msg <- msgM; sig <- sigM
+  op <- builtin3 VerifyEd25519Signature
+  AnId <$> app' op [vk, msg, sig]
+
+verifyEcdsa :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
+verifyEcdsa vkM msgM sigM = do
+  vk <- vkM; msg <- msgM; sig <- sigM
+  op <- builtin3 VerifyEcdsaSecp256k1Signature
+  AnId <$> app' op [vk, msg, sig]
+
+verifySchnorr :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
+verifySchnorr vkM msgM sigM = do
+  vk <- vkM; msg <- msgM; sig <- sigM
+  op <- builtin3 VerifySchnorrSecp256k1Signature
+  AnId <$> app' op [vk, msg, sig]
 
 (.==), (./=) :: Contract Expr -> Contract Expr -> Contract Condition
 (.==) = equalsInt

@@ -120,6 +120,7 @@ test-suite haskledger-tests
     Test.Literals
     Test.Examples
     Test.ExtendedBuiltins
+    Test.SignatureVerification
     Test.TxInfo
 
 -- Example contracts executable
