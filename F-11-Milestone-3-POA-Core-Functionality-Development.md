@@ -1,7 +1,9 @@
 # Catalyst Milestone 3: Core Functionality Development
 
 **Project:** HaskLedger - A Haskell eDSL for Cardano Smart Contracts
+
 **Repository:** https://github.com/KonmaORG/HaskLedger
+
 **Milestone Title:** Core Functionality Development
 
 ---
