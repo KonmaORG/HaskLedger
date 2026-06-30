@@ -64,12 +64,24 @@ nix develop
 cabal run haskledger-examples
 ```
 
-This produces four `.plutus` files in the `examples/` directory:
+This produces `.plutus` files in two directories:
 
-- `examples/always-succeeds.plutus`
-- `examples/redeemer-match.plutus`
-- `examples/deadline.plutus`
-- `examples/guarded-deadline.plutus`
+MS3 contracts (in `examples/ms3/`):
+- `always-succeeds.plutus`
+- `redeemer-match.plutus`
+- `deadline.plutus`
+- `guarded-deadline.plutus`
+
+MS4 contracts (in `examples/ms4/`):
+- `hash-lock.plutus`
+- `hash-verify.plutus`
+- `vesting.plutus`
+- `escrow.plutus`
+- `one-shot-nft.plutus`
+- `token-gate.plutus`
+- `multisig.plutus`
+- `treasury.plutus`
+- `oracle.plutus`
 
 ## Step 2: Set Up a Testnet Wallet
 
@@ -153,6 +165,131 @@ Expected output:
 - Test 1: Lock TX + Unlock TX (success)
 - Test 2: Lock TX + "TX correctly failed" (wrong redeemer)
 - Test 3: Lock TX + "TX correctly failed" (before deadline)
+
+### Hash Lock
+
+```bash
+bash haskledger/deploy/deploy-hash-lock.sh
+```
+
+Datum: `{"bytes": "<blake2b_256 hash of preimage>"}`. Redeemer: `{"bytes": "<preimage hex>"}`.
+
+The script computes `blake2b_256("vinitisgod")` and locks it as a ByteString datum. Unlock requires providing the preimage.
+
+1. **Test 1 (positive):** Correct preimage — should succeed
+2. **Test 2 (negative):** Wrong preimage — should be rejected
+
+### Vesting
+
+```bash
+bash haskledger/deploy/deploy-vesting.sh
+```
+
+Datum: `{"constructor": 0, "fields": [{"bytes": "<beneficiaryPKH>"}, {"int": 1769904000000}]}`. Redeemer: `{"int": 0}`.
+
+The contract checks: (1) current time is past deadline, (2) beneficiary signed, (3) change pays to beneficiary.
+
+1. **Test 1 (positive):** Beneficiary signs after deadline with change to beneficiary — should succeed
+2. **Test 2 (negative):** Non-beneficiary signs — should be rejected
+3. **Test 3 (negative):** Beneficiary signs before deadline — should be rejected
+
+Requires wallets: `payment`, `beneficiary`.
+
+### Escrow
+
+```bash
+bash haskledger/deploy/deploy-escrow.sh
+```
+
+Datum: `{"constructor": 0, "fields": [{"bytes": "<sellerPKH>"}, {"bytes": "<buyerPKH>"}, {"int": 1769904000000}]}`. Redeemer: `{"int": 1}` (claim) or `{"int": 0}` (refund).
+
+Claim (r=1): seller signs after deadline, change to seller. Refund (r=0): buyer signs before deadline (`--invalid-hereafter`), change to buyer.
+
+1. **Test 1 (positive):** Seller claims after deadline — should succeed
+2. **Test 2 (positive):** Buyer refunds before deadline — should succeed
+3. **Test 3 (negative):** Wrong signer tries to claim — should be rejected
+
+Requires wallets: `payment`, `seller`, `buyer`.
+
+### One-Shot NFT
+
+```bash
+bash haskledger/deploy/deploy-one-shot-nft.sh
+```
+
+Minting policy — no inline datum. Redeemer: `{"int": 0}` (mint) or `{"int": 1}` (burn). No changes from MS3.
+
+### Token Gate
+
+```bash
+bash haskledger/deploy/deploy-token-gate.sh
+```
+
+Datum: `{"constructor": 0, "fields": [{"bytes": "<gatePolicyID>"}, {"bytes": "<tokenNameHex>"}]}`. Redeemer: `{"int": 0}`.
+
+The script creates a native minting policy, mints ACCESS tokens, then tests the gate. The datum contains the gate token's currency symbol and token name.
+
+1. **Test 1 (positive):** Unlock while holding ACCESS token in outputs — should succeed
+2. **Test 2 (negative):** Unlock without ACCESS token — should be rejected
+
+### Multisig
+
+```bash
+bash haskledger/deploy/deploy-multisig.sh
+```
+
+Datum: `{"constructor": 0, "fields": [{"int": 2}, {"bytes": "<signer1PKH>"}, {"bytes": "<signer2PKH>"}, {"bytes": "<signer3PKH>"}]}`. Redeemer: `{"int": 0}`.
+
+The contract counts how many of the 3 authorized signers signed and checks it meets the threshold (2).
+
+1. **Test 1 (positive):** 2 of 3 signers sign — should succeed
+2. **Test 2 (negative):** Only 1 signer — should be rejected
+
+Requires wallets: `payment`, `signer1`, `signer2`, `signer3`.
+
+### Treasury
+
+```bash
+bash haskledger/deploy/deploy-treasury.sh
+```
+
+Datum: `{"bytes": "<adminPKH>"}`. Redeemer: `{"int": 0}` (withdraw) or `{"int": 1}` (deposit).
+
+Withdraw (r=0) requires admin signature. Deposit (r=1) requires `valuePreserved` — a continuing output at the script address with at least the locked amount.
+
+1. **Test 1 (positive):** Admin withdraws — should succeed
+2. **Test 2 (positive):** Deposit with continuing output — should succeed
+3. **Test 3 (negative):** Non-admin tries to withdraw — should be rejected
+
+Requires wallets: `payment`, `admin`.
+
+### Oracle
+
+```bash
+bash haskledger/deploy/deploy-oracle.sh
+```
+
+Datum: `{"bytes": "<operatorPKH>"}`. Redeemer: `{"int": 0}`.
+
+The contract requires the operator's signature and `valuePreserved` — a continuing output at the script address preserving the locked value.
+
+1. **Test 1 (positive):** Operator signs with continuing output — should succeed
+2. **Test 2 (negative):** Non-operator signs — should be rejected
+
+Requires wallets: `payment`, `operator`.
+
+### Hash Verify
+
+```bash
+bash haskledger/deploy/deploy-hash-verify.sh
+```
+
+Datum: `{"constructor": 0, "fields": [{"bytes": "<blake2b_224 hash>"}, {"bytes": "<keccak_256 hash>"}]}`. Redeemer: `{"bytes": "<preimage hex>"}`.
+
+The contract verifies the redeemer preimage matches both hashes stored in the datum. Requires `python3` for keccak_256 computation.
+
+1. **Test 1 (positive):** Correct preimage — should succeed
+2. **Test 2 (negative):** Wrong preimage — should be rejected
 
 ## How Deployment Works
 

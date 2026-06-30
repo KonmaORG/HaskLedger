@@ -1,6 +1,4 @@
 {-# LANGUAGE OverloadedLists #-}
--- TODO: Once tests are wired this should be removed
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 module Main (main) where
 
@@ -27,7 +25,6 @@ import Covenant.Constant (AConstant (ABoolean, AnInteger))
 import Covenant.DeBruijn (DeBruijn (S, Z))
 import Covenant.Index (ix0, ix1, ix2)
 import Covenant.Prim (ThreeArgFunc (IfThenElse), TwoArgFunc (EqualsInteger))
-import Covenant.Test (concretifyMegaTest)
 import Covenant.Type
   ( AbstractTy,
     BuiltinFlatT (IntegerT),
@@ -37,6 +34,7 @@ import Covenant.Type
     boolT,
     tyvar,
   )
+import Covenant.Unsafe (concretifyMegaTest)
 
 main :: IO ()
 main = case debugTest hiddenConcretificationTest of
@@ -81,8 +79,8 @@ testFn i b =
         Just a  -> aToInt a
   in fPolyOneElim (fPolyOneIntro fMono monoConst gMono i b) id b fMono
 -}
-testFn :: Either CovenantError ASG
-testFn = runASGBuilder defaultDatatypes concretifyMegaTest
+_testFn :: Either CovenantError ASG
+_testFn = runASGBuilder defaultDatatypes concretifyMegaTest
 
 {- smaller test
 
@@ -97,8 +95,8 @@ f i b =
   in (g i) == (g b)
 -}
 
-smallerTestFn :: Either CovenantError ASG
-smallerTestFn = runASGBuilder defaultDatatypes smallerTest
+_smallerTestFn :: Either CovenantError ASG
+_smallerTestFn = runASGBuilder defaultDatatypes smallerTest
 
 smallerTest :: ASGBuilder Id
 smallerTest = lam topLevelTy $ do
@@ -132,8 +130,8 @@ f i b =
   in g i == g b
 --}
 
-noRigidsTestFn :: Either CovenantError ASG
-noRigidsTestFn = runASGBuilder defaultDatatypes noRigidsTest
+_noRigidsTestFn :: Either CovenantError ASG
+_noRigidsTestFn = runASGBuilder defaultDatatypes noRigidsTest
 
 noRigidsTest :: ASGBuilder Id
 noRigidsTest = lam topLevelTy $ do
@@ -181,8 +179,8 @@ ifte = lam (Comp1 $ boolT :--:> tyvar Z ix0 :--:> tyvar Z ix0 :--:> ReturnT (tyv
   ifThen <- builtin3 IfThenElse
   AnId <$> app' ifThen [cond, t, f]
 
-hiddenConcretification :: Either CovenantError ASG
-hiddenConcretification = runASGBuilder defaultDatatypes hiddenConcretificationTest
+_hiddenConcretification :: Either CovenantError ASG
+_hiddenConcretification = runASGBuilder defaultDatatypes hiddenConcretificationTest
 
 hiddenConcretificationTest :: ASGBuilder Id
 hiddenConcretificationTest = lam topLevelTy $ do
@@ -220,8 +218,7 @@ rigidBinderTest = lam rigidBinderTy $ do
   f <- lam (Comp0 $ intT :--:> ReturnT boolT) $ do
     justHandler <- lazyLam (Comp0 $ tyvar (S (S Z)) ix0 :--:> ReturnT boolT) $ do
       AnId <$> lit (ABoolean False)
-    nothingHandler <- lazyLam (Comp0 $ ReturnT boolT) $ do
-      AnId <$> lit (ABoolean False)
+    nothingHandler <- lit (ABoolean False)
     x <- AnArg <$> arg (S Z) ix0
     m <- ctor' "Maybe" "Just" [x]
     AnId <$> match (AnId m) [AnId justHandler, AnId nothingHandler]

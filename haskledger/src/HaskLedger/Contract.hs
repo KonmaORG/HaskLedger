@@ -6,6 +6,7 @@ module HaskLedger.Contract
     Expr,
     Condition,
     validator,
+    mintingPolicy,
     pass,
     require,
     requireAll,
@@ -68,13 +69,13 @@ data Validator = Validator
     validatorBuilder :: ASGBuilder Id
   }
 
--- | Plutus V3 validator type: @Data -> Unit@.
 validatorType :: CompT AbstractTy
 validatorType = Comp0 $ dataT :--:> ReturnT unitValT
   where
     dataT = Datatype "Data" Vector.empty
     unitValT = BuiltinFlat UnitT
 
+-- Spending validator: Data -> Unit.
 validator :: String -> Contract Expr -> Validator
 validator name body =
   Validator
@@ -82,11 +83,14 @@ validator name body =
       validatorBuilder = lam validatorType body
     }
 
+-- Minting policy: same type as validator, signals intent.
+mintingPolicy :: String -> Contract Expr -> Validator
+mintingPolicy = validator
+
 pass :: Contract Expr
 pass = AnId <$> lit AUnit
 
--- | If the condition is false, error out. Branches wrapped in lambdas
--- and thunked so IfThenElse doesn't eagerly evaluate the error path.
+-- Assert condition or abort. Branches are thunked.
 require :: String -> Contract Condition -> Contract Expr
 require _label condM = do
   cond <- condM
@@ -99,7 +103,7 @@ require _label condM = do
   unit <- lit AUnit
   AnId <$> app' forced [AnId unit]
 
--- | Checks all conditions left to right; first failure aborts.
+-- Check all conditions left to right, first failure aborts.
 requireAll :: [(String, Contract Condition)] -> Contract Expr
 requireAll [] = pass
 requireAll [(label, condM)] = require label condM

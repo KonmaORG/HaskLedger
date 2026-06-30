@@ -36,7 +36,6 @@ import Covenant.ExtendedASG
     resolveExtended,
   )
 import Covenant.Index (Index, ix0, ix1)
-import Covenant.Test (BoundTyVar (BoundTyVar), ValNodeInfo (AppInternal))
 import Covenant.Transform.Common
   ( BuiltinFnData
       ( ByteString_Cata,
@@ -90,6 +89,7 @@ import Covenant.Type
     DataEncoding (SOP),
     ValT (Abstraction, Datatype, ThunkT),
   )
+import Covenant.Unsafe (BoundTyVar (BoundTyVar), ValNodeInfo (AppInternal))
 import Data.Foldable (traverse_)
 import Data.Kind (Type)
 import Data.Map (Map)
@@ -106,9 +106,9 @@ import Optics.Core (review)
 -}
 resolveRepPoly ::
   forall (m :: Type -> Type).
-  ( MonadStub m,
-    MonadReader (Rec ConcretifyCxt) m,
-    MonadState RepPolyHandlers m
+  ( MonadStub m
+  , MonadReader (Rec ConcretifyCxt) m
+  , MonadState RepPolyHandlers m
   ) =>
   m ()
 resolveRepPoly = eTopLevelSrcNode >>= go . fst
@@ -130,25 +130,21 @@ resolveRepPoly = eTopLevelSrcNode >>= go . fst
               <> msg
               <> "\n\n"
       error errMsg
-
     unsafeFnTy :: forall k. (ExtendedKey k, Show k) => k -> m (CompT AbstractTy)
     unsafeFnTy k =
       getASG >>= \asg -> case eSafeNodeAt k asg of
         Just (ACompNode compT _) -> pure compT
         other -> traceError $ "unsafeFnTy called on " <> show other <> " which isn't a comp node"
-
     goRef :: Ref -> m ()
     goRef = \case
       AnId i -> resolveExtended i >>= go
-      AnArg {} -> pure ()
-
+      AnArg{} -> pure ()
     withLocation :: Id -> (ASTRef -> m r) -> m r
     withLocation anId f = do
       lamScope <- fmap (\(LambdaId x) -> x) <$> asks (R..! #callPath)
       appScope <- fmap (\(AppId x) -> x) <$> asks (R..! #appPath)
-      let ref = ASTRef {underLams = lamScope, underApps = appScope, appNodeId = anId}
+      let ref = ASTRef{underLams = lamScope, underApps = appScope, appNodeId = anId}
       f ref
-
     dbBindingSite :: DeBruijn -> m LambdaId
     dbBindingSite db = do
       let dbInt = review asInt db
@@ -228,7 +224,7 @@ resolveRepPoly = eTopLevelSrcNode >>= go . fst
         Just (TyFixerFnData tn enc _polyTyNoHandlers _compiled schema _nm kind) -> do
           -- we need to extract the "function type with handlers added" from the schema, which in this branch has to be a data schema
           (polyWithHandlers, _handlerArgPosDict) <- case schema of
-            SOPSchema {} -> traceError $ "SOP schema mismatch in " <> show tn <> " " <> show enc
+            SOPSchema{} -> traceError $ "SOP schema mismatch in " <> show tn <> " " <> show enc
             DataSchema ty dict -> pure (ty, dict)
           let CompN _ (ArgsAndResult polyArgsWithHandlers _) = polyWithHandlers
               CompN _ (ArgsAndResult concreteArgsNoHandlers _) = cFunTy

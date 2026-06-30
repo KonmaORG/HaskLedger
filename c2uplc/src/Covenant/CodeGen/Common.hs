@@ -52,7 +52,6 @@ import Covenant.Prim
   ( OneArgFunc (BData, IData, ListData, MapData),
     TwoArgFunc (ConstrData, MkCons),
   )
-import Covenant.Test (Arg (UnsafeMkArg), Id (UnsafeMkId))
 import Covenant.Transform.Common
   ( BuiltinFnData
       ( ByteString_Cata,
@@ -75,7 +74,6 @@ import Covenant.Transform.Common
       ),
     TyFixerFnData (BuiltinTyFixer, TyFixerFnData),
     pFreshLam2,
-    tyFixerFnTy,
   )
 import Covenant.Transform.Pipeline.Common (CodeGenData)
 import Covenant.Transform.Pipeline.Monad
@@ -94,6 +92,7 @@ import Covenant.Type
     TyName,
     ValT,
   )
+import Covenant.Unsafe (Arg (UnsafeMkArg), Id (UnsafeMkId))
 import Data.Foldable (foldl', traverse_)
 import Data.Kind (Type)
 import Data.Map (Map)
@@ -107,7 +106,7 @@ import Data.Text qualified as T
 import Data.Vector (Vector)
 import Data.Vector qualified as Vector
 import GHC.TypeLits (Symbol)
-import Optics.Core (review)
+import Optics.Core (review, view)
 import PlutusCore (Name (Name))
 import PlutusCore.MkPlc (mkConstant)
 import UntypedPlutusCore (DefaultFun, DefaultUni, Term, Unique (Unique))
@@ -127,7 +126,7 @@ import UntypedPlutusCore (DefaultFun, DefaultUni, Term, Unique (Unique))
 -}
 newtype CodeGenContext
   = CodeGenContext
-  { getContext ::
+  { _getContext ::
       Rec
         ( "termScope" .== Map Id (Term Name DefaultUni DefaultFun ())
             .+ "argScope" .== Map LambdaId (Vector Name)
@@ -139,6 +138,20 @@ newtype CodeGenContext
             .+ "repPolyHandlers" .== RepPolyHandlers
         )
   }
+
+getContext ::
+  CodeGenContext ->
+  Rec
+    ( "termScope" .== Map Id (Term Name DefaultUni DefaultFun ())
+        .+ "argScope" .== Map LambdaId (Vector Name)
+        .+ "lamScope" .== Vector LambdaId
+        -- We ONLY need an appscope for resolving Nil -_-
+        .+ "appScope" .== Vector AppId
+        .+ "asg" .== Map Id ASGNode
+        .+ "tyFixers" .== Map Id TyFixerFnData
+        .+ "repPolyHandlers" .== RepPolyHandlers
+    )
+getContext (CodeGenContext x) = x
 
 data CodeGenError
   = NoASG
@@ -155,19 +168,19 @@ data CodeGenError
 
 data ArgResolutionFailReason
   = -- | We got @Nothing@ when we tried to look up the context corresponding to the
-    --      @Id@ of the parent node where the arg was found.
+    --       @Id@ of the parent node where the arg was found.
     ParentIdLookupFailed Id
   | -- | The @Id@ of the parent node of the arg we are examining should index a @Vector Id@ but instead
-    --      indexes a @Vector Name@.
+    --       indexes a @Vector Name@.
     ParentIdPointsAtNames Id
   | -- | The @DeBruijn@ index of the arg points to an out of bounds lambda.
     DBIndexOutOfBounds DeBruijn
   | -- | The @Id@ of the lambda corresponding to the @DeBruijn@ index does not correspond to anything in our
-    --      argument resolution dictionary.
+    --       argument resolution dictionary.
     NoBindingContext Id
   | -- | The @Id@ of the Lambda that the DeBruijn points at corresponds to an entry in our
-    --      argument resolution diciontary, but that entry is a @Vector Id@ and not the @Vector Name@
-    --      that we need
+    --       argument resolution diciontary, but that entry is a @Vector Id@ and not the @Vector Name@
+    --       that we need
     LamIdPointsAtContext Id
   deriving stock (Show, Eq)
 
@@ -282,10 +295,16 @@ crossLam compT lid@(LambdaId i) act = do
   where
     go :: Vector Name -> CodeGenContext -> CodeGenContext
     go vars (CodeGenContext r) =
-      CodeGenContext
-        . rModify (Vector.cons lid) #lamScope
-        . rModify (M.insert lid vars) #argScope
-        $ r
+      let asg = r R..! #asg
+      in CodeGenContext
+          . rModify (Vector.cons lid) #lamScope
+          . rModify (M.insert lid vars) #argScope
+          -- Clear cached compilations of source nodes when entering a new
+          -- lambda scope. Hash-consed nodes (same Id at different lambda depths)
+          -- contain Arg refs that resolve differently per scope. Keeping stale
+          -- outer-scope compilations in termScope produces wrong DeBruijn terms.
+          . rModify (M.filterWithKey (\k _ -> not (M.member k asg))) #termScope
+          $ r
 
 -- TODO: Better name, this one is just a wrapper over 'local' (we need this to check ASTRefs in the
 --       `canLet` stuff). This is all so we don't try to lift sub-ASGs that contain "disposable"
@@ -391,7 +410,7 @@ nodeOrVar i =
                   "Somehow something tried to resolve Id "
                     <> show i
                     <> " which belongs to a type fixer of type: "
-                    <> pCompT (tyFixerFnTy tyFixer)
+                    <> pCompT (view #fnTy tyFixer)
 
 compileTopDown :: Id -> CodeGenM (Term Name DefaultUni DefaultFun ())
 compileTopDown nodeId =
@@ -491,7 +510,7 @@ compileTopDown nodeId =
           let nm = idToName i
           t <- compileTopDown i
           local (doBind i nm) $
-            letMany rest (pLet nm t <$> act)
+            pLet nm t <$> letMany rest act
           where
             doBind :: Id -> Name -> CodeGenContext -> CodeGenContext
             doBind thisId thisName (CodeGenContext r) =
@@ -609,13 +628,13 @@ getBindableSubTerms dbOffset = \case
         safeToBind nodeId dbOff thisNode >>= \case
           True -> pure $ M.singleton nodeId thisNode
           False -> case thisNode of
-            AnError -> pure M.empty
+            AnError -> pure $ M.singleton nodeId thisNode
             ACompNode _ compNodeInfo -> case compNodeInfo of
               Force r -> goRef dbOff r
               Lam r -> crossLamX (LambdaId nodeId) $ goRef (dbOff + 1) r
               _ -> pure M.empty
             AValNode _ valNodeInfo -> case valNodeInfo of
-              Lit {} -> pure $ M.singleton nodeId thisNode
+              Lit{} -> pure $ M.singleton nodeId thisNode
               App fnId args _ _ -> do
                 fnBinds <- crossApp (AppId fnId) $ go dbOff fnId
                 argBinds <- M.unions <$> traverse (goRef dbOff) args
@@ -625,7 +644,7 @@ getBindableSubTerms dbOffset = \case
       where
         goRef :: Int -> Ref -> CodeGenM (Map Id ASGNode)
         goRef dbDist r = case r of
-          AnArg {} -> pure M.empty
+          AnArg{} -> pure M.empty
           AnId childId ->
             alreadyCompiled childId >>= \case
               True -> pure mempty
@@ -678,7 +697,7 @@ withLocation :: forall r. Id -> (ASTRef -> CodeGenM r) -> CodeGenM r
 withLocation i f = do
   lamScope <- fmap (\(LambdaId x) -> x) <$> getLamScope
   appScope <- fmap (\(AppId x) -> x) <$> getAppScope
-  let ref = ASTRef {underLams = lamScope, underApps = appScope, appNodeId = i}
+  let ref = ASTRef{underLams = lamScope, underApps = appScope, appNodeId = i}
   f ref
 
 data LiftStatus

@@ -35,7 +35,7 @@ import Control.Monad.RWS.Strict
   )
 import Control.Monad.State.Strict (State, evalState)
 import Covenant.ASG (ASGNode, Id)
-import Covenant.Test (Id (UnsafeMkId))
+import Covenant.Unsafe (Id (UnsafeMkId))
 import Data.Bifunctor (first)
 import Data.Kind (Type)
 import Data.Map (Map)
@@ -116,7 +116,9 @@ extendedNodes (ExtendedASG nodes _ _) = nodes
 unExtendedASG :: ExtendedASG -> (Id, [(Id, ASGNode)])
 unExtendedASG (ExtendedASG nodes _ _) = (topSrcId, rawASG)
   where
+    topSrcId :: Id
     topSrcId = forgetExtendedId . fst $ M.findMax nodes
+    rawASG :: [(Id, ASGNode)]
     rawASG = first forgetExtendedId <$> M.toList nodes
 
 wrapASG :: Map Id ASGNode -> ExtendedASG
@@ -124,7 +126,6 @@ wrapASG asg = ExtendedASG nodes idResolver (fst . M.findMax $ asg)
   where
     nodes :: Map ExtendedId ASGNode
     nodes = M.mapKeys WrappedSrcId asg
-
     idResolver :: Map Id ExtendedId
     idResolver = M.fromList . map (\x -> (x, WrappedSrcId x)) . M.keys $ asg
 
@@ -141,7 +142,9 @@ instance ExtendedKey Id where
 -- | Unsafe
 eNodeAt ::
   forall (a :: Type) (m :: Type -> Type).
-  (MonadASG m, ExtendedKey a, Show a) => a -> m ASGNode
+  (MonadASG m, ExtendedKey a, Show a) =>
+  a ->
+  m ASGNode
 eNodeAt k =
   getASG >>= \asg -> case eSafeNodeAt k asg of
     Nothing -> error $ "eNodeAt: Error: Key " <> show k <> " not found in ExtendedASG"

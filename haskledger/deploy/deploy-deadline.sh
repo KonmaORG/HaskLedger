@@ -54,20 +54,19 @@ echo "------------------------------------------------------------"
 echo ""
 info "TEST 1: Validity range AFTER deadline"
 
-info "Locking 5 ADA..."
-LOCK1_TX="$(full_lock "deadline-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK1_TX="$(lock_or_reuse "deadline-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Unlocking with --invalid-before ${SLOT_AFTER_DEADLINE}..."
 UNLOCK1_TX="$(full_unlock "deadline-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 0 "$SLOT_AFTER_DEADLINE" "")"
 success "Test 1 PASSED: after-deadline unlock accepted."
+unset SCRIPT_UTXO
 
 # TEST 2: before deadline (expect failure)
 echo ""
 info "TEST 2: Validity range BEFORE deadline"
 
-info "Locking 5 ADA..."
-LOCK2_TX="$(full_lock "deadline-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK2_TX="$(lock_or_reuse "deadline-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Attempting unlock with --invalid-before ${SLOT_BEFORE_DEADLINE} (should fail at script)..."
@@ -76,6 +75,7 @@ if try_unlock "deadline-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUT
   exit 1
 else
   success "Test 2 PASSED: before-deadline unlock correctly rejected."
+  unset SCRIPT_UTXO
 fi
 
 # Summary
@@ -84,7 +84,13 @@ echo "------------------------------------------------------------"
 success "deadline tests complete!"
 echo ""
 echo "  Script address:       ${SCRIPT_ADDR}"
+echo "                        $(addr_url "$SCRIPT_ADDR")"
 echo "  Deadline (POSIX):     ${DEADLINE_POSIX}"
-echo "  Success TX (after):   ${UNLOCK1_TX}"
-echo "  Failure TX (before):  rejected (as expected)"
+echo "  Lock TX (test 1):     ${LOCK1_TX}"
+echo "                        $(tx_url "$LOCK1_TX")"
+echo "  Unlock TX (after):    ${UNLOCK1_TX}"
+echo "                        $(tx_url "$UNLOCK1_TX")"
+echo "  Lock TX (test 2):     ${LOCK2_TX}"
+echo "                        $(tx_url "$LOCK2_TX")"
+echo "  Unlock TX (before):   rejected (as expected)"
 echo "------------------------------------------------------------"

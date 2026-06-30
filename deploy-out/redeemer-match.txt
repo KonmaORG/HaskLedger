@@ -1,0 +1,113 @@
+[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-redeemer-match.sh
+[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[INFO] Node synced: 100.00%
+
+------------------------------------------------------------
+[INFO] Deploying: redeemer-match
+  Script address: addr_test1wrrjr2ufcknvalzvgpy373kghpswu6cn0lp5vnsw2k9c06grsq9pr
+  This contract requires redeemer == 42 to validate.
+
+  Test 1: Unlock with redeemer 42 (should SUCCEED)
+  Test 2: Unlock with redeemer 99 (should FAIL)
+------------------------------------------------------------
+
+[INFO] TEST 1: Redeemer 42
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9#1 (9585571974 lovelace)
+Estimated transaction fee: 170649 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1"}
+[OK] Lock TX: bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1
+[INFO] Waiting for next block (current: 4062794)...
+[OK] TX included in block 4062795 (after 15s).
+
+[INFO] Unlocking with redeemer 42...
+[INFO] Finding script UTxO...
+[INFO] Script UTxO: 6d649029e182e2f3fbeb103a494af59a126f8619c46e37044724c55ec614e071#0 (5000000 lovelace)
+[INFO] Finding collateral UTxO...
+[INFO] Collateral: bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1#1
+Estimated transaction fee: 177224 Lovelace
+[INFO] Submitting unlock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27"}
+[OK] Unlock TX: eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27
+[INFO] Waiting for next block (current: 4062795)...
+[OK] TX included in block 4062797 (after 5s).
+[OK] Test 1 PASSED: redeemer=42 accepted.
+
+[INFO] TEST 2: Redeemer 99
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1#1 (9580401325 lovelace)
+Estimated transaction fee: 170649 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b"}
+[OK] Lock TX: e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b
+[INFO] Waiting for next block (current: 4062797)...
+[OK] TX included in block 4062798 (after 10s).
+
+[INFO] Attempting unlock with redeemer 99 (should fail)...
+[INFO] Finding script UTxO...
+Command failed: transaction build  Error: The following scripts have execution failures:
+the script for transaction input 0 (in ascending order of the TxIds) failed with:
+Script hash: 581cc721ab89c5a6cefc4c40491f46c8b860ee6b137fc3464e0e558b87e9
+Script language: PlutusV3
+Protocol version: Version 10
+Script arguments:
+   ScriptInfo: SpendingScript (TxOutRef {txOutRefId = b36153880105ca3caa98634497e66cfbcce9c030b87495b88ac7df1831d7ca76, txOutRefIdx = 0}) (Just (Datum {getDatum = I 0}))
+   TxInfo:
+     TxId: a1c494723f5988e5d3d64cc1cd6f67979e9d84bdd6fa2a735fc20bd0182e6bba
+     Inputs: [ b36153880105ca3caa98634497e66cfbcce9c030b87495b88ac7df1831d7ca76!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [("",5000000)]})]}} addressed to
+                                                                                       ScriptCredential: c721ab89c5a6cefc4c40491f46c8b860ee6b137fc3464e0e558b87e9 (no staking credential)
+                                                                                       with datum
+                                                                                       inline datum :  0
+                                                                                       with referenceScript
+                                                                                        ]
+     Reference inputs: []
+     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [("",9580230676)]})]}} addressed to
+                  PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
+                  with datum
+                  no datum
+                  with referenceScript
+                   ]
+     Fee: 0
+     Value minted: UnsafeMintValue (Map {unMap = []})
+     TxCerts: []
+     Wdrl: []
+     Valid range: (-∞ , +∞)
+     Signatories: []
+     Redeemers: [ ( Spending (TxOutRef {txOutRefId = b36153880105ca3caa98634497e66cfbcce9c030b87495b88ac7df1831d7ca76, txOutRefIdx = 0})
+                , 99 ) ]
+     Datums: []
+     Votes: []
+     Proposal Procedures: []
+     Current Treasury Amount:
+     Treasury Donation:
+   Redeemer:
+     99
+Script evaluation error: An error has occurred:
+The machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.
+Script execution logs:
+Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggs2FTiAEFyjyqmGNEl+Zs+8zpwDC4dJW4isffGDHXynYA/9h5n9h5n9h6n1gcxyGricWmzvxMQEkfRsi4YO5rE3/DRk4OVYuH6f/YeoD/oUChQBoATEtA2HufAP/YeoD///+An9h5n9h5n9h5n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP/YeoD/oUChQBsAAAACOwa4FNh5gNh6gP//AKCAoNh5n9h5n9h5gNh6gP/YeZ/Ye4DYeoD//4Ch2Hqf2HmfWCCzYVOIAQXKPKqYY0SX5mz7zOnAMLh0lbiKx98YMdfKdgD//xhjoFggocSUcj9ZiOXT1kzBzW9nl56dhL3W+ipzX8IL0Bgua7qggNh6gNh6gP8YY9h6n9h5n1ggs2FTiAEFyjyqmGNEl+Zs+8zpwDC4dJW4isffGDHXynYA/9h5nwD///8=
+Script base64 encoded bytes: WCYBAQAjIAE1MzVzRm4c3WmroTV0RqrnjdUACkCoJGQAKTCRkACyTQ==
+
+[OK] TX correctly failed at build stage.
+[OK] Test 2 PASSED: redeemer=99 correctly rejected.
+
+------------------------------------------------------------
+[OK] redeemer-match tests complete!
+
+  Script address:     addr_test1wrrjr2ufcknvalzvgpy373kghpswu6cn0lp5vnsw2k9c06grsq9pr
+                      https://preview.cardanoscan.io/address/addr_test1wrrjr2ufcknvalzvgpy373kghpswu6cn0lp5vnsw2k9c06grsq9pr
+  Lock TX (test 1):   bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1
+                      https://preview.cardanoscan.io/transaction/bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1
+  Unlock TX (r=42):   eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27
+                      https://preview.cardanoscan.io/transaction/eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27
+  Lock TX (test 2):   e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b
+                      https://preview.cardanoscan.io/transaction/e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b
+  Unlock TX (r=99):   rejected (as expected)
+------------------------------------------------------------
+[nix haskledger ~/code/haskledger-init]$

@@ -14,9 +14,9 @@ import Covenant.CodeGen.Common
   )
 import Covenant.ExtendedASG (wrapASG)
 import Covenant.JSON (CompilationUnit (CompilationUnit))
-import Covenant.Test (unsafeMkDatatypeInfos)
 import Covenant.Transform (transformASG)
 import Covenant.Transform.Pipeline.Monad (Datatypes (Datatypes), runCodeGen)
+import Covenant.Unsafe (unsafeMkDatatypeInfos)
 import Data.Bifunctor (Bifunctor (first))
 import Data.Kind (Type)
 import Data.Text (Text)
@@ -30,7 +30,8 @@ import UntypedPlutusCore.Evaluation.Machine.Cek qualified as Cek
 
 compilePretty ::
   forall (ann :: Type).
-  CompilationUnit -> Either CodeGenError (Doc ann)
+  CompilationUnit ->
+  Either CodeGenError (Doc ann)
 compilePretty = fmap pretty . compile
 
 {- Add optimization pass after UPLC generation
@@ -59,15 +60,16 @@ evalTerm t = case errOrRes of
   Left anErr -> Left $ "Failure!\n  Eval Exception: " <> show anErr <> "\n  Logs: " <> show log'
   Right res -> pure res
   where
-    (errOrRes, log') = evalTerm' t
+    _result :: (Either (Cek.CekEvaluationException Name DefaultUni DefaultFun) (Term Name DefaultUni DefaultFun ()), [Text])
+    _result@(errOrRes, log') = evalTerm' t
 
 -- no budget, don't care yet
 evalTerm' ::
   Term Name DefaultUni DefaultFun () ->
   ( Either
       (Cek.CekEvaluationException Name PLC.DefaultUni PLC.DefaultFun)
-      (Term Name DefaultUni DefaultFun ()),
-    [Text]
+      (Term Name DefaultUni DefaultFun ())
+  , [Text]
   )
 evalTerm' t =
   case Cek.runCek defaultCekParametersForTesting Cek.counting Cek.logEmitter t of

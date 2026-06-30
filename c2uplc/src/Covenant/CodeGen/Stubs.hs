@@ -89,7 +89,6 @@ import Covenant.Prim
     SixArgFunc (ChooseData),
     TwoArgFunc (ConstrData, MkPairData),
   )
-import Covenant.Test (Id (UnsafeMkId))
 import Covenant.Transform.Common
   ( freshNamePrefix,
     pCaseList,
@@ -122,6 +121,7 @@ import Covenant.Universe
     analyzeListTy,
     unsafeReflect,
   )
+import Covenant.Unsafe (Id (UnsafeMkId))
 import Data.Kind (Type)
 import Data.Map (Map)
 import Data.Map qualified as M
@@ -294,9 +294,10 @@ _cataList = declare "cataList" $ do
 
 -- nil is really really annoying. we have to know the fully concretified type b/c reasons
 
--- | This produces the correct empty list term directly and doesn't declare anything.
---  After pre-evaluation this will just reduce to the constant anyway. A 'Nothing' means
---  we cannot construct a builtin list of elements of that type.
+{- | This produces the correct empty list term directly and doesn't declare anything.
+ After pre-evaluation this will just reduce to the constant anyway. A 'Nothing' means
+ we cannot construct a builtin list of elements of that type.
+-}
 mkNil ::
   forall m.
   (MonadStub m) =>
@@ -317,6 +318,7 @@ mkNil dtDict valT
         selectNil <- resolveStub selectNilNm
         pure . Just $ selectNil # pInt depth
   where
+    listOfPairs :: ValT a -> Bool
     listOfPairs (Datatype "List" args) = case args Vector.! 0 of
       Datatype "Pair" _ -> True
       _ -> False
@@ -388,9 +390,9 @@ _matchPair = declare "matchPair" $
 
 data StubContext
   = StubContext
-  { _bindings :: Map Text (Name, Term Name DefaultUni DefaultFun (), Id), -- not everything actually needs an Id
-    _deps :: Map Text (Set Text), -- an adjacency list, basically
-    _depsAcc :: Set Text
+  { _bindings :: Map Text (Name, Term Name DefaultUni DefaultFun (), Id) -- not everything actually needs an Id
+  , _deps :: Map Text (Set Text) -- an adjacency list, basically
+  , _depsAcc :: Set Text
   }
 
 data StubError
@@ -403,12 +405,12 @@ data StubError
 
 newtype StubM m a = StubM (ExceptT StubError (StateT StubContext m) a)
   deriving
-    ( Functor,
-      Applicative,
-      Monad
-      -- I am intentionally not defining a MonadState instance so it doesn't "clash"
-      -- with other instances. This will live at the bottom of a transformer stack with
-      -- RWS on top. (I suspect a MonadState instance would lead to annoying fundeps inference problems)
+    ( Functor
+    , Applicative
+    , Monad
+    -- I am intentionally not defining a MonadState instance so it doesn't "clash"
+    -- with other instances. This will live at the bottom of a transformer stack with
+    -- RWS on top. (I suspect a MonadState instance would lead to annoying fundeps inference problems)
     )
     via (ExceptT StubError (StateT StubContext m))
 
@@ -515,9 +517,10 @@ declare nm mkStub =
       stub <- mkStub
       _bindStub nm stub
 
--- | This gets a variable reference to the stub, it does not
---  return the body of the stub. Compilation of the bodies is handled "automagically"
---  by compileStubM
+{- | This gets a variable reference to the stub, it does not
+ return the body of the stub. Compilation of the bodies is handled "automagically"
+ by compileStubM
+-}
 resolveStub :: (MonadStub m) => Text -> m (Term Name DefaultUni DefaultFun ())
 resolveStub nmTxt = do
   (pName, _, _) <- stubData nmTxt
@@ -532,6 +535,7 @@ runStubM (StubM scope) (StubM act') = do
   (\(e, cxt) -> case e of Left e' -> Left e'; Right res -> Right (cxt, res))
     <$> runStateT (runExceptT act) (StubContext mempty mempty mempty)
   where
+    act :: ExceptT StubError (StateT StubContext m) a
     act = scope >> act'
 
 -- this let-binds all of the dependencies after performing dependency analysis. ugh
@@ -664,6 +668,9 @@ _embedList ::
   m ()
 _embedList = declare "embedList" fun
   where
+    listify ::
+      Term Name DefaultUni DefaultFun () ->
+      Term Name DefaultUni DefaultFun ()
     listify x = pBuiltin ListData # x
     -- morally: Integer -> ((a -> b) -> List a -> List b) -> ... (can't express this without dep types see above)
     mkGo :: m (Term Name DefaultUni DefaultFun ())
@@ -703,7 +710,8 @@ Don't use this directly. Use projListWithType
 projList ::
   forall (m :: Type -> Type) (a :: Type).
   (MonadStub m) =>
-  DefaultUni (Esc a) -> m (Term Name DefaultUni DefaultFun ())
+  DefaultUni (Esc a) ->
+  m (Term Name DefaultUni DefaultFun ())
 projList wit = body
   where
     body :: m (Term Name DefaultUni DefaultFun ())
@@ -788,7 +796,9 @@ _embedBool :: (MonadStub m) => m ()
 _embedBool = declare "embedBool" $ pFreshLam' "b" $ \b ->
   pure $ pIf b troo fawlse
   where
+    troo :: Term Name DefaultUni DefaultFun ()
     troo = mkConstant () $ Constr 0 []
+    fawlse :: Term Name DefaultUni DefaultFun ()
     fawlse = mkConstant () $ Constr 1 []
 
 --   Int Projection / Embedding
@@ -898,34 +908,37 @@ _fix = declare "fix" $ do
 -}
 
 {- r -> (r -> r) ->  Integer -> r -}
-_recNat :: (MonadStub m) => m ()
+_recNat :: forall (m :: Type -> Type). (MonadStub m) => m ()
 _recNat = declare "recNat" $ do
   fix <- resolveStub "fix"
   body <- go
   pure $ fix # body
   where
+    go :: m (Term Name DefaultUni DefaultFun ())
     go = pFreshLam' "self" $ \self -> pFreshLam3' "whenZ" "whenS" "n" $ \whenZ whenS n -> do
       let isZero = n #<= pInt 0
       pure $ pIf isZero whenZ (whenS # (self # whenZ # whenS # (n #- pInt 1)))
 
 --  r -> (r -> Integer -> r) ->  Integer -> r
-_recNatN :: (MonadStub m) => m ()
+_recNatN :: forall (m :: Type -> Type). (MonadStub m) => m ()
 _recNatN = declare "recNatN" $ do
   fix <- resolveStub "fix"
   body <- go
   pure $ fix # body
   where
+    go :: m (Term Name DefaultUni DefaultFun ())
     go = pFreshLam' "self" $ \self -> pFreshLam3' "whenZ" "whenS" "n" $ \whenZ whenS n -> do
       let isZero = n #== pInt 0
           whenS' = whenS # n
       pure $ pIf isZero whenZ (whenS' # (self # whenZ # whenS # (n #- pInt 1)))
 
-_recNeg :: (MonadStub m) => m ()
+_recNeg :: forall (m :: Type -> Type). (MonadStub m) => m ()
 _recNeg = declare "recNeg" $ do
   fix <- resolveStub "fix"
   body <- go
   pure $ fix # body
   where
+    go :: m (Term Name DefaultUni DefaultFun ())
     go = pFreshLam' "self" $ \self -> pFreshLam3' "whenZ" "whenS" "n" $ \whenZ whenS n -> do
       let isZero = n #== pInt 0
       pure $
@@ -1009,25 +1022,24 @@ mkSelectNil uni = declare declNm $ pFreshLam' "selectNil_depth" $ \depth ->
   pure $
     pCase
       depth
-      [ mkList 0,
-        mkList 1,
-        mkList 2,
-        mkList 3,
-        mkList 4,
-        mkList 5,
-        mkList 6,
-        mkList 7,
-        mkList 8,
-        mkList 9,
-        mkList 10
+      [ mkList 0
+      , mkList 1
+      , mkList 2
+      , mkList 3
+      , mkList 4
+      , mkList 5
+      , mkList 6
+      , mkList 7
+      , mkList 8
+      , mkList 9
+      , mkList 10
       ]
   where
+    declNm :: Text
     declNm = selectNilName uni
-
     mkList :: Int -> Term Name DefaultUni DefaultFun ()
     mkList n = case mkWitness n of
       MkListProof wit -> mkConstantOf () wit []
-
     mkWitness :: Int -> ListProof
     mkWitness n
       | n <= 0 = MkListProof $ DefaultUniApply DefaultUniProtoList uni

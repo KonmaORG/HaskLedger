@@ -1,0 +1,45 @@
+[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-always-succeeds.sh
+[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[INFO] Node synced: 100.00%
+
+------------------------------------------------------------
+[INFO] Deploying: always-succeeds
+  Script address: addr_test1wzwhlkxcgefejzf44ec9q6vr3763qe89rjrplusyl77ye0s936624
+  This contract accepts any redeemer - always validates.
+------------------------------------------------------------
+
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: ef92f1fe7db521aae4cb5e2108cd013e029d5813752d5b2e19f2b204e80a152e#1 (9590742623 lovelace)
+Estimated transaction fee: 170649 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9"}
+[OK] Lock TX: fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9
+[INFO] Waiting for next block (current: 4062791)...
+[OK] TX included in block 4062792 (after 55s).
+
+[INFO] Unlocking...
+[INFO] Finding script UTxO...
+[INFO] Script UTxO: 6a2e565a3a6f6b849f7c0bcb08f2904261fd80750fe6907fa579a8b04a28f9c7#0 (5000000 lovelace)
+[INFO] Finding collateral UTxO...
+[INFO] Collateral: fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9#1
+Estimated transaction fee: 175500 Lovelace
+[INFO] Submitting unlock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f"}
+[OK] Unlock TX: e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f
+[INFO] Waiting for next block (current: 4062792)...
+[OK] TX included in block 4062793 (after 60s).
+
+------------------------------------------------------------
+[OK] always-succeeds deployment complete!
+
+  Script address: addr_test1wzwhlkxcgefejzf44ec9q6vr3763qe89rjrplusyl77ye0s936624
+                  https://preview.cardanoscan.io/address/addr_test1wzwhlkxcgefejzf44ec9q6vr3763qe89rjrplusyl77ye0s936624
+  Lock TX:        fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9
+                  https://preview.cardanoscan.io/transaction/fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9
+  Unlock TX:      e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f
+                  https://preview.cardanoscan.io/transaction/e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f
+------------------------------------------------------------
+[nix haskledger ~/code/haskledger-init]$

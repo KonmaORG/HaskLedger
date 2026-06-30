@@ -4,8 +4,8 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase)
 
 import Covenant.ASG (Ref (AnId))
-import HaskLedger
-import HaskLedger.Internal (unconstrData, unconstrTag, unconstrFields, fstPair, sndPair, headList, tailList, nthField)
+import HaskLedger hiding (mkNothing, mkJust, mkPubKeyHash, mkTxOutRef)
+import HaskLedger.Internal.Data (unconstrData, unconstrTag, unconstrFields, fstPair, sndPair, headList, tailList, nthField)
 import TestHelper
 
 tests :: TestTree

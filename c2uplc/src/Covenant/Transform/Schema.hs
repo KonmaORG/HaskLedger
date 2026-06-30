@@ -2,28 +2,28 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE StrictData #-}
 
-module Covenant.Transform.Schema
-  ( TypeSchema (..),
+module Covenant.Transform.Schema (
+    TypeSchema (..),
     mkTypeSchema,
     schemaFnArgs,
     schemaFnType,
-  )
+)
 where
 
 import Covenant.ArgDict (pCompT)
 import Covenant.DeBruijn (DeBruijn (S, Z))
 import Covenant.Index (Index, intCount, intIndex)
-import Covenant.Type
-  ( AbstractTy (BoundAt),
+import Covenant.Type (
+    AbstractTy (BoundAt),
     CompT (Comp0, CompN),
     CompTBody (ArgsAndResult, ReturnT, (:--:>)),
     DataEncoding (SOP),
     ValT (Abstraction, BuiltinFlat, Datatype, ThunkT),
     tyvar,
-  )
-import Data.Foldable
-  ( foldl',
-  )
+ )
+import Data.Foldable (
+    foldl',
+ )
 import Data.Map (Map)
 import Data.Map qualified as M
 import Data.Set qualified as S
@@ -88,84 +88,86 @@ trace _ x = x
    information we need from the (argument position, NOT DeBruijn) index (which indicates the order of type variable bindings).
 -}
 data TypeSchema
-  = SOPSchema (CompT AbstractTy)
-  | DataSchema (CompT AbstractTy) (Map (Index "tyvar") Int)
+    = SOPSchema (CompT AbstractTy)
+    | DataSchema (CompT AbstractTy) (Map (Index "tyvar") Int)
 
 -- gets the CompT out of the schema
 schemaFnType :: TypeSchema -> CompT AbstractTy
 schemaFnType = \case
-  SOPSchema compT -> compT
-  DataSchema compT _ -> compT
+    SOPSchema compT -> compT
+    DataSchema compT _ -> compT
 
 -- gets the Args out of the CompT inside the schema
 schemaFnArgs :: TypeSchema -> Vector (ValT AbstractTy)
 schemaFnArgs s = case schemaFnType s of
-  (CompN _ (ArgsAndResult args _)) -> args
+    (CompN _ (ArgsAndResult args _)) -> args
 
 mkTypeSchema ::
-  -- "Is it an intro node?" - controls whether we expect an 'r' tyVar which we have to ignore in match/cata
-  Bool ->
-  DataEncoding ->
-  -- The function type. This should be the
-  -- "generated" function type, e.g. the thing we get
-  -- from the Covenant.Data functions that create match or cata types
-  -- (or whatever)
-  CompT AbstractTy ->
-  TypeSchema
+    -- "Is it an intro node?" - controls whether we expect an 'r' tyVar which we have to ignore in match/cata
+    Bool ->
+    DataEncoding ->
+    -- The function type. This should be the
+    -- "generated" function type, e.g. the thing we get
+    -- from the Covenant.Data functions that create match or cata types
+    -- (or whatever)
+    CompT AbstractTy ->
+    TypeSchema
 mkTypeSchema isIntro dataEnc fnTy@(CompN tvCnt (ArgsAndResult args result)) = case dataEnc of
-  SOP -> SOPSchema fnTy
-  -- All of our "Builtin" types (i.e. types that we pretend are ADTs but which are really onchain primitives,
-  -- such as list, pair, etc) are "morally data encoded" (in the sense that they need projections and embeddings
-  -- and nothing about the builtin strategy will affect those projections or embedding), I think?
-  -- We ought to be able to handle every non-SOP  case the same way.
-  _builtinOrData ->
-    -- if we don't have any arguments (i.e. if the thunk is just a ReturnT) then
-    -- we can just return an empty map and the original function type unaltered. We need
-    -- arguments to insert proj/embed handlers. Also, this lets us safely assume that the vector isn't empty
-    -- going forward, which is useful to avoid out of bounds errors
-    if lenOrigArgs == 0
-      then DataSchema fnTy M.empty
-      else
-        let extraArgBundle :: (Int, Map (Index "tyvar") Int, Vector (ValT AbstractTy))
-            extraArgBundle =
-              -- This constructs the (a -> a) types for the extra projection/embedding arguments
-              let mkProjEmbedHandlerArg :: Index "tyvar" -> ValT AbstractTy
-                  mkProjEmbedHandlerArg indx =
-                    -- These are always added to the top level of a function that binds the variables
-                    -- being used, so we know that inside the thunk, the DB index will always be (S Z)
-                    let tv = tyvar (S Z) indx
-                     in ThunkT (Comp0 $ tv :--:> ReturnT tv)
-               in -- There HAS to be a less convoluted way to write this, ugh. State monad?
-                  foldl'
-                    ( \(pos, hDict, eArgs) tv ->
-                        let newHandlerDict = M.insert tv (pos + lenOrigArgs) hDict
-                            newPos = pos + 1
-                            handler = mkProjEmbedHandlerArg tv
-                            newExtraArgs = Vector.snoc eArgs handler
-                         in (newPos, newHandlerDict, newExtraArgs)
-                    )
-                    (0, M.empty, Vector.empty)
-                    allUsedTyVarIndices
-            (_, handlerDict, extraHandlerArgs) = extraArgBundle
+    SOP -> SOPSchema fnTy
+    -- All of our "Builtin" types (i.e. types that we pretend are ADTs but which are really onchain primitives,
+    -- such as list, pair, etc) are "morally data encoded" (in the sense that they need projections and embeddings
+    -- and nothing about the builtin strategy will affect those projections or embedding), I think?
+    -- We ought to be able to handle every non-SOP  case the same way.
+    _builtinOrData ->
+        -- if we don't have any arguments (i.e. if the thunk is just a ReturnT) then
+        -- we can just return an empty map and the original function type unaltered. We need
+        -- arguments to insert proj/embed handlers. Also, this lets us safely assume that the vector isn't empty
+        -- going forward, which is useful to avoid out of bounds errors
+        if lenOrigArgs == 0
+            then DataSchema fnTy M.empty
+            else
+                let extraArgBundle :: (Int, Map (Index "tyvar") Int, Vector (ValT AbstractTy))
+                    extraArgBundle =
+                        -- This constructs the (a -> a) types for the extra projection/embedding arguments
+                        let mkProjEmbedHandlerArg :: Index "tyvar" -> ValT AbstractTy
+                            mkProjEmbedHandlerArg indx =
+                                -- These are always added to the top level of a function that binds the variables
+                                -- being used, so we know that inside the thunk, the DB index will always be (S Z)
+                                let tv = tyvar (S Z) indx
+                                 in ThunkT (Comp0 $ tv :--:> ReturnT tv)
+                         in -- There HAS to be a less convoluted way to write this, ugh. State monad?
+                            foldl'
+                                ( \(pos, hDict, eArgs) tv ->
+                                    let newHandlerDict = M.insert tv (pos + lenOrigArgs) hDict
+                                        newPos = pos + 1
+                                        handler = mkProjEmbedHandlerArg tv
+                                        newExtraArgs = Vector.snoc eArgs handler
+                                     in (newPos, newHandlerDict, newExtraArgs)
+                                )
+                                (0, M.empty, Vector.empty)
+                                allUsedTyVarIndices
+                    (_, handlerDict, extraHandlerArgs) = extraArgBundle
 
-            fnTyWithHandlers = CompN tvCnt $ ArgsAndResult (args <> extraHandlerArgs) result
-            msg' = msg <> "\n  result: " <> pCompT fnTyWithHandlers
-         in trace msg' $ DataSchema fnTyWithHandlers handlerDict
+                    fnTyWithHandlers = CompN tvCnt $ ArgsAndResult (args <> extraHandlerArgs) result
+                    msg' = msg <> "\n  result: " <> pCompT fnTyWithHandlers
+                 in trace msg' $ DataSchema fnTyWithHandlers handlerDict
   where
+    msg :: String
     msg =
-      "\nmkTypeSchema\n  fnTy: "
-        <> pCompT fnTy
-        <> "\n  allUsedTyVarIndices: "
-        <> show allUsedTyVarIndices
+        "\nmkTypeSchema\n  fnTy: "
+            <> pCompT fnTy
+            <> "\n  allUsedTyVarIndices: "
+            <> show allUsedTyVarIndices
+    lenOrigArgs :: Int
     lenOrigArgs = Vector.length args
     allUsedTyVarIndices :: [Index "tyvar"]
     allUsedTyVarIndices =
-      S.toList
-        . S.fromList
-        . (if isIntro then id else cleanup)
-        . concatMap collectIndices
-        . Vector.toList
-        $ args
+        S.toList
+            . S.fromList
+            . (if isIntro then id else cleanup)
+            . concatMap collectIndices
+            . Vector.toList
+            $ args
     -- We don't ever care about the 'r' variable - we never need to project or embed it
     -- so we can just remove it from our list. Have to be careful to only ever use this
     -- on Match/Cata since Intro doesn't have an "output tyvar"
@@ -175,62 +177,9 @@ mkTypeSchema isIntro dataEnc fnTy@(CompN tvCnt (ArgsAndResult args result)) = ca
         isR :: Index "tyvar" -> Bool
         isR indx = review intIndex indx == rIndx
         rIndx = review intCount tvCnt - 1
-
     collectIndices :: ValT AbstractTy -> [Index "tyvar"]
     collectIndices = \case
-      Abstraction (BoundAt _ indx) -> [indx]
-      ThunkT (CompN _ (ArgsAndResult args' _)) -> concatMap collectIndices $ Vector.toList args'
-      BuiltinFlat _ -> []
-      Datatype _ args' -> concatMap collectIndices $ Vector.toList args'
-
-{-
--- TODO/REVIEW: Maybe this needs to run in a reader to track DB levels?
-mkSchema :: DataEncoding -> CompT AbstractTy -> MagicTypeSchema
-mkSchema dataEnc fnTy@(CompN tvCnt (ArgsAndResult args result)) = case dataEnc of
-    SOP -> SOPSchema fnTy
-    BuiltinStrategy _strat ->
-        error $
-            "TODO: Try to remember what we would need to do here. For this (but not the codegen), "
-                <> "it's probably fine to generate the same thing as for PlutusData"
-    PlutusData _strat ->
-        -- strategy doesn't matter HERE though it does for codegen
-        -- note that we *can't* have "external" rigids here
-
-        -- We only care about adding wrappers for types that occur as arguments.
-        -- And - extra nice for us - we can just ignore thunks becaaauusssee
-        -- this is data-encoded and they can't exist as params anyway. So we really just need to
-        -- look for any arg that is a tyvar
-        let getTyVar :: ValT AbstractTy -> Maybe AbstractTy
-            getTyVar = \case
-                Abstraction a -> Just a
-                _ -> Nothing
-
-            -- We need to return *something* that indicates which extra handler arg is associated w/ a particular
-            -- tyvar. Not immediately sure what the best way to do this is.
-            usedTypeVariables :: [AbstractTy]
-            usedTypeVariables = S.toList . S.fromList . mapMaybe getTyVar . Vector.toList $ args
-
-            lenOrigArgs = Vector.length args
-
-            extraArgs' :: (Int, Map AbstractTy Int, Vector (ValT AbstractTy))
-            extraArgs' =
-                let mkHandler (BoundAt db indx) =
-                        let tv = tyvar (S db) indx
-                         in ThunkT (Comp0 $ tv :--:> ReturnT tv)
-                 in foldl'
-                        ( \(pos, handlerDict, eArgs) tv ->
-                            let newHandlerDict = M.insert tv (pos + lenOrigArgs) handlerDict
-                                newPos = pos + 1
-                                handler = mkHandler tv
-                                newEArgs = Vector.snoc eArgs handler
-                             in (newPos, newHandlerDict, newEArgs)
-                        )
-                        (0, M.empty, Vector.empty)
-                        usedTypeVariables
-
-            (_, hDict, extraArgs) = extraArgs'
-
-            polyFnTy :: CompT AbstractTy
-            polyFnTy = CompN tvCnt $ ArgsAndResult (args <> extraArgs) result
-         in DataSchema polyFnTy (`M.lookup` hDict)
--}
+        Abstraction (BoundAt _ indx) -> [indx]
+        ThunkT (CompN _ (ArgsAndResult args' _)) -> concatMap collectIndices $ Vector.toList args'
+        BuiltinFlat _ -> []
+        Datatype _ args' -> concatMap collectIndices $ Vector.toList args'

@@ -58,20 +58,19 @@ echo "------------------------------------------------------------"
 echo ""
 info "TEST 1: Redeemer 42 + after deadline"
 
-info "Locking 5 ADA..."
-LOCK1_TX="$(full_lock "guarded-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK1_TX="$(lock_or_reuse "guarded-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Unlocking with redeemer 42, --invalid-before ${SLOT_AFTER_DEADLINE}..."
 UNLOCK1_TX="$(full_unlock "guarded-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 42 "$SLOT_AFTER_DEADLINE" "")"
 success "Test 1 PASSED: redeemer=42 + after deadline accepted."
+unset SCRIPT_UTXO
 
 # TEST 2: r=99 + after (expect failure)
 echo ""
 info "TEST 2: Redeemer 99 + after deadline"
 
-info "Locking 5 ADA..."
-LOCK2_TX="$(full_lock "guarded-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK2_TX="$(lock_or_reuse "guarded-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Attempting unlock with redeemer 99, --invalid-before ${SLOT_AFTER_DEADLINE} (should fail)..."
@@ -80,14 +79,14 @@ if try_unlock "guarded-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTU
   exit 1
 else
   success "Test 2 PASSED: redeemer=99 correctly rejected (wrong redeemer)."
+  unset SCRIPT_UTXO
 fi
 
 # TEST 3: r=42 + before (expect failure)
 echo ""
 info "TEST 3: Redeemer 42 + before deadline"
 
-info "Locking 5 ADA..."
-LOCK3_TX="$(full_lock "guarded-t3" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK3_TX="$(lock_or_reuse "guarded-t3" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Attempting unlock with redeemer 42, --invalid-before ${SLOT_BEFORE_DEADLINE} (should fail)..."
@@ -96,6 +95,7 @@ if try_unlock "guarded-t3" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTU
   exit 1
 else
   success "Test 3 PASSED: before-deadline correctly rejected (deadline not met)."
+  unset SCRIPT_UTXO
 fi
 
 # Summary
@@ -104,8 +104,16 @@ echo "------------------------------------------------------------"
 success "guarded-deadline tests complete!"
 echo ""
 echo "  Script address:              ${SCRIPT_ADDR}"
+echo "                               $(addr_url "$SCRIPT_ADDR")"
 echo "  Deadline (POSIX):            ${DEADLINE_POSIX}"
-echo "  Success TX (r=42 + after):   ${UNLOCK1_TX}"
-echo "  Failure TX (r=99 + after):   rejected (as expected)"
-echo "  Failure TX (r=42 + before):  rejected (as expected)"
+echo "  Lock TX (test 1):            ${LOCK1_TX}"
+echo "                               $(tx_url "$LOCK1_TX")"
+echo "  Unlock TX (r=42 + after):    ${UNLOCK1_TX}"
+echo "                               $(tx_url "$UNLOCK1_TX")"
+echo "  Lock TX (test 2):            ${LOCK2_TX}"
+echo "                               $(tx_url "$LOCK2_TX")"
+echo "  Unlock TX (r=99 + after):    rejected (as expected)"
+echo "  Lock TX (test 3):            ${LOCK3_TX}"
+echo "                               $(tx_url "$LOCK3_TX")"
+echo "  Unlock TX (r=42 + before):   rejected (as expected)"
 echo "------------------------------------------------------------"

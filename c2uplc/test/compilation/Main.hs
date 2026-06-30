@@ -1,10 +1,8 @@
 {-# LANGUAGE OverloadedLists #-}
--- TODO: Once tests are wired up, this should be removed
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 {- HLINT ignore "Use camelCase" -}
 
-module Main (main) where
+module Main (main, testCompileIO) where
 
 import Covenant.ASG
   ( ASG (ASG),
@@ -19,6 +17,7 @@ import Covenant.ASG
     cata,
     ctor,
     ctor',
+    err,
     lam,
     lazyLam,
     lit,
@@ -40,7 +39,6 @@ import Covenant.Index (count0, count1, ix0, ix1)
 import Covenant.JSON (CompilationUnit (CompilationUnit), Version (Version))
 import Covenant.Plutus (prettyPTerm)
 import Covenant.Prim (TwoArgFunc (AddInteger))
-import Covenant.Test (ledgerTypes, list, unsafeMkDatatypeInfos)
 import Covenant.Type
   ( AbstractTy,
     BuiltinFlatT
@@ -65,6 +63,7 @@ import Covenant.Type
     integerT,
     tyvar,
   )
+import Covenant.Unsafe (ledgerTypes, list, unsafeMkDatatypeInfos)
 import Data.Bimap (toMap)
 import Data.Kind (Type)
 import Data.List (find)
@@ -82,41 +81,45 @@ main =
   defaultMain $
     testGroup
       "compilation"
-      [ shouldCompile "addTwoNumbers" mempty addTwoNumbers,
-        shouldCompile "mkJust_SOP" [maybeSOP] mkJust,
-        shouldCompile "mkJust_Data" [maybeData] mkJust,
-        shouldCompile "matchMaybeInt_SOP" [maybeSOP] matchOnMaybeInt,
-        shouldCompile "matchMaybeInt_Data" [maybeData] matchOnMaybeInt,
-        shouldCompile "intro_enum" [abcT] introEnum,
-        shouldCompile "elim_enum" [abcT] elimEnum,
-        shouldCompile "intro_product_sop" [productSOP] introProduct,
-        shouldCompile "intro_product_data" [productData] introProduct,
-        shouldCompile "intro_newtype" [myNewtype] introNewtype,
-        shouldCompile "elim_newtype" [myNewtype] elimNewtype,
-        -- list
-        goTest "nil_concrete" mkNilConcrete,
-        goTest "cons_concrete" mkConsConcrete,
-        goTest "match_list_empty" matchListEmpty,
-        goTest "list_cata" cataList,
-        -- pair
-        goTest "intro_pair" mkPair,
-        goTest "elim_pair" matchPair,
-        -- data
-        goTest "data_I" mkData_I,
-        goTest "data_B" mkData_B,
-        goTest "data_List" mkData_List,
-        goTest "data_Map" mkData_Map,
-        goTest "data_constr_1" mkData_Constr_Nullary,
-        goTest "data_constr_2" mkData_Constr_Unary,
-        -- map
-        goTest "intro_map" mkMap,
-        goTest "elim_map_1" matchMapEmpty,
-        goTest "elim_map_2" matchMapNonEmpty
+      [ shouldFail "throw_an_error" mempty throwAnError
+      , shouldCompile "addTwoNumbers" mempty addTwoNumbers
+      , shouldCompile "mkJust_SOP" [maybeSOP] mkJust
+      , shouldCompile "mkJust_Data" [maybeData] mkJust
+      , shouldCompile "matchMaybeInt_SOP" [maybeSOP] matchOnMaybeInt
+      , shouldCompile "matchMaybeInt_Data" [maybeData] matchOnMaybeInt
+      , shouldCompile "intro_enum" [abcT] introEnum
+      , shouldCompile "elim_enum" [abcT] elimEnum
+      , shouldCompile "intro_product_sop" [productSOP] introProduct
+      , shouldCompile "intro_product_data" [productData] introProduct
+      , shouldCompile "intro_newtype" [myNewtype] introNewtype
+      , shouldCompile "elim_newtype" [myNewtype] elimNewtype
+      , -- list
+        goTest "nil_concrete" mkNilConcrete
+      , goTest "cons_concrete" mkConsConcrete
+      , goTest "match_list_empty" matchListEmpty
+      , goTest "match_list_non_empty" matchListNonEmpty
+      , goTest "list_cata" cataList
+      , -- pair
+        goTest "intro_pair" mkPair
+      , goTest "elim_pair" matchPair
+      , -- data
+        goTest "data_I" mkData_I
+      , goTest "data_B" mkData_B
+      , goTest "data_List" mkData_List
+      , goTest "data_Map" mkData_Map
+      , goTest "data_constr_1" mkData_Constr_Nullary
+      , goTest "data_constr_2" mkData_Constr_Unary
+      , -- map
+        goTest "intro_map" mkMap
+      , goTest "elim_map_1" matchMapEmpty
+      , goTest "elim_map_2" matchMapNonEmpty
       ]
   where
     goTest ::
       forall (a :: Type).
-      String -> ASGBuilder a -> TestTree
+      String ->
+      ASGBuilder a ->
+      TestTree
     goTest nm = shouldCompile nm testCxt
     testCxt :: Vector (DataDeclaration AbstractTy)
     testCxt = [dataT, list, pairT, mapT, pairT]
@@ -156,7 +159,7 @@ testCompileIO dtDict builder = case mkASG dtDict builder of
         putStrLn "Attempting evaluation..."
         putStrLn ""
         case evalTerm resTerm of
-          Left err -> putStrLn $ "!! ERROR !! Evaluation failed:\n" <> err
+          Left err' -> putStrLn $ "!! ERROR !! Evaluation failed:\n" <> err'
           Right res -> do
             putStrLn "******************"
             putStrLn "Evaluation Success"
@@ -177,10 +180,22 @@ shouldCompile ::
   String ->
   Vector (DataDeclaration AbstractTy) ->
   ASGBuilder a ->
-  TestTree -- i.e. IO (), why do they do that
+  TestTree
 shouldCompile testNm dtDict builder = testCase testNm $ case testCompile dtDict builder of
-  Left err -> assertFailure $ "Compilation failed. Error: " <> err
+  Left err' -> assertFailure $ "Compilation failed. Error: " <> err'
   Right _ -> pure ()
+
+shouldFail ::
+  forall a.
+  String ->
+  Vector (DataDeclaration AbstractTy) ->
+  ASGBuilder a ->
+  TestTree
+shouldFail testNm dtDict builder = testCase testNm $ case testCompile dtDict builder of
+  Left _ ->
+    -- Ideally we should check the error but due to lack of time the errors aren't structured and
+    pure ()
+  Right res -> assertFailure $ "Compilation succeeded when it ought to have failed. Result:\n" <> show (prettyPTerm res)
 
 testCompile ::
   forall a.
@@ -207,7 +222,7 @@ mkASG ::
 mkASG dtDict builder = case runASGBuilder (unsafeMkDatatypeInfos $ V.toList dtDict) builder of
   Left err' -> Left err'
   Right (ASG asg) -> do
-    pure $ CompilationUnit dtDict asg (Version 0 0)
+    pure $ CompilationUnit dtDict (snd asg) (Version 0 0)
 
 -- obviously very unsafe and inefficient, but doesn't matter here
 ledgerType :: TyName -> DataDeclaration AbstractTy
@@ -245,8 +260,8 @@ maybeT =
   DataDeclaration
     "Maybe"
     count1
-    [ Constructor "Nothing" [],
-      Constructor "Just" [tyvar Z ix0]
+    [ Constructor "Nothing" []
+    , Constructor "Just" [tyvar Z ix0]
     ]
 
 maybeSOP :: DataDeclaration AbstractTy
@@ -261,26 +276,27 @@ abcT =
   DataDeclaration
     "ABC"
     count0
-    [ Constructor "A" [],
-      Constructor "B" [],
-      Constructor "C" []
+    [ Constructor "A" []
+    , Constructor "B" []
+    , Constructor "C" []
     ]
     (PlutusData EnumData)
 
-myListT :: DataEncoding -> DataDeclaration AbstractTy
-myListT =
+-- TODO no time to set these up as real tests but should do so as soon as time/budget becomes available
+_myListT :: DataEncoding -> DataDeclaration AbstractTy
+_myListT =
   DataDeclaration
     "MyList"
     count1
-    [ Constructor "MyNil" [],
-      Constructor "MyCons" [tyvar Z ix0, Datatype "MyList" [tyvar Z ix0]]
+    [ Constructor "MyNil" []
+    , Constructor "MyCons" [tyvar Z ix0, Datatype "MyList" [tyvar Z ix0]]
     ]
 
-myListSOP :: DataDeclaration AbstractTy
-myListSOP = myListT SOP
+_myListSOP :: DataDeclaration AbstractTy
+_myListSOP = _myListT SOP
 
-myListData :: DataDeclaration AbstractTy
-myListData = myListT (PlutusData Covenant.Type.ConstrData)
+_myListData :: DataDeclaration AbstractTy
+_myListData = _myListT (PlutusData Covenant.Type.ConstrData)
 
 -- Simple product type
 productT :: DataEncoding -> DataDeclaration AbstractTy
@@ -326,6 +342,10 @@ mapTy a b = Datatype "Map" [a, b]
    NOTE: For types with SOP and Data variants, run the tests with the respective variant to
          test behavior for each encoding.
 -}
+
+-- the return type doesn't really matter
+throwAnError :: ASGBuilder Id
+throwAnError = lam (Comp0 $ ReturnT (BuiltinFlat IntegerT)) $ AnId <$> err
 
 -- Do simple builtins on integers work?
 addTwoNumbers :: ASGBuilder Id
@@ -389,8 +409,8 @@ elimNewtype = testLam (BuiltinFlat IntegerT) $ do
   AnId <$> match myNT [AnId idF]
 
 -- User defined recursive type
-myListInts :: ASGBuilder Id
-myListInts = testLam (Datatype "MyList" [BuiltinFlat IntegerT]) $ do
+_myListInts :: ASGBuilder Id
+_myListInts = testLam (Datatype "MyList" [BuiltinFlat IntegerT]) $ do
   (one, two, three) <- (,,) <$> lit (AnInteger 1) <*> lit (AnInteger 2) <*> lit (AnInteger 3)
   AnId <$> mkListLike (BuiltinFlat IntegerT) "MyList" "MyCons" "MyNil" [AnId one, AnId two, AnId three]
 

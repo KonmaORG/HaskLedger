@@ -1,0 +1,116 @@
+[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-deadline.sh
+[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[INFO] Node synced: 100.00%
+
+------------------------------------------------------------
+[INFO] Deploying: deadline
+  Script address:   addr_test1wqjdkawua8u9hwh3nx2g46nwj6ewvhjrunt3kvmjs2cv39g2yft3l
+  Deadline (POSIX):  1769904000 (2026-02-01 00:00 UTC)
+  Deadline (slot):   103248000
+  Current slot:      105374341
+
+  Test 1: --invalid-before 105374341 (should SUCCEED)
+  Test 2: --invalid-before 103247000 (should FAIL at script level)
+------------------------------------------------------------
+
+[INFO] TEST 1: Validity range AFTER deadline
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b#1 (9575230676 lovelace)
+Estimated transaction fee: 170649 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9"}
+[OK] Lock TX: f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9
+[INFO] Waiting for next block (current: 4062799)...
+[OK] TX included in block 4062800 (after 5s).
+
+[INFO] Unlocking with --invalid-before 105374341...
+[INFO] Finding script UTxO...
+[INFO] Script UTxO: 77570a6486971e09671fc62b57e9db5872c91c23332b505f85aafc15cb71fe80#0 (5000000 lovelace)
+[INFO] Finding collateral UTxO...
+[INFO] Collateral: f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9#1
+Estimated transaction fee: 187304 Lovelace
+[INFO] Submitting unlock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5"}
+[OK] Unlock TX: 898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5
+[INFO] Waiting for next block (current: 4062802)...
+[OK] TX included in block 4062803 (after 35s).
+[OK] Test 1 PASSED: after-deadline unlock accepted.
+
+[INFO] TEST 2: Validity range BEFORE deadline
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9#1 (9570060027 lovelace)
+Estimated transaction fee: 170649 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b"}
+[OK] Lock TX: 42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b
+[INFO] Waiting for next block (current: 4062803)...
+[OK] TX included in block 4062804 (after 50s).
+
+[INFO] Attempting unlock with --invalid-before 103247000 (should fail at script)...
+[INFO] Finding script UTxO...
+Command failed: transaction build  Error: The following scripts have execution failures:
+the script for transaction input 0 (in ascending order of the TxIds) failed with:
+Script hash: 581c24db75dce9f85bbaf199948aea6e96b2e65e43e4d71b337282b0c895
+Script language: PlutusV3
+Protocol version: Version 10
+Script arguments:
+   ScriptInfo: SpendingScript (TxOutRef {txOutRefId = 42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b, txOutRefIdx = 0}) (Just (Datum {getDatum = I 0}))
+   TxInfo:
+     TxId: ded5c445b68f7425e57f8352d53098324cde5b45285f519b778f8edc4c9829a2
+     Inputs: [ 42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [("",5000000)]})]}} addressed to
+                                                                                       ScriptCredential: 24db75dce9f85bbaf199948aea6e96b2e65e43e4d71b337282b0c895 (no staking credential)
+                                                                                       with datum
+                                                                                       inline datum :  0
+                                                                                       with referenceScript
+                                                                                        ]
+     Reference inputs: []
+     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [("",9569889378)]})]}} addressed to
+                  PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
+                  with datum
+                  no datum
+                  with referenceScript
+                   ]
+     Fee: 0
+     Value minted: UnsafeMintValue (Map {unMap = []})
+     TxCerts: []
+     Wdrl: []
+     Valid range: [ POSIXTime 1769903000000 , +∞)
+     Signatories: []
+     Redeemers: [ ( Spending (TxOutRef {txOutRefId = 42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b, txOutRefIdx = 0})
+                , 0 ) ]
+     Datums: []
+     Votes: []
+     Proposal Procedures: []
+     Current Treasury Amount:
+     Treasury Donation:
+   Redeemer:
+     0
+Script evaluation error: An error has occurred:
+The machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.
+Script execution logs:
+Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggQvsJcQsaYWdenGrBmgvdQDpxtpBE7AYBPt/QyQBlnxsA/9h5n9h5n9h6n1gcJNt13On4W7rxmZSK6m6WsuZeQ+TXGzNygrDIlf/YeoD/oUChQBoATEtA2HufAP/YeoD///+An9h5n9h5n9h5n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP/YeoD/oUChQBsAAAACOmjsYth5gNh6gP//AKCAoNh5n9h5n9h6nxsAAAGcFnCJwP/YeoD/2Hmf2HuA2HqA//+Aodh6n9h5n1ggQvsJcQsaYWdenGrBmgvdQDpxtpBE7AYBPt/QyQBlnxsA//8AoFgg3tXERbaPdCXlf4NS1TCYMkzeW0UoX1Gbd4+O3EyYKaKggNh6gNh6gP8A2Hqf2HmfWCBC+wlxCxphZ16casGaC91AOnG2kETsBgE+39DJAGWfGwD/2HmfAP///w==
+Script base64 encoded bytes: WNoBAQAjIAE1MzVzRmauaM3DmqudN1Rq6E1dEaq543VGroTVXPG6o1dCauiNXRGrojV0Rq6I1dEauiNVc8bqjV0JqrnjdUACkAEZuJSCAsP7ngmc3WmroTVXPG6o1dCaq543VGroTVXPG6o1dCauiNXRGrojV0Rq6I1dEauiNVc8bqjV0JqrnjdUACZuJSCAsP7ngmczcAbrTV0JqrnjdUauhNVc8bqjV0JqrnjdUauhNXRGrojV0Rq6I1dEauiNXRGqueN1Rq6E1VzxuqABSACEjIAFJhIyABZJgQ==
+
+[OK] TX correctly failed at build stage.
+[OK] Test 2 PASSED: before-deadline unlock correctly rejected.
+
+------------------------------------------------------------
+[OK] deadline tests complete!
+
+  Script address:       addr_test1wqjdkawua8u9hwh3nx2g46nwj6ewvhjrunt3kvmjs2cv39g2yft3l
+                        https://preview.cardanoscan.io/address/addr_test1wqjdkawua8u9hwh3nx2g46nwj6ewvhjrunt3kvmjs2cv39g2yft3l
+  Deadline (POSIX):     1769904000
+  Lock TX (test 1):     f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9
+                        https://preview.cardanoscan.io/transaction/f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9
+  Unlock TX (after):    898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5
+                        https://preview.cardanoscan.io/transaction/898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5
+  Lock TX (test 2):     42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b
+                        https://preview.cardanoscan.io/transaction/42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b
+  Unlock TX (before):   rejected (as expected)
+------------------------------------------------------------
+[nix haskledger ~/code/haskledger-init]$

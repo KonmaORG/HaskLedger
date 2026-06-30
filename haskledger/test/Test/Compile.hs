@@ -3,7 +3,7 @@ module Test.Compile (tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase)
 
-import HaskLedger
+import HaskLedger hiding (mkNothing, mkJust, mkPubKeyHash, mkTxOutRef)
 import TestHelper
 
 tests :: TestTree

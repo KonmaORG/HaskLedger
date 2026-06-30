@@ -5,31 +5,50 @@ module TestHelper
   , assertEvalFailure
   , assertCompiles
   , mkScriptContext
+  , mkScriptContextWithInfo
   , mkTxInfo
   , mkValidRange
   , mkClosedLowerBound
   , mkOpenLowerBound
   , mkNegInfLowerBound
-  , mkPosInfUpperBound
+  , mkPosInfBound
   , mkFiniteExtended
   , mkSimpleCtx
   , mkDeadlineCtx
-  , mkNegInfCtx
   , mkPosInfLowerCtx
+  , mkByteStringCtx
+  , mkListCtx
+  , defaultTxInfo
+  , mkTxInfoWith
+  , mkTxOut
+  , mkTxOutRef
+  , mkTxInInfo
+  , mkSimpleAddress
+  , mkAdaValue
+  , mkNoOutputDatum
+  , mkNothing
+  , mkJust
+  , mkPubKeyHash
+  , mkSpendingInfo
+  , mkMintingInfo
+  , mkMultiValue
+  , mkTxInfoWithFields
+  , mkSpendingInfoWithDatum
+  , mkSpendingInfoFull
+  , mkScriptContextWithDatum
+  , mkScriptAddress
   )
 where
 
+import Data.ByteString (ByteString)
+import Data.List (foldl')
 import Covenant.ASG (ASG (ASG), defaultDatatypes, runASGBuilder)
 import Covenant.CodeGen (compile, evalTerm)
-import Covenant.Data (DatatypeInfo (DatatypeInfo))
 import Covenant.JSON (CompilationUnit (CompilationUnit), Version (Version))
 import Covenant.Plutus (pApp)
-import Covenant.Type (AbstractTy, DataDeclaration, TyName)
-import Data.Map qualified as Map
-import Data.Set qualified as Set
 import Data.Vector qualified as Vector
+import HaskLedger.Compile (alphaRename, safeLedgerDecls)
 import HaskLedger.Contract (Validator (Validator))
-import Optics.Core (view)
 import PlutusCore (Name)
 import PlutusCore.Data (Data (Constr, I, List, Map, B))
 import PlutusCore.MkPlc (mkConstant)
@@ -38,33 +57,26 @@ import UntypedPlutusCore (DefaultFun, DefaultUni, Term)
 
 type PlutusTerm = Term Name DefaultUni DefaultFun ()
 
--- Same filtering as HaskLedger.Compile.safeLedgerDecls (not exported)
-builtinTypeNames :: Set.Set TyName
-builtinTypeNames = Set.fromList ["Data", "List", "Pair", "Map"]
-
-safeLedgerDecls :: [DataDeclaration AbstractTy]
-safeLedgerDecls =
-  [ decl
-  | DatatypeInfo decl _ _ isBF <- Map.elems defaultDatatypes
-  , not isBF
-  , view #datatypeName decl `Set.member` builtinTypeNames
-  ]
-
 compileContract :: Validator -> Either String PlutusTerm
 compileContract (Validator _name builder) =
   case runASGBuilder defaultDatatypes builder of
     Left asgErr -> Left $ "ASG error: " <> show asgErr
-    Right (ASG asgMap) ->
+    Right (ASG (_rootId, asgMap)) ->
       let cu = CompilationUnit (Vector.fromList safeLedgerDecls) asgMap (Version 1 0)
-       in case compile cu of
-            Left cgErr -> Left $ "CodeGen error: " <> show cgErr
-            Right term -> Right term
+      in case compile cu of
+           Left cgErr -> Left $ "CodeGen error: " <> show cgErr
+           -- Alpha-rename to deduplicate Uniques from hash-consing.
+           -- New c2uplc starts freshUnique at 0, causing collisions
+           -- that the CEK machine can't resolve without renaming.
+           Right term -> Right (alphaRename term)
 
 evalValidator :: Validator -> Data -> Either String PlutusTerm
 evalValidator v ctx = do
   compiled <- compileContract v
   let applied = pApp compiled (mkConstant () ctx)
-  evalTerm applied
+  case evalTerm applied of
+    Left errMsg -> Left errMsg
+    Right result -> Right result
 
 assertEvalSuccess :: String -> Either String PlutusTerm -> Assertion
 assertEvalSuccess msg (Left err) = assertFailure $ msg <> ": " <> err
@@ -81,14 +93,23 @@ assertCompiles msg v = case compileContract v of
 
 mkScriptContext :: Data -> Data -> Data
 mkScriptContext txi red =
-  Constr 0 [txi, red, Constr 1 [Constr 0 [Constr 0 [B ""], I 0], Constr 0 []]]
+  Constr 0 [txi, red, mkSpendingInfo]
 
--- Fields: inputs refInputs outputs fee mint certs wdrl validRange sigs reds datums txId
+-- SpendingScript info.
+mkSpendingInfo :: Data
+mkSpendingInfo = Constr 1 [Constr 0 [B "", I 0], Constr 1 []]
+
+-- ScriptContext with custom ScriptInfo.
+mkScriptContextWithInfo :: Data -> Data -> Data -> Data
+mkScriptContextWithInfo txi red info = Constr 0 [txi, red, info]
+
+-- TxInfo with all 16 fields.
 mkTxInfo :: Data -> Data
 mkTxInfo vr = Constr 0
-  [ List [], List [], List [], I 0, Constr 0 [Map []], List [], Map []
+  [ List [], List [], List [], I 0, Map [], List [], Map []
   , vr
-  , List [], Map [], Map [], Constr 0 [B ""]
+  , List [], Map [], Map [], B ""
+  , Map [], List [], Constr 1 [], Constr 1 []
   ]
 
 mkValidRange :: Data -> Data -> Data
@@ -106,22 +127,19 @@ mkOpenLowerBound ms = Constr 0 [mkFiniteExtended ms, Constr 0 []]
 mkNegInfLowerBound :: Data
 mkNegInfLowerBound = Constr 0 [Constr 0 [], Constr 1 []]
 
-mkPosInfUpperBound :: Data
-mkPosInfUpperBound = Constr 0 [Constr 2 [], Constr 1 []]
+mkPosInfBound :: Data
+mkPosInfBound = Constr 0 [Constr 2 [], Constr 1 []]
 
 mkSimpleCtx :: Integer -> Data
 mkSimpleCtx r =
   mkScriptContext
-    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
     (I r)
-
-mkNegInfCtx :: Integer -> Data
-mkNegInfCtx = mkSimpleCtx
 
 mkPosInfLowerCtx :: Integer -> Data
 mkPosInfLowerCtx r =
   mkScriptContext
-    (mkTxInfo (mkValidRange (Constr 0 [Constr 2 [], Constr 1 []]) mkPosInfUpperBound))
+    (mkTxInfo (mkValidRange mkPosInfBound mkPosInfBound))
     (I r)
 
 mkDeadlineCtx :: Integer -> Bool -> Integer -> Data
@@ -130,5 +148,107 @@ mkDeadlineCtx r closed ms =
     (mkTxInfo
       (mkValidRange
         (if closed then mkClosedLowerBound ms else mkOpenLowerBound ms)
-        mkPosInfUpperBound))
+        mkPosInfBound))
     (I r)
+
+mkByteStringCtx :: ByteString -> Data
+mkByteStringCtx bs =
+  mkScriptContext
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
+    (B bs)
+
+mkListCtx :: [Data] -> Data
+mkListCtx xs =
+  mkScriptContext
+    (mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound))
+    (List xs)
+
+-- Default TxInfo with empty/zero fields.
+defaultTxInfo :: Data
+defaultTxInfo = mkTxInfo (mkValidRange mkNegInfLowerBound mkPosInfBound)
+
+-- TxInfo with one field replaced by index.
+mkTxInfoWith :: Int -> Data -> Data
+mkTxInfoWith idx val = Constr 0 (replace idx val defaults)
+  where
+    defaults =
+      [ List [], List [], List [], I 0, Map [], List [], Map []
+      , mkValidRange mkNegInfLowerBound mkPosInfBound
+      , List [], Map [], Map [], B ""
+      , Map [], List [], Constr 1 [], Constr 1 []
+      ]
+    replace n v xs = take n xs ++ [v] ++ drop (n + 1) xs
+
+-- TxOutRef from txid and index.
+mkTxOutRef :: ByteString -> Integer -> Data
+mkTxOutRef txid ix = Constr 0 [B txid, I ix]
+
+-- PubKeyHash as raw B.
+mkPubKeyHash :: ByteString -> Data
+mkPubKeyHash = B
+
+-- PubKey address with no staking credential.
+mkSimpleAddress :: ByteString -> Data
+mkSimpleAddress pkh = Constr 0 [Constr 0 [B pkh], Constr 1 []]
+
+-- ADA-only Value.
+mkAdaValue :: Integer -> Data
+mkAdaValue lovelaces = Map [(B "", Map [(B "", I lovelaces)])]
+
+-- No output datum.
+mkNoOutputDatum :: Data
+mkNoOutputDatum = Constr 0 []
+
+mkNothing :: Data
+mkNothing = Constr 1 []
+
+mkJust :: Data -> Data
+mkJust x = Constr 0 [x]
+
+-- TxOut from address, value, datum, refScript.
+mkTxOut :: Data -> Data -> Data -> Data -> Data
+mkTxOut addr val datum refScript = Constr 0 [addr, val, datum, refScript]
+
+-- TxInInfo from outRef and txOut.
+mkTxInInfo :: Data -> Data -> Data
+mkTxInInfo outRef txout = Constr 0 [outRef, txout]
+
+-- MintingScript info from currency symbol.
+mkMintingInfo :: ByteString -> Data
+mkMintingInfo cs = Constr 0 [B cs]
+
+-- Two-currency Value.
+mkMultiValue :: ByteString -> ByteString -> Integer -> ByteString -> ByteString -> Integer -> Data
+mkMultiValue cs1 tn1 qty1 cs2 tn2 qty2 =
+  Map [ (B cs1, Map [(B tn1, I qty1)])
+      , (B cs2, Map [(B tn2, I qty2)])
+      ]
+
+-- TxInfo with multiple fields replaced at once.
+mkTxInfoWithFields :: [(Int, Data)] -> Data
+mkTxInfoWithFields replacements = Constr 0 (foldl applyOne defaults replacements)
+  where
+    applyOne xs (i, v) = take i xs ++ [v] ++ drop (i + 1) xs
+    defaults =
+      [ List [], List [], List [], I 0, Map [], List [], Map []
+      , mkValidRange mkNegInfLowerBound mkPosInfBound
+      , List [], Map [], Map [], B ""
+      , Map [], List [], Constr 1 [], Constr 1 []
+      ]
+
+-- SpendingScript with inline datum and default TxOutRef.
+mkSpendingInfoWithDatum :: Data -> Data
+mkSpendingInfoWithDatum = mkSpendingInfoFull (mkTxOutRef "" 0)
+
+-- SpendingScript with specific TxOutRef and inline datum.
+mkSpendingInfoFull :: Data -> Data -> Data
+mkSpendingInfoFull outRef datum = Constr 1 [outRef, Constr 0 [datum]]
+
+-- ScriptContext with inline datum.
+mkScriptContextWithDatum :: Data -> Data -> Data -> Data
+mkScriptContextWithDatum txi red datum = Constr 0 [txi, red, mkSpendingInfoWithDatum datum]
+
+-- Script address (ScriptCredential, no staking).
+mkScriptAddress :: Data
+mkScriptAddress = Constr 0 [Constr 1 [B ""], Constr 1 []]
+

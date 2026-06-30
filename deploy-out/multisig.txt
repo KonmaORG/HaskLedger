@@ -1,0 +1,28 @@
+[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-multisig.sh
+[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[INFO] Node synced: 100.00%
+
+------------------------------------------------------------
+[INFO] Deploying: multisig (2-of-3)
+  Script address: addr_test1wzkt4jh76mzus3jdctq7knc9wge9hg9vncqfks2n2dhat3cm0ra6v
+
+  Test 1: 2 of 3 signers (should SUCCEED)
+  Test 2: 1 of 3 signers (should FAIL)
+------------------------------------------------------------
+
+[INFO] TEST 1: Two authorized signers
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: d42e27bf9e3de361fb28f3d3c8a12fe1f9879d9f0e356af3358805552fe5e4bf#1 (9295420057 lovelace)
+Estimated transaction fee: 178085 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"208e8d548d63ba176556c048264d97ad9525b3ed8da5324cc930250c59187528"}
+[OK] Lock TX: 208e8d548d63ba176556c048264d97ad9525b3ed8da5324cc930250c59187528
+[INFO] Waiting for next block (current: 4068081)...
+[OK] TX included in block 4068082 (after 10s).
+
+[INFO] Unlocking with signer1 + signer2...
+[INFO] Finding script UTxO...
+[FAIL] No UTxO at script address.
+[nix haskledger ~/code/haskledger-init]$

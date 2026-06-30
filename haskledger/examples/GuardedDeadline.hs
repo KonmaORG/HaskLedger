@@ -1,5 +1,4 @@
 -- | Requires redeemer == 42 AND transaction past the deadline.
--- Both conditions must hold. Checked left to right via 'requireAll'.
 module GuardedDeadline (guardedDeadline) where
 
 import HaskLedger

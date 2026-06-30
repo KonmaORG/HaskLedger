@@ -34,20 +34,23 @@ echo "  This contract accepts any redeemer - always validates."
 echo "------------------------------------------------------------"
 echo ""
 
-# Lock
-info "Locking 5 ADA..."
-LOCK_TX="$(full_lock "always-succeeds" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+# Lock (or reuse stale UTxO from a previous run)
+LOCK_TX="$(lock_or_reuse "always-succeeds" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 # Unlock
 echo ""
 info "Unlocking..."
 UNLOCK_TX="$(full_unlock "always-succeeds" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 0)"
+unset SCRIPT_UTXO
 
 echo ""
 echo "------------------------------------------------------------"
 success "always-succeeds deployment complete!"
 echo ""
 echo "  Script address: ${SCRIPT_ADDR}"
+echo "                  $(addr_url "$SCRIPT_ADDR")"
 echo "  Lock TX:        ${LOCK_TX}"
+echo "                  $(tx_url "$LOCK_TX")"
 echo "  Unlock TX:      ${UNLOCK_TX}"
+echo "                  $(tx_url "$UNLOCK_TX")"
 echo "------------------------------------------------------------"

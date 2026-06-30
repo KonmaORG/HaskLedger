@@ -42,20 +42,19 @@ echo "------------------------------------------------------------"
 echo ""
 info "TEST 1: Redeemer 42"
 
-info "Locking 5 ADA..."
-LOCK1_TX="$(full_lock "redeemer-match-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK1_TX="$(lock_or_reuse "redeemer-match-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Unlocking with redeemer 42..."
 UNLOCK1_TX="$(full_unlock "redeemer-match-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 42)"
 success "Test 1 PASSED: redeemer=42 accepted."
+unset SCRIPT_UTXO
 
 # TEST 2: redeemer 99 (expect failure)
 echo ""
 info "TEST 2: Redeemer 99"
 
-info "Locking 5 ADA..."
-LOCK2_TX="$(full_lock "redeemer-match-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
+LOCK2_TX="$(lock_or_reuse "redeemer-match-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
 echo ""
 info "Attempting unlock with redeemer 99 (should fail)..."
@@ -72,6 +71,12 @@ echo "------------------------------------------------------------"
 success "redeemer-match tests complete!"
 echo ""
 echo "  Script address:     ${SCRIPT_ADDR}"
-echo "  Success TX (r=42):  ${UNLOCK1_TX}"
-echo "  Failure  TX (r=99): rejected (as expected)"
+echo "                      $(addr_url "$SCRIPT_ADDR")"
+echo "  Lock TX (test 1):   ${LOCK1_TX}"
+echo "                      $(tx_url "$LOCK1_TX")"
+echo "  Unlock TX (r=42):   ${UNLOCK1_TX}"
+echo "                      $(tx_url "$UNLOCK1_TX")"
+echo "  Lock TX (test 2):   ${LOCK2_TX}"
+echo "                      $(tx_url "$LOCK2_TX")"
+echo "  Unlock TX (r=99):   rejected (as expected)"
 echo "------------------------------------------------------------"

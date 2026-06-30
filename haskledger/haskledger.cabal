@@ -66,18 +66,37 @@ library
   hs-source-dirs: src
   exposed-modules:
     HaskLedger
-    HaskLedger.Contract
-    HaskLedger.Combinators
-    HaskLedger.Internal
+    HaskLedger.Auth
+    HaskLedger.Bool
+    HaskLedger.ByteString
     HaskLedger.Compile
+    HaskLedger.Contract
+    HaskLedger.Crypto
+    HaskLedger.Data
+    HaskLedger.Internal.Builtin
+    HaskLedger.Internal.Data
+    HaskLedger.Ledger
+    HaskLedger.List
+    HaskLedger.Case
+    HaskLedger.Num
+    HaskLedger.Trace
+    HaskLedger.Validator
+    HaskLedger.Value
 
   build-depends:
+    bytestring >=0.12.1.0 && <0.13,
+    c2uplc,
     containers >=0.6.8 && <0.8,
     covenant ==1.3.0,
     directory,
     filepath,
     optics-core,
+    plutus-core ==1.51.0.0,
+    plutus-ledger-api,
+    plutus-tx,
     process,
+    smash ==0.1.0.0,
+    text >=2.1.1 && <2.2,
     transformers >=0.6.1.0 && <0.7.0.0,
     vector,
 
@@ -91,6 +110,7 @@ common test-lang
     -with-rtsopts=-N
 
   build-depends:
+    bytestring >=0.12.1.0 && <0.13,
     c2uplc,
     containers >=0.6.8 && <0.8,
     covenant ==1.3.0,
@@ -102,19 +122,137 @@ common test-lang
     tasty-quickcheck ==0.11.1,
     vector,
 
--- Test suite
-test-suite haskledger-tests
+-- Core tests: Contract, Combinators, Internal, Literals
+test-suite haskledger-core
   import: test-lang
   type: exitcode-stdio-1.0
-  main-is: Main.hs
+  main-is: CoreTests.hs
+  hs-source-dirs: test
+  other-modules:
+    TestHelper
+    Test.Contract
+    Test.Combinators
+    Test.Internal
+    Test.Literals
+
+-- Matching tests: PatternMatching, List, Value
+test-suite haskledger-matching
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: MatchingTests.hs
+  hs-source-dirs: test
+  other-modules:
+    TestHelper
+    Test.PatternMatching
+    Test.List
+    Test.Value
+
+-- Ledger tests: Compile, Examples, TxInfo, DEXSwap
+test-suite haskledger-ledger
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: LedgerTests.hs
   hs-source-dirs: test
   other-modules:
     TestHelper
     Test.Compile
-    Test.Contract
-    Test.Combinators
-    Test.Internal
     Test.Examples
+    Test.TxInfo
+    Test.DEXSwap
+
+-- Crypto tests: SignatureVerification, ExtendedBuiltins
+test-suite haskledger-crypto
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: CryptoTests.hs
+  hs-source-dirs: test
+  other-modules:
+    TestHelper
+    Test.SignatureVerification
+    Test.ExtendedBuiltins
+
+-- Convenience combinator tests: type constructors, value shortcuts, countList
+test-suite haskledger-convenience
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: ConvenienceTests.hs
+  hs-source-dirs: test
+  other-modules:
+    TestHelper
+    Test.Convenience
+
+-- Contract behavioral tests: edge cases for ms4 example contracts
+test-suite haskledger-contracts
+  import: test-lang
+  type: exitcode-stdio-1.0
+  main-is: ContractTests.hs
+  hs-source-dirs: test, examples
+  other-modules:
+    TestHelper
+    WalletConfig
+    AlwaysSucceeds
+    Deadline
+    Escrow
+    GuardedDeadline
+    HashLock
+    HashVerify
+    Multisig
+    OneShotNFT
+    Oracle
+    RedeemerMatch
+    TokenGate
+    Treasury
+    Vesting
+    Test.HashLock
+    Test.Vesting
+    Test.Escrow
+    Test.OneShotNFT
+    Test.TokenGate
+    Test.Multisig
+    Test.Treasury
+    Test.Oracle
+    Test.HashVerify
+
+-- Cata scope bug dumps — run separately, single-threaded
+test-suite dump-oracle-asg
+  import: test-lang
+  type: exitcode-stdio-1.0
+  ghc-options: -with-rtsopts=-N1
+  main-is: DumpOracleASG.hs
+  hs-source-dirs: test, examples
+  other-modules:
+    Oracle
+    WalletConfig
+
+test-suite dump-oracle-uplc
+  import: test-lang
+  type: exitcode-stdio-1.0
+  ghc-options: -with-rtsopts=-N1
+  main-is: DumpOracleUPLC.hs
+  hs-source-dirs: test, examples
+  other-modules:
+    Oracle
+    WalletConfig
+
+test-suite dump-multisig-asg
+  import: test-lang
+  type: exitcode-stdio-1.0
+  ghc-options: -with-rtsopts=-N1
+  main-is: DumpMultisigASG.hs
+  hs-source-dirs: test, examples
+  other-modules:
+    Multisig
+    WalletConfig
+
+test-suite dump-multisig-uplc
+  import: test-lang
+  type: exitcode-stdio-1.0
+  ghc-options: -with-rtsopts=-N1
+  main-is: DumpMultisigUPLC.hs
+  hs-source-dirs: test, examples
+  other-modules:
+    Multisig
+    WalletConfig
 
 -- Example contracts executable
 executable haskledger-examples
@@ -124,10 +262,21 @@ executable haskledger-examples
   other-modules:
     AlwaysSucceeds,
     Deadline,
+    Escrow,
     GuardedDeadline,
+    HashLock,
+    HashVerify,
+    Multisig,
+    OneShotNFT,
+    Oracle,
     RedeemerMatch,
+    TokenGate,
+    Treasury,
+    Vesting,
+    WalletConfig,
   build-depends:
     base >=4.19.0.0 && <5,
+    covenant ==1.3.0,
     haskledger,
   build-tool-depends:
     c2uplc:c2uplc,

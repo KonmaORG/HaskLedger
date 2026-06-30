@@ -4,7 +4,9 @@ import Control.Exception (ErrorCall, evaluate, try)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertFailure, testCase)
 
-import HaskLedger
+import PlutusCore.Data (Data (I))
+
+import HaskLedger hiding (mkNothing, mkJust, mkPubKeyHash, mkTxOutRef)
 import TestHelper
 
 tests :: TestTree
@@ -86,6 +88,28 @@ tests = testGroup "Contract"
           assertEvalSuccess "compound" $ evalValidator
             (validator "t" $ require "eq" $ ((2 + 3) * 4 - 1 :: Contract Expr) .== mkInt 19)
             (mkSimpleCtx 0)
+      ]
+  , testGroup "mintingPolicy"
+      [ testCase "compiles" $
+          assertCompiles "mint" (mintingPolicy "t" pass)
+      , testCase "succeeds with minting context" $
+          assertEvalSuccess "mint-ok" $ evalValidator
+            (mintingPolicy "t" pass)
+            (mkScriptContextWithInfo defaultTxInfo (I 0)
+              (mkMintingInfo "my-policy"))
+      , testCase "ownCurrencySymbol extracts correct CS" $
+          assertEvalSuccess "mint-cs" $ evalValidator
+            (mintingPolicy "t" $ require "cs" $
+              equalsByteString
+                (asByteString ownCurrencySymbol)
+                (mkByteString "test-policy"))
+            (mkScriptContextWithInfo defaultTxInfo (I 0)
+              (mkMintingInfo "test-policy"))
+      , testCase "failing condition still crashes" $
+          assertEvalFailure "mint-fail" $ evalValidator
+            (mintingPolicy "t" $ require "bad" $ mkInt 1 .== mkInt 0)
+            (mkScriptContextWithInfo defaultTxInfo (I 0)
+              (mkMintingInfo "any"))
       ]
   , testGroup "Num unsupported"
       [ testCase "abs throws" $ do

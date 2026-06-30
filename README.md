@@ -41,12 +41,17 @@ Requires Nix with flakes enabled. The dev shell provides GHC 9.12.2 and all depe
 
 # What contracts are included?
 
-Four examples, all validated on the Cardano Preview testnet (PlutusV3, Conway era):
+The example suite spans spending validators and a minting policy, all validated on the Cardano Preview testnet (PlutusV3, Conway era) with positive and negative test cases:
 
 - **always-succeeds** -- ignores inputs, always passes. Pipeline smoke test.
 - **redeemer-match** -- checks the redeemer equals 42.
 - **deadline** -- checks the validity range is past a POSIX timestamp.
 - **guarded-deadline** -- redeemer check + deadline check via `requireAll`.
+- **hash-lock** -- spend by revealing a preimage whose `blake2b_256` matches the datum.
+- **hash-verify** -- preimage must satisfy two hashes (`blake2b_224` and `keccak_256`).
+- **oracle** -- only the datum-named operator may update; the UTxO must continue.
+- **treasury** -- admin withdraws; anyone deposits while value is preserved.
+- **one-shot-nft** -- minting policy that consumes a seed UTxO and mints exactly one token.
 
 Each has a deploy script under `haskledger/deploy/` that runs positive and negative tests against a local `cardano-node`. See the [Deployment Guide](docs/deployment-guide.md) for node setup.
 
@@ -58,9 +63,12 @@ haskledger/
     HaskLedger.hs              -- single import, re-exports everything
     HaskLedger/Contract.hs     -- Validator, Contract, require, Num instance
     HaskLedger/Combinators.hs  -- operators, data access, after, boolean logic
-    HaskLedger/Internal.hs     -- Plutus Data destructuring (not user-facing)
+    HaskLedger/Crypto.hs       -- hashing builtins (blake2b, keccak)
+    HaskLedger/Auth.hs         -- signature checks
+    HaskLedger/Value.hs        -- value and minting helpers
+    HaskLedger/Internal/       -- Plutus Data destructuring (not user-facing)
     HaskLedger/Compile.hs      -- eDSL -> Covenant JSON -> c2uplc -> .plutus
-  examples/                    -- the four example contracts
+  examples/                    -- example contracts
   deploy/                      -- testnet deployment scripts
 covenant/                      -- MLabs Covenant IR (v1.3.0, vendored)
 c2uplc/                        -- MLabs UPLC code generator (v1.0.0, vendored)

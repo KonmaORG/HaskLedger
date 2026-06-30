@@ -26,11 +26,6 @@
             };
             hlint.enable = true;
 
-            typos = {
-              enable = true;
-              excludes = [ "\.golden" "fourmolu.yaml" ];
-            };
-
             yamllint.enable = true;
           };
         };

@@ -1,0 +1,93 @@
+[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-one-shot-nft.sh
+[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[INFO] Node synced: 100.00%
+
+------------------------------------------------------------
+[INFO] Deploying: one-shot-nft
+  Policy ID:    06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+  Token name:   (empty — matches contract's emptyByteString)
+
+  Test 1: Mint with seed UTxO   (should SUCCEED)
+  Test 2: Mint again (no seed)  (should FAIL)
+------------------------------------------------------------
+
+[INFO] TEST 1: Mint NFT
+[INFO] Finding seed UTxO in wallet...
+[INFO] Seed UTxO: e9b907dbc11581d3528e84ed8fe18620bb8d8fa18735eb9c33128655a2e1c515#1
+[INFO] Only one UTxO. Splitting to create collateral...
+Estimated transaction fee: 172057 Lovelace
+[INFO] Submitting split TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94"}
+[OK] Split TX: 55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94
+[INFO] Waiting for next block (current: 4067467)...
+[OK] TX included in block 4067468 (after 40s).
+[INFO] New seed UTxO: 55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94#0
+[INFO] Collateral: 55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94#1
+[INFO] Mint redeemer: action=0, seed=55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94#0
+Estimated transaction fee: 239156 Lovelace
+[INFO] Submitting mint TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e"}
+[OK] Mint TX: 3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e
+[INFO] Waiting for next block (current: 4067468)...
+[OK] TX included in block 4067469 (after 40s).
+[OK] Test 1 PASSED: NFT minted.
+
+[INFO] TEST 2: Try to mint again (seed UTxO consumed)
+[INFO] Attempting second mint (should fail)...
+Command failed: transaction build  Error: The following scripts have execution failures:
+the script for policyId 0 (in ascending order of the PolicyIds) failed with:
+Script hash: 581c06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+Script language: PlutusV3
+Protocol version: Version 10
+Script arguments:
+   ScriptInfo: MintingScript 06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+   TxInfo:
+     TxId: e8b00eaad85afcc1008ee4fa57058c2413ad7918eb891128c7ec3b448b9fb3af
+     Inputs: [ 3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [("",9305772971)]}),(06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4,Map {unMap = [("",1)]}),(7efdfc9bae8afc3cb7a4b8fc8ac4d8e5e45846a6f518020c7a9cf2c6,Map {unMap = [("ACCESS",20)]})]}} addressed to
+                                                                                       PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
+                                                                                       with datum
+                                                                                       no datum
+                                                                                       with referenceScript
+                                                                                        ]
+     Reference inputs: []
+     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [("",9305772971)]}),(06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4,Map {unMap = [("",2)]}),(7efdfc9bae8afc3cb7a4b8fc8ac4d8e5e45846a6f518020c7a9cf2c6,Map {unMap = [("ACCESS",20)]})]}} addressed to
+                  PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
+                  with datum
+                  no datum
+                  with referenceScript
+                   ]
+     Fee: 0
+     Value minted: UnsafeMintValue (Map {unMap = [(06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4,Map {unMap = [("",1)]})]})
+     TxCerts: []
+     Wdrl: []
+     Valid range: (-∞ , +∞)
+     Signatories: []
+     Redeemers: [ ( Minting 06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+                , <0, <Vafn4EItUOitU2Fq0EH7EdE0ByyHhWft7f7TtXcXypQ=, 0>> ) ]
+     Datums: []
+     Votes: []
+     Proposal Procedures: []
+     Current Treasury Amount:
+     Treasury Donation:
+   Redeemer:
+     <0, <Vafn4EItUOitU2Fq0EH7EdE0ByyHhWft7f7TtXcXypQ=, 0>>
+Script evaluation error: An error has occurred:
+The machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.
+Script execution logs:
+Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggPbcV3LRKStG7IvA+fCp1FIMDPHOBHZZIwb0GiMmZwJ4A/9h5n9h5n9h5n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP/YeoD/o0ChQBsAAAACKqrTq1gcBvogQUkkf8M21MEvw/yPsZnjQfJcy9QkblgI9KFAAVgcfv38m66K/Dy3pLj8isTY5eRYRqb1GAIMepzyxqFGQUNDRVNTFNh5gNh6gP///4Cf2Hmf2Hmf2HmfWBya//onInoLoF74bWhpX6cc+geFU15n0phYL5TA/9h6gP+jQKFAGwAAAAIqqtOrWBwG+iBBSSR/wzbUwS/D/I+xmeNB8lzL1CRuWAj0oUACWBx+/fybror8PLekuPyKxNjl5FhGpvUYAgx6nPLGoUZBQ0NFU1MU2HmA2HqA//8AoVgcBvogQUkkf8M21MEvw/yPsZnjQfJcy9QkblgI9KFAAYCg2Hmf2Hmf2HmA2HqA/9h5n9h7gNh6gP//gKHYeZ9YHAb6IEFJJH/DNtTBL8P8j7GZ40HyXMvUJG5YCPT/2HmfANh5n1ggVafn4EItUOitU2Fq0EH7EdE0ByyHhWft7f7TtXcXypQA//+gWCDosA6q2Fr8wQCO5PpXBYwkE615GOuJESjH7DtEi5+zr6CA2HqA2HqA/9h5nwDYeZ9YIFWn5+BCLVDorVNhatBB+xHRNAcsh4Vn7e3+07V3F8qUAP//2HmfWBwG+iBBSSR/wzbUwS/D/I+xmeNB8lzL1CRuWAj0//8=
+Script base64 encoded bytes: WQODAQEAMjIyMjIyMjIyMjIyMjIyMiMjIyMjIyMjIyMjIyMjIyMjIyMjIyNTMwDDMwDDMwDAEDMwDDMBEwEzIyMjIzIyJTM1c0YCQAIgLCamQkZAAmZgKmbrzAdMAgwCQAgBwBgATAbABMAIwHAASMwAgAgASMiUzNXNGAkACICwmpkJGQAJmYCpm68wHTAIMAkAIAcAYAEwGwATACMBwAEjMAIAIAEBI3UAIGAsYC5gAmAEYCxgLmACYAQDCq551QBpmAiYCZkZkZEpmauaMA8AEQExNTISMgATMwEjN15qrnQAjdSkQQAwBgAgATAYABMAIwGQASMwAgAgASMiUzNXNGAeACICYmpkJGQAJmYCRm681VzoARupSIEAMAYAIAEwGAATACMBkAEjMAIAIAEwCzIzIyJTM1c0YCAAIgKCamQkZAAmZgJmbrzVXOgBADGAOAEACYDIAJgBGA0ACRmAEAEACRkSmZq5owEAARAUE1MhIyABMzATM3XmqudACAGMAcAIAEwGQATACMBoAEjMAIAIAEAswFTABN1RgKmAsYCxgAm6oBdVc8AaAQAQAIZmAYAOZgCmAmZGZGRKZmrmjAPABEBMTUyEjIAEzMBIzdeaq50AI3UpEQAwBgAgATAYABMAIwGQASMwAgAgASMiUzNXNGAeACICYmpkJGQAJmYCRm681VzoARupSIEAMAYAIAEwGAATACMBkAEjMAIAIAEwCzIzIyJTM1c0YCAAIgKCamQkZAAmZgJmbrzVXOgBADGAOAEACYDIAJgBGA0ACRmAEAEACRkSmZq5owEAARAUE1MhIyABMzATM3XmqudACAGMAcAIAEwGQATACMBoAEjMAIAIAEAgwFTABN1RgKmAsYCxgAm6oBdVc8AkAQAEACAGJGQALCQASTJRcQYAhgHGAeYB5gHmAeaq543VGAcaq543VAIGYBRgGGAaaq543VGAaYBxqrnjdUAeAMlAwATALMAwwDDAMMAw1VzxuqMAs1VzxuqANdWro1c0kAEbrDAGNVc8bqjAGNVc8bqgCDdQAGZgAmAGYAhqrnjdUYAhgCmqueN1QAwATh0gAHWq6FXRFIANMAED2HqAAKYBA9h5gAA6l1BG6k3MAAkmAQPYeYAAI3Um7oAEjdSbwQAUmIAEpNVc6bqgAaUaUDrnWkbmTdcACSTEbuzdcACRvCN1wAM=
+
+[OK] Test 2 PASSED: second mint correctly rejected (seed UTxO gone).
+
+------------------------------------------------------------
+[OK] one-shot-nft tests complete!
+
+  Policy ID:           06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+  Token:               06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4
+  Mint TX:             3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e
+                       https://preview.cardanoscan.io/transaction/3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e
+  Second mint:         rejected (as expected)
+------------------------------------------------------------
+[nix haskledger ~/code/haskledger-init]$

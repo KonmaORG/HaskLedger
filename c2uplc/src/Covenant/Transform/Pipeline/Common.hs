@@ -28,7 +28,6 @@ import Covenant.ExtendedASG
     MonadASG (getASG, putASG),
   )
 import Covenant.Index (Index)
-import Covenant.Test (CompNodeInfo (LamInternal))
 import Covenant.Transform.Common
   ( TyFixerDataBundle,
     TyFixerFnData,
@@ -45,6 +44,7 @@ import Covenant.Type
     TyName (TyName),
     ValT (Abstraction),
   )
+import Covenant.Unsafe (CompNodeInfo (LamInternal))
 import Data.Kind (Type)
 import Data.Map (Map)
 import Data.Map qualified as M
@@ -91,10 +91,10 @@ mapField l f r = R.update l (f (r R..! l)) r
 -- I dunno what the point of this was
 newtype MetaM r a = MetaM (State (Rec r) a)
   deriving
-    ( Functor,
-      Applicative,
-      Monad,
-      MonadState (Rec r)
+    ( Functor
+    , Applicative
+    , Monad
+    , MonadState (Rec r)
     )
     via (State (Rec r))
 

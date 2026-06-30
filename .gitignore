@@ -5,5 +5,18 @@ result-*
 haskledger/deploy/keys/
 haskledger/deploy/tx/
 
+# Local backup copies of vendored subprojects
+c2uplc-backup/
+covenant-backup/
+haskledger-backup/
+
+# Internal planning notes
+docs/plans/
+
+# Scratch build artifacts
+examples/demo/
+examples/**/demo-*.plutus
+examples/**/demo-*.json
+
 
 

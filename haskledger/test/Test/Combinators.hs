@@ -3,7 +3,9 @@ module Test.Combinators (tests) where
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (testCase)
 
-import HaskLedger
+import PlutusCore.Data (Data (I))
+
+import HaskLedger hiding (mkNothing, mkJust, mkPubKeyHash, mkTxOutRef)
 import TestHelper
 
 tests :: TestTree
@@ -58,7 +60,7 @@ tests = testGroup "Combinators"
       , testCase "open at deadline-2 fails" $
           assertEvalFailure "open-2" $ evalValidator v (mkDeadlineCtx 0 False (dl - 2))
       , testCase "NegInf crashes" $
-          assertEvalFailure "negInf" $ evalValidator v (mkNegInfCtx 0)
+          assertEvalFailure "negInf" $ evalValidator v (mkSimpleCtx 0)
       , testCase "PosInf lower crashes" $
           assertEvalFailure "posInf" $ evalValidator v (mkPosInfLowerCtx 0)
       ]
@@ -74,6 +76,81 @@ tests = testGroup "Combinators"
       , testCase "not F"  $ ok  (notBool falseC)
       , testCase "(T && F) || T" $ ok  ((trueC .&& falseC) .|| trueC)
       , testCase "(F || F) && T" $ bad ((falseC .|| falseC) .&& trueC)
+      ]
+  , testGroup "ByteString ops"
+      [ testCase "equalsByteString same" $
+          assertEvalSuccess "bs==" $ evalValidator
+            (validator "t" $ require "eq" $
+              equalsByteString (asByteString theRedeemer) (asByteString theRedeemer))
+            (mkByteStringCtx "hello")
+      , testCase "sha2 changes value" $
+          assertEvalFailure "hash/=" $ evalValidator
+            (validator "t" $ require "neq" $
+              equalsByteString (asByteString theRedeemer) (sha2_256 (asByteString theRedeemer)))
+            (mkByteStringCtx "hello")
+      , testCase "lengthByteString" $
+          assertEvalSuccess "len" $ evalValidator
+            (validator "t" $ require "len" $
+              lengthByteString (asByteString theRedeemer) .== mkInt 5)
+            (mkByteStringCtx "hello")
+      ]
+  , testGroup "Hashing"
+      [ testCase "sha2_256 deterministic" $
+          assertEvalSuccess "sha2" $ evalValidator
+            (validator "t" $ require "det" $
+              equalsByteString (sha2_256 (asByteString theRedeemer)) (sha2_256 (asByteString theRedeemer)))
+            (mkByteStringCtx "test")
+      , testCase "blake2b_256 deterministic" $
+          assertEvalSuccess "blake" $ evalValidator
+            (validator "t" $ require "det" $
+              equalsByteString (blake2b_256 (asByteString theRedeemer)) (blake2b_256 (asByteString theRedeemer)))
+            (mkByteStringCtx "test")
+      ]
+  , testGroup "Data ops"
+      [ testCase "equalsData same" $
+          assertEvalSuccess "d==" $ evalValidator
+            (validator "t" $ require "eq" $
+              equalsData theRedeemer theRedeemer)
+            (mkSimpleCtx 42)
+      , testCase "equalsData different" $
+          assertEvalFailure "d/=" $ evalValidator
+            (validator "t" $ require "eq" $
+              equalsData theRedeemer (mkIntData (mkInt 99)))
+            (mkSimpleCtx 42)
+      , testCase "serialiseData compiles" $
+          assertCompiles "ser" $
+            validator "t" $ require "ok" $
+              equalsByteString (serialiseData theRedeemer) (serialiseData theRedeemer)
+      ]
+  , testGroup "List ops"
+      [ testCase "isNullList empty" $
+          assertEvalSuccess "null" $ evalValidator
+            (validator "t" $ require "null" $
+              isNullList (asList theRedeemer))
+            (mkListCtx [])
+      , testCase "isNullList non-empty" $
+          assertEvalFailure "!null" $ evalValidator
+            (validator "t" $ require "null" $
+              isNullList (asList theRedeemer))
+            (mkListCtx [I 1])
+      ]
+  , testGroup "Arithmetic extended"
+      [ testCase "quotientInt 7 2 == 3" $
+          ok (quotientInt (mkInt 7) (mkInt 2) .== mkInt 3)
+      , testCase "remainderInt 7 2 == 1" $
+          ok (remainderInt (mkInt 7) (mkInt 2) .== mkInt 1)
+      , testCase "modInt 7 2 == 1" $
+          ok (modInt (mkInt 7) (mkInt 2) .== mkInt 1)
+      , testCase "quotientInt (-7) 2 == -3" $
+          ok (quotientInt (mkInt (-7)) (mkInt 2) .== mkInt (-3))
+      , testCase "remainderInt (-7) 2 == -1" $
+          ok (remainderInt (mkInt (-7)) (mkInt 2) .== mkInt (-1))
+      , testCase "modInt (-7) 2 == 1" $
+          ok (modInt (mkInt (-7)) (mkInt 2) .== mkInt 1)
+      ]
+  , testGroup "Trace"
+      [ testCase "traceMsg passes value through" $
+          ok (traceMsg (mkString "debug") (mkInt 42) .== mkInt 42)
       ]
   ]
   where
