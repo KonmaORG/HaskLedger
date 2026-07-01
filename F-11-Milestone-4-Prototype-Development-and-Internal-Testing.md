@@ -10,7 +10,7 @@
 
 ## Milestone Outputs
 
-A fully functional HaskLedger prototype ready for internal testing. The prototype demonstrates HaskLedger's capabilities in a controlled environment — the Cardano Preview testnet — simulating real-world conditions to assess performance, efficiency, and hardware compatibility.
+A fully functional HaskLedger prototype ready for internal testing. The prototype demonstrates HaskLedger's capabilities in a controlled environment - the Cardano Preview testnet - simulating real-world conditions to assess performance, efficiency, and hardware compatibility.
 
 The prototype is the complete eDSL-to-chain toolchain delivered in Milestone 3, now exercised under a structured internal-testing regime: a suite of **13 contracts of increasing complexity**, each deployed and run on-chain with both positive (accept) and negative (reject) cases. Internal testing confirmed **9 contracts fully operational** and surfaced **4 contracts with defects** that are documented below as concrete areas for further optimization.
 
@@ -18,7 +18,7 @@ The prototype is the complete eDSL-to-chain toolchain delivered in Milestone 3, 
 
 ## Acceptance Criteria
 
-### Criterion 1 — The prototype successfully executes smart contracts on Cardano, showcasing improvements in transaction throughput and efficiency
+### Criterion 1 - The prototype successfully executes smart contracts on Cardano, showcasing improvements in transaction throughput and efficiency
 
 #### Smart contracts executed on Cardano
 
@@ -58,23 +58,23 @@ The prototype compiles eDSL contracts directly to compact UPLC and emits standar
 Observations from internal testing:
 
 - **Simple validators settle for ~0.175 ADA**; even the most complex contracts (continuing-output enforcement, minting, multi-hash) stay under ~0.26 ADA.
-- **Cost tracks logic, not abstraction.** The eDSL's high-level combinators (e.g. `after` hides 10+ levels of `Data` destructuring) add no measurable on-chain overhead — fees are governed by the underlying script work, confirming the compilation pipeline produces efficient UPLC.
+- **Cost tracks logic, not abstraction.** The eDSL's high-level combinators (e.g. `after` hides 10+ levels of `Data` destructuring) add no measurable on-chain overhead - fees are governed by the underlying script work, confirming the compilation pipeline produces efficient UPLC.
 - Every validating transaction was **included in the next block** after submission, confirming the scripts evaluate within Cardano's execution-unit budget with margin to spare.
 
 > Per-transaction efficiency (fee, script size, ex-unit budget) is what the prototype controls; aggregate network throughput is governed by Cardano L1 itself. The figures above are the measured, controllable cost surface.
 
-### Criterion 2 — Internal testing results validate operational effectiveness and highlight areas for further optimization
+### Criterion 2 - Internal testing results validate operational effectiveness and highlight areas for further optimization
 
 #### Testing methodology
 
 Each contract was deployed via a dedicated, reproducible shell script (`haskledger/deploy/deploy-<contract>.sh`) that performs a full lifecycle against the live testnet:
 
-1. **Positive case** — a transaction that _should_ validate (correct redeemer / preimage / signer / timing) is submitted and confirmed on-chain.
-2. **Negative case** — a transaction that _should_ be rejected (wrong input) is submitted; the script must fail evaluation at the build stage.
+1. **Positive case** - a transaction that _should_ validate (correct redeemer / preimage / signer / timing) is submitted and confirmed on-chain.
+2. **Negative case** - a transaction that _should_ be rejected (wrong input) is submitted; the script must fail evaluation at the build stage.
 
 A contract is counted **operationally effective** only if the positive case is accepted on-chain **and** the negative case is correctly rejected. Raw logs for every run are captured in [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out).
 
-#### Results — operational effectiveness (9 / 13 fully passing)
+#### Results - operational effectiveness (9 / 13 fully passing)
 
 | Contract         | Positive case               | Negative case              | Verdict |
 | ---------------- | --------------------------- | -------------------------- | ------- |
@@ -88,20 +88,20 @@ A contract is counted **operationally effective** only if the positive case is a
 | treasury         | withdraw + deposit accepted | non-admin rejected         | Pass    |
 | one-shot-nft     | mint accepted               | re-mint rejected           | Pass    |
 
-Negative cases are rejected at the `cardano-cli transaction build` stage with a Plutus _script evaluation error_ — confirming the on-chain validator (not the wallet) enforces the rule.
+Negative cases are rejected at the `cardano-cli transaction build` stage with a Plutus _script evaluation error_ - confirming the on-chain validator (not the wallet) enforces the rule.
 
 #### Areas for further optimization (4 contracts with defects found)
 
-Internal testing deliberately included more advanced contracts than the 9 above, and **surfaced real defects** — exactly the optimization signal this milestone is meant to produce.
+Internal testing deliberately included more advanced contracts than the 9 above, and **surfaced real defects** - exactly the optimization signal this milestone is meant to produce.
 
 | Contract   | Symptom (from `deploy-out/`)                                                                                                      | Diagnosed root cause                                                                                                               | Optimization action                                                                  |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| escrow     | Positive case (seller claim) crashes: `unConstrData (con data (I 0))` — "Expected the Constr constructor but got a different one" | Structured (`Constr`) datum/redeemer destructuring path applies `unConstrData` to a value that reaches the validator as an integer | Fix the `Constr` field-extraction combinator codegen for mixed datum/redeemer shapes |
+| escrow     | Positive case (seller claim) crashes: `unConstrData (con data (I 0))` - "Expected the Constr constructor but got a different one" | Structured (`Constr`) datum/redeemer destructuring path applies `unConstrData` to a value that reaches the validator as an integer | Fix the `Constr` field-extraction combinator codegen for mixed datum/redeemer shapes |
 | token-gate | Positive case (token-holder unlock) crashes with the **same** `unConstrData` Constr error                                         | Same destructuring defect as escrow                                                                                                | Shared fix with escrow / vesting                                                     |
 | vesting    | Positive case (beneficiary claim) crashes with the **same** `unConstrData` Constr error                                           | Same destructuring defect                                                                                                          | Shared fix with escrow / token-gate                                                  |
-| multisig   | Unlock aborts: `[FAIL] No UTxO at script address` after a confirmed lock                                                          | Lock UTxO not discoverable at spend time — deploy-script UTxO-tracking / contract address derivation issue                         | Audit lock-output addressing and UTxO selection in the multisig deploy flow          |
+| multisig   | Unlock aborts: `[FAIL] No UTxO at script address` after a confirmed lock                                                          | Lock UTxO not discoverable at spend time - deploy-script UTxO-tracking / contract address derivation issue                         | Audit lock-output addressing and UTxO selection in the multisig deploy flow          |
 
-Key finding: **3 of the 4 failures share a single root cause** — the structured-`Constr` destructuring path. This is a high-leverage optimization target: one fix in the combinator codegen is expected to recover escrow, token-gate, and vesting together. The multisig issue is independent and localized to UTxO handling.
+Key finding: **3 of the 4 failures share a single root cause** - the structured-`Constr` destructuring path. This is a high-leverage optimization target: one fix in the combinator codegen is expected to recover escrow, token-gate, and vesting together. The multisig issue is independent and localized to UTxO handling.
 
 This is the intended output of internal testing: the prototype is validated as operationally effective on its core capability set, and the remaining defects are isolated, root-caused, and prioritized for the next development cycle.
 
@@ -167,7 +167,7 @@ Cardanoscan links follow the pattern `https://preview.cardanoscan.io/transaction
 | one-shot-nft     | Mint (with seed UTxO)        | `3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e) |
 | one-shot-nft     | Mint again (seed consumed)   | N/A                                                                | Correctly rejected | N/A |
 
-Failed unlock/mint transactions do not produce TX hashes — they are rejected at the build stage by `cardano-cli` (script evaluation error), confirming the Plutus script correctly rejects the invalid input.
+Failed unlock/mint transactions do not produce TX hashes - they are rejected at the build stage by `cardano-cli` (script evaluation error), confirming the Plutus script correctly rejects the invalid input.
 
 ---
 
