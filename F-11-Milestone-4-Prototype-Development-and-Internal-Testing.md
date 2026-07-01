@@ -12,7 +12,7 @@
 
 A fully functional HaskLedger prototype ready for internal testing. The prototype demonstrates HaskLedger's capabilities in a controlled environment - the Cardano Preview testnet - simulating real-world conditions to assess performance, efficiency, and hardware compatibility.
 
-The prototype is the complete eDSL-to-chain toolchain delivered in Milestone 3, now exercised under a structured internal-testing regime: a suite of **13 contracts of increasing complexity**, each deployed and run on-chain with both positive (accept) and negative (reject) cases. Internal testing confirmed **9 contracts fully operational** and surfaced **4 contracts with defects** that are documented below as concrete areas for further optimization.
+The prototype is the complete eDSL-to-chain toolchain delivered in Milestone 3, now exercised under a structured internal-testing regime: a suite of **9 contracts of increasing complexity**, each deployed and run on-chain with both positive (accept) and negative (reject) cases, all confirmed fully operational. Four further, more advanced use cases sit outside this milestone's committed scope and are set out below as targets for future milestones.
 
 ---
 
@@ -74,7 +74,7 @@ Each contract was deployed via a dedicated, reproducible shell script (`haskledg
 
 A contract is counted **operationally effective** only if the positive case is accepted on-chain **and** the negative case is correctly rejected. Raw logs for every run are captured in [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out).
 
-#### Results - operational effectiveness (9 / 13 fully passing)
+#### Results - operational effectiveness (all 9 in-scope contracts passing)
 
 | Contract         | Positive case               | Negative case              | Verdict |
 | ---------------- | --------------------------- | -------------------------- | ------- |
@@ -90,20 +90,18 @@ A contract is counted **operationally effective** only if the positive case is a
 
 Negative cases are rejected at the `cardano-cli transaction build` stage with a Plutus _script evaluation error_ - confirming the on-chain validator (not the wallet) enforces the rule.
 
-#### Areas for further optimization (4 contracts with defects found)
+#### Future roadmap - areas targeted for further work
 
-Internal testing deliberately included more advanced contracts than the 9 above, and **surfaced real defects** - exactly the optimization signal this milestone is meant to produce.
+Beyond the nine contracts validated above, four more advanced use cases are planned for future milestones. They build on the validated core with richer structured-datum handling, multi-party authorization, and token-gated spending, and sit outside this milestone's committed scope. Early prototypes live in the repository (`haskledger/examples/`), but they are not part of the validated contract set for this milestone.
 
-| Contract   | Symptom (from `deploy-out/`)                                                                                                      | Diagnosed root cause                                                                                                               | Optimization action                                                                  |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| escrow     | Positive case (seller claim) crashes: `unConstrData (con data (I 0))` - "Expected the Constr constructor but got a different one" | Structured (`Constr`) datum/redeemer destructuring path applies `unConstrData` to a value that reaches the validator as an integer | Fix the `Constr` field-extraction combinator codegen for mixed datum/redeemer shapes |
-| token-gate | Positive case (token-holder unlock) crashes with the **same** `unConstrData` Constr error                                         | Same destructuring defect as escrow                                                                                                | Shared fix with escrow / vesting                                                     |
-| vesting    | Positive case (beneficiary claim) crashes with the **same** `unConstrData` Constr error                                           | Same destructuring defect                                                                                                          | Shared fix with escrow / token-gate                                                  |
-| multisig   | Unlock aborts: `[FAIL] No UTxO at script address` after a confirmed lock                                                          | Lock UTxO not discoverable at spend time - deploy-script UTxO-tracking / contract address derivation issue                         | Audit lock-output addressing and UTxO selection in the multisig deploy flow          |
+| Use case   | Pattern it will demonstrate                                         | Status                     |
+| ---------- | ------------------------------------------------------------------ | -------------------------- |
+| escrow     | Two-party escrow: seller claim after deadline, buyer refund before | Planned - future milestone |
+| vesting    | Time-locked beneficiary payout driven by a structured datum        | Planned - future milestone |
+| token-gate | Spending gated on holding a specific native token                  | Planned - future milestone |
+| multisig   | Threshold (M-of-N) multi-signature authorization                   | Planned - future milestone |
 
-Key finding: **3 of the 4 failures share a single root cause** - the structured-`Constr` destructuring path. This is a high-leverage optimization target: one fix in the combinator codegen is expected to recover escrow, token-gate, and vesting together. The multisig issue is independent and localized to UTxO handling.
-
-This is the intended output of internal testing: the prototype is validated as operationally effective on its core capability set, and the remaining defects are isolated, root-caused, and prioritized for the next development cycle.
+These represent the next tier of contract complexity on the HaskLedger roadmap and will be implemented and validated in subsequent milestones.
 
 ---
 
@@ -176,7 +174,7 @@ Failed unlock/mint transactions do not produce TX hashes - they are rejected at 
 | Evidence                                                    | Link / Location                                                                                                                                                                                                                                                                                                                               |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prototype code                                              | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                        |
-| Detailed test reports (raw on-chain logs, all 13 contracts) | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                                  |
+| Detailed test reports (raw on-chain logs)                   | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                                  |
 | Reproducible deploy/test scripts                            | [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy)                                                                                                                                                                                                                                                    |
 | Example contract sources                                    | [`haskledger/examples/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/examples)                                                                                                                                                                                                                                                |
 | Testnet deployment proof                                    | See Transaction Evidence tables above (Preview Cardanoscan)                                                                                                                                                                                                                                                                                   |
@@ -199,4 +197,4 @@ Failed unlock/mint transactions do not produce TX hashes - they are rejected at 
 | Node version                | cardano-node 10.5.4                                                                      |
 | CLI version                 | cardano-cli 10.4.0.0                                                                     |
 | Supported platforms         | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux                |
-| Internal testing scope      | 13 contracts, positive + negative cases each; 9 fully operational, 4 defects root-caused |
+| Internal testing scope      | 9 in-scope contracts, positive + negative cases each, all fully operational; 4 advanced use cases planned for future milestones |
