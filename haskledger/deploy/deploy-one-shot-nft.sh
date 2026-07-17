@@ -97,26 +97,35 @@ if [[ -z "$COLL_INFO" || "$COLL_INFO" == "null null" ]]; then
   success "Split TX: ${SPLIT_TX}"
   wait_for_block
 
-  # Re-query after split
-  SEED_INFO="$(get_first_utxo "$WALLET_ADDR" 5000000)"
-  SEED_UTXO="${SEED_INFO%% *}"
+  # Re-query after split. The node's UTxO set lags block confirmation, so
+  # retry until the second wallet UTxO shows up.
+  COLL_INFO=""
+  SPLIT_TRIES=0
+  while (( SPLIT_TRIES < 10 )); do
+    SEED_INFO="$(get_first_utxo "$WALLET_ADDR" 5000000)"
+    SEED_UTXO="${SEED_INFO%% *}"
+    COLL_INFO="$(cardano-cli conway query utxo \
+      --address "$WALLET_ADDR" \
+      --testnet-magic "$TESTNET_MAGIC" \
+      --out-file /dev/stdout \
+      | jq -r --arg skip "$SEED_UTXO" '
+        to_entries
+        | map(select(.key != $skip and .value.value.lovelace >= 5000000))
+        | first
+        | "\(.key) \(.value.value.lovelace)"
+      ' 2>/dev/null || echo "")"
+    if [[ -n "$COLL_INFO" && "$COLL_INFO" != "null null" ]]; then
+      break
+    fi
+    SPLIT_TRIES=$(( SPLIT_TRIES + 1 ))
+    sleep 5
+  done
   SEED_TXHASH="${SEED_UTXO%#*}"
   SEED_IX="${SEED_UTXO##*#}"
   info "New seed UTxO: ${SEED_UTXO}"
 
-  COLL_INFO="$(cardano-cli conway query utxo \
-    --address "$WALLET_ADDR" \
-    --testnet-magic "$TESTNET_MAGIC" \
-    --out-file /dev/stdout \
-    | jq -r --arg skip "$SEED_UTXO" '
-      to_entries
-      | map(select(.key != $skip and .value.value.lovelace >= 5000000))
-      | first
-      | "\(.key) \(.value.value.lovelace)"
-    ' 2>/dev/null || echo "")"
-
   if [[ -z "$COLL_INFO" || "$COLL_INFO" == "null null" ]]; then
-    fail "Split failed — still only one UTxO."
+    fail "Split failed — still only one UTxO (after retries)."
     exit 1
   fi
 fi

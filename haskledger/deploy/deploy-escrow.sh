@@ -81,7 +81,9 @@ export DATUM_FILE="$DATUM_PAST"
 info "Locking 5 ADA (past deadline)..."
 LOCK1_TX="$(full_lock "escrow-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
-CHANGE_ADDR="$SELLER_ADDR"
+# paysAtLeast: the seller must receive the full locked value, so pay it
+# explicitly (funded from the wallet) rather than as script-minus-fee change.
+PAYOUT_ADDR="$SELLER_ADDR"
 EXTRA_BUILD_ARGS=(--required-signer-hash "$SELLER_PKH")
 EXTRA_SKEYS=("$SELLER_SKEY")
 SCRIPT_UTXO="${LOCK1_TX}#0"
@@ -90,7 +92,7 @@ echo ""
 info "Unlocking as seller (r=1) with both bounds..."
 UNLOCK1_TX="$(full_unlock "escrow-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 1 "$CURRENT_SLOT" "$HEREAFTER_SLOT")"
 success "Test 1 PASSED: seller claim accepted."
-unset EXTRA_BUILD_ARGS EXTRA_SKEYS CHANGE_ADDR SCRIPT_UTXO
+unset EXTRA_BUILD_ARGS EXTRA_SKEYS PAYOUT_ADDR SCRIPT_UTXO
 
 # TEST 2: buyer refunds (deadline in the future)
 echo ""
@@ -100,7 +102,7 @@ export DATUM_FILE="$DATUM_FUTURE"
 info "Locking 5 ADA (future deadline)..."
 LOCK2_TX="$(full_lock "escrow-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
-CHANGE_ADDR="$BUYER_ADDR"
+PAYOUT_ADDR="$BUYER_ADDR"
 EXTRA_BUILD_ARGS=(--required-signer-hash "$BUYER_PKH")
 EXTRA_SKEYS=("$BUYER_SKEY")
 SCRIPT_UTXO="${LOCK2_TX}#0"
@@ -109,7 +111,7 @@ echo ""
 info "Unlocking as buyer (r=0) with both bounds..."
 UNLOCK2_TX="$(full_unlock "escrow-t2" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 0 "$CURRENT_SLOT" "$DEADLINE_FUTURE_SLOT")"
 success "Test 2 PASSED: buyer refund accepted."
-unset EXTRA_BUILD_ARGS EXTRA_SKEYS CHANGE_ADDR SCRIPT_UTXO
+unset EXTRA_BUILD_ARGS EXTRA_SKEYS PAYOUT_ADDR SCRIPT_UTXO
 
 # TEST 3: wrong signer (deadline in the past, same as test 1)
 echo ""

@@ -12,14 +12,13 @@ import Covenant.Prim
                   VerifySchnorrSecp256k1Signature),
   )
 import HaskLedger.Contract (Condition, Contract, Expr)
-import HaskLedger.Data (asList, equalsData)
+import HaskLedger.Data (asList, equalsData, nthField)
 import HaskLedger.Internal.Builtin (liftBuiltin3)
-import HaskLedger.Internal.Data (nthField)
 import HaskLedger.Ledger (txSignatories)
 import HaskLedger.List (anyList)
 
--- PKH appears anywhere in signatories. Hash-consing fix makes
--- direct capture safe -- no env-passing needed.
+-- PKH appears anywhere in signatories. Exprs are depth-tracked recipes, so
+-- the captured pkh re-derives inside the anyList handler -- no env-passing needed.
 signedBy :: Contract Expr -> Contract Condition
 signedBy pkhM = do
   pkh <- pkhM

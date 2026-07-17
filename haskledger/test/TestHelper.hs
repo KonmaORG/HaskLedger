@@ -37,6 +37,9 @@ module TestHelper
   , mkSpendingInfoFull
   , mkScriptContextWithDatum
   , mkScriptAddress
+  , mkInlineDatum
+  , mkMintValue
+  , mkScriptInput
   )
 where
 
@@ -251,4 +254,19 @@ mkScriptContextWithDatum txi red datum = Constr 0 [txi, red, mkSpendingInfoWithD
 -- Script address (ScriptCredential, no staking).
 mkScriptAddress :: Data
 mkScriptAddress = Constr 0 [Constr 1 [B ""], Constr 1 []]
+
+-- Inline datum on a TxOut: OutputDatum wrapper (Constr 2 [d]).
+mkInlineDatum :: Data -> Data
+mkInlineDatum d = Constr 2 [d]
+
+-- Value under a single currency symbol carrying several token names.
+mkMintValue :: ByteString -> [(ByteString, Integer)] -> Data
+mkMintValue cs toks = Map [(B cs, Map [(B tn, I q) | (tn, q) <- toks])]
+
+-- TxInInfo sitting at the script address. txid/index build the outRef, ada the
+-- lovelace in the resolved output. Used to stage single- and multi-input spends.
+mkScriptInput :: ByteString -> Integer -> Integer -> Data
+mkScriptInput txid ix ada =
+  mkTxInInfo (mkTxOutRef txid ix)
+    (mkTxOut mkScriptAddress (mkAdaValue ada) mkNoOutputDatum mkNothing)
 

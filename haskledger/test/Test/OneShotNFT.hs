@@ -23,6 +23,14 @@ tests = testGroup "OneShotNFT"
       assertEvalFailure "empty" $ evalValidator oneShotNFT (mintCtx [] 1)
   , testCase "seed among many" $
       assertEvalSuccess "among" $ evalValidator oneShotNFT (mintCtx [otherInput, seedInput, otherInput2] 1)
+  -- H2: mint the one legit token PLUS an extra name under the same policy. The
+  -- empty-TN quantity is still 1, so the old contract minted the extra for free.
+  , testCase "mint smuggles extra token name" $
+      assertEvalFailure "smuggle-mint" $ evalValidator oneShotNFT smuggleMintCtx
+  -- H2: burn -1 of the empty TN while minting a positive quantity of another
+  -- name in the same tx.
+  , testCase "burn smuggles positive mint" $
+      assertEvalFailure "smuggle-burn" $ evalValidator oneShotNFT smuggleBurnCtx
   ]
   where
     seedTxId  = "\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89"
@@ -50,4 +58,16 @@ tests = testGroup "OneShotNFT"
 
     burnCtx qty =
       let txi = mkTxInfoWithFields [(4, mintMap qty)]
+      in mkScriptContextWithInfo txi burnRedeemer mintingInfo
+
+    -- One legit empty-TN mint plus a smuggled second token name under the policy.
+    smuggleMintCtx =
+      let mint = mkMintValue mintCS [("", 1), ("EXTRA", 100)]
+          txi = mkTxInfoWithFields [(0, List [seedInput]), (4, mint)]
+      in mkScriptContextWithInfo txi mintRedeemer mintingInfo
+
+    -- Burn the empty TN (-1) while minting a positive quantity of another name.
+    smuggleBurnCtx =
+      let mint = mkMintValue mintCS [("", -1), ("OTHER", 5)]
+          txi = mkTxInfoWithFields [(4, mint)]
       in mkScriptContextWithInfo txi burnRedeemer mintingInfo

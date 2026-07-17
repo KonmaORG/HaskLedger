@@ -22,7 +22,7 @@ The prototype is the complete eDSL-to-chain toolchain delivered in Milestone 3, 
 
 #### Smart contracts executed on Cardano
 
-Nine contracts were compiled through the full HaskLedger pipeline and **executed on the Cardano Preview testnet** (`testnet-magic 2`) using `cardano-node` v10.5.4 and `cardano-cli` v10.4.0.0. Each contract was driven through a real lock/unlock (or mint) lifecycle, with the validating spend confirmed in a block.
+Nine contracts were compiled through the full HaskLedger pipeline and **executed on the Cardano Preview testnet** (`testnet-magic 2`) using `cardano-node` v11.0.1 and `cardano-cli` v11.0.0.0 (Plutus V3, protocol Version 11). Each contract was driven through a real lock/unlock (or mint) lifecycle, with the validating spend confirmed in a block.
 
 | #   | Contract         | Script Type        | Capability Exercised                              | On-chain Result |
 | --- | ---------------- | ------------------ | ------------------------------------------------- | --------------- |
@@ -44,20 +44,20 @@ The prototype compiles eDSL contracts directly to compact UPLC and emits standar
 
 | Contract         | Validating TX     | Network fee (lovelace) | Notes                            |
 | ---------------- | ----------------- | ---------------------- | -------------------------------- |
-| always-succeeds  | Unlock            | 175,500                | Trivial validator                |
-| redeemer-match   | Unlock (r=42)     | 177,224                | Single equality                  |
-| hash-lock        | Unlock            | 179,417                | One hash + compare               |
-| hash-verify      | Unlock            | 185,930                | Two hashes + datum destructure   |
-| deadline         | Unlock            | 187,304                | Validity-range constraint        |
-| guarded-deadline | Unlock            | 189,200                | Two combined constraints         |
-| one-shot-nft     | Mint              | 239,156                | Minting + tx-input introspection |
-| treasury         | Unlock (deposit)  | 250,825                | Continuing output + value check  |
-| treasury         | Unlock (withdraw) | 254,613                | Signature + continuing output    |
-| oracle           | Unlock            | 259,543                | Signature + continuing output    |
+| always-succeeds  | Unlock            | 182,430                | Trivial validator                |
+| redeemer-match   | Unlock (r=42)     | 184,110                | Single equality                  |
+| hash-lock        | Unlock            | 186,258                | One hash + compare               |
+| hash-verify      | Unlock            | 191,056                | Two hashes + datum destructure   |
+| deadline         | Unlock            | 194,234                | Validity-range constraint        |
+| guarded-deadline | Unlock            | 196,130                | Two combined constraints         |
+| one-shot-nft     | Mint              | 263,849                | Minting + tx-input introspection |
+| oracle           | Unlock            | 270,193                | Signature + continuing output    |
+| treasury         | Unlock (withdraw) | 273,009                | Signature + continuing output    |
+| treasury         | Unlock (deposit)  | 274,864                | Continuing output + value check  |
 
 Observations from internal testing:
 
-- **Simple validators settle for ~0.175 ADA**; even the most complex contracts (continuing-output enforcement, minting, multi-hash) stay under ~0.26 ADA.
+- **Simple validators settle for ~0.18 ADA**; even the most complex contracts (continuing-output enforcement, minting, multi-hash) stay under ~0.28 ADA.
 - **Cost tracks logic, not abstraction.** The eDSL's high-level combinators (e.g. `after` hides 10+ levels of `Data` destructuring) add no measurable on-chain overhead - fees are governed by the underlying script work, confirming the compilation pipeline produces efficient UPLC.
 - Every validating transaction was **included in the next block** after submission, confirming the scripts evaluate within Cardano's execution-unit budget with margin to spare.
 
@@ -113,56 +113,52 @@ Cardanoscan links follow the pattern `https://preview.cardanoscan.io/transaction
 
 | Contract                 | Script Address / Policy ID                                        | Link |
 | ------------------------ | ----------------------------------------------------------------- | ---- |
-| always-succeeds          | `addr_test1wzwhlkxcgefejzf44ec9q6vr3763qe89rjrplusyl77ye0s936624` | [View](https://preview.cardanoscan.io/address/addr_test1wzwhlkxcgefejzf44ec9q6vr3763qe89rjrplusyl77ye0s936624) |
-| redeemer-match           | `addr_test1wrrjr2ufcknvalzvgpy373kghpswu6cn0lp5vnsw2k9c06grsq9pr` | [View](https://preview.cardanoscan.io/address/addr_test1wrrjr2ufcknvalzvgpy373kghpswu6cn0lp5vnsw2k9c06grsq9pr) |
-| deadline                 | `addr_test1wqjdkawua8u9hwh3nx2g46nwj6ewvhjrunt3kvmjs2cv39g2yft3l` | [View](https://preview.cardanoscan.io/address/addr_test1wqjdkawua8u9hwh3nx2g46nwj6ewvhjrunt3kvmjs2cv39g2yft3l) |
-| guarded-deadline         | `addr_test1wpqnjaq72wkg2458ecvr0jrc8xd98ys8cqefnzzg8dmlm9g97kzq5` | [View](https://preview.cardanoscan.io/address/addr_test1wpqnjaq72wkg2458ecvr0jrc8xd98ys8cqefnzzg8dmlm9g97kzq5) |
-| hash-lock                | `addr_test1wpdnkl69qh48uc8r8sp242mhvp2hk79vdlqedvgv2r2ut9cjyuvra` | [View](https://preview.cardanoscan.io/address/addr_test1wpdnkl69qh48uc8r8sp242mhvp2hk79vdlqedvgv2r2ut9cjyuvra) |
-| hash-verify              | `addr_test1wp3a460tp0rqsrm4qjsrqdvwszznxnarutvt2u4pej0cg7crswt05` | [View](https://preview.cardanoscan.io/address/addr_test1wp3a460tp0rqsrm4qjsrqdvwszznxnarutvt2u4pej0cg7crswt05) |
-| oracle                   | `addr_test1wpyddwe8lmg550mlytmns4cp662e0t9gdyzmtkqu0v47feq3r057j` | [View](https://preview.cardanoscan.io/address/addr_test1wpyddwe8lmg550mlytmns4cp662e0t9gdyzmtkqu0v47feq3r057j) |
-| treasury                 | `addr_test1wqtkxu0euk7y7jj37nrp6z2z62q6jcdpdfa4w7p0wx9n65cjgeh0a` | [View](https://preview.cardanoscan.io/address/addr_test1wqtkxu0euk7y7jj37nrp6z2z62q6jcdpdfa4w7p0wx9n65cjgeh0a) |
-| one-shot-nft (policy ID) | `06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4`        | [View](https://preview.cardanoscan.io/tokenPolicy/06fa204149247fc336d4c12fc3fc8fb199e341f25ccbd4246e5808f4) |
+| always-succeeds          | `addr_test1wqv4uprqnvm0tjkqlqvwlqgqudwjya4dctetw58v363cd4grdsqr8` | [View](https://preview.cardanoscan.io/address/addr_test1wqv4uprqnvm0tjkqlqvwlqgqudwjya4dctetw58v363cd4grdsqr8) |
+| redeemer-match           | `addr_test1wq0wjvxsyh6alc2zk0mddg5n5mu9dze2p70act3ycxm82qgha4pea` | [View](https://preview.cardanoscan.io/address/addr_test1wq0wjvxsyh6alc2zk0mddg5n5mu9dze2p70act3ycxm82qgha4pea) |
+| deadline                 | `addr_test1wz9499mfd7a2ajsl9ty7j74swxjh50z5vxyqn9e5m3szfeg2pke27` | [View](https://preview.cardanoscan.io/address/addr_test1wz9499mfd7a2ajsl9ty7j74swxjh50z5vxyqn9e5m3szfeg2pke27) |
+| guarded-deadline         | `addr_test1wpfud3vkqgs4mn0c7w0mztcrn4eunmuf2f2peagzjd67kfckrr42w` | [View](https://preview.cardanoscan.io/address/addr_test1wpfud3vkqgs4mn0c7w0mztcrn4eunmuf2f2peagzjd67kfckrr42w) |
+| hash-lock                | `addr_test1wr2dzdg4qcdp5l97dsq4p3qhqz9qpakav8zkde2jrgttcds7es5gp` | [View](https://preview.cardanoscan.io/address/addr_test1wr2dzdg4qcdp5l97dsq4p3qhqz9qpakav8zkde2jrgttcds7es5gp) |
+| hash-verify              | `addr_test1wqf0nl7cv5g2gr4zckvx5lyy5cgfffn8mr7r2yeh40gwync2s3q39` | [View](https://preview.cardanoscan.io/address/addr_test1wqf0nl7cv5g2gr4zckvx5lyy5cgfffn8mr7r2yeh40gwync2s3q39) |
+| oracle                   | `addr_test1wp3crs3wzgh6p6zqmv985p9k4az2akfwpe50c5awnsher4gepq4c4` | [View](https://preview.cardanoscan.io/address/addr_test1wp3crs3wzgh6p6zqmv985p9k4az2akfwpe50c5awnsher4gepq4c4) |
+| treasury                 | `addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0` | [View](https://preview.cardanoscan.io/address/addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0) |
+| one-shot-nft (policy ID) | `d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b`        | [View](https://preview.cardanoscan.io/tokenPolicy/d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b) |
 
 ### Confirmed transactions
 
 | Contract         | Transaction                  | TX Hash                                                            | Result             | Link |
 | ---------------- | ---------------------------- | ------------------------------------------------------------------ | ------------------ | ---- |
-| always-succeeds  | Lock                         | `fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/fd96eed3b92efaa34aa590ab9d9a0db515e6e107d1d744f2bd76faab39aa2ef9) |
-| always-succeeds  | Unlock                       | `e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/e10d2fdfccfc2bfe90f22835ef72eb97883d7504e9bf37e45bd6ac29e5d9cd9f) |
-| redeemer-match   | Lock                         | `bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/bbaadbb9095bfa7f7147588be64160bf9f7917c6eee5f73b58c6fe90d58a9dd1) |
-| redeemer-match   | Unlock (r=42)                | `eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/eddd6dced8857f7ab8119ec64248a1d35be0ea18a4544e95d7d916b8c100eb27) |
-| redeemer-match   | Lock (neg test)              | `e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/e3e42a40b7e0a42e5c30c42a3901e818377f7007a94df6733be647062a54547b) |
+| always-succeeds  | Lock                         | `1c69652c5aa86056d2df07b27bf237a5443906b621569b661438c6136b08c45c` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/1c69652c5aa86056d2df07b27bf237a5443906b621569b661438c6136b08c45c) |
+| always-succeeds  | Unlock                       | `7f4804395cbea73e3edc8cc6953d871753f60726390503c09f7022999ec522ef` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/7f4804395cbea73e3edc8cc6953d871753f60726390503c09f7022999ec522ef) |
+| redeemer-match   | Lock                         | `b0fbc5bc20f31972ae7a5822e3a13e38061618017c914111f053cad3ed1bd3c4` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/b0fbc5bc20f31972ae7a5822e3a13e38061618017c914111f053cad3ed1bd3c4) |
+| redeemer-match   | Unlock (r=42)                | `f735830cbf0b5040ac8a5e5803538bb3b39891a80d575b495ef58c62508af373` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/f735830cbf0b5040ac8a5e5803538bb3b39891a80d575b495ef58c62508af373) |
+| redeemer-match   | Lock (neg test)              | `cedc50be4dfa21ffa6715824ee6918ae13cd62bc9cd815bab36df372c974370a` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/cedc50be4dfa21ffa6715824ee6918ae13cd62bc9cd815bab36df372c974370a) |
 | redeemer-match   | Unlock (r=99)                | N/A                                                                | Correctly rejected | N/A |
-| deadline         | Lock                         | `f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/f0b8733269e59156dd501fa3eda93428d2d9a5db980e84c528a1f1af2a712df9) |
-| deadline         | Unlock (past deadline)       | `898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/898386340892a5f4b4f14635187ec41581e8e985b085ce5d8488be18614b56c5) |
-| deadline         | Lock (neg test)              | `42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/42fb09710b1a61675e9c6ac19a0bdd403a71b69044ec06013edfd0c900659f1b) |
+| deadline         | Lock                         | `5dbe8cbd6b0ed6ec4c36220f5244bcd2b6719db39fb8e1857d0ff3bdbdedaaa5` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/5dbe8cbd6b0ed6ec4c36220f5244bcd2b6719db39fb8e1857d0ff3bdbdedaaa5) |
+| deadline         | Unlock (past deadline)       | `8d1366dede4dbe3524ed7e4dd0dffed90caf690fb55e69a2b7dfa07178433aef` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/8d1366dede4dbe3524ed7e4dd0dffed90caf690fb55e69a2b7dfa07178433aef) |
+| deadline         | Lock (neg test)              | `e3ecd7f0d49c598b3531b8f9c0d806529d5517edc471a7835f0d680652c6886d` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/e3ecd7f0d49c598b3531b8f9c0d806529d5517edc471a7835f0d680652c6886d) |
 | deadline         | Unlock (before deadline)     | N/A                                                                | Correctly rejected | N/A |
-| guarded-deadline | Lock                         | `1540534f0310df9a0dd31716b1aae03888d93222d7b9678c271f6aa37d09f08d` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/1540534f0310df9a0dd31716b1aae03888d93222d7b9678c271f6aa37d09f08d) |
-| guarded-deadline | Unlock (42 + past)           | `96961340749b1b8b017cc43df68e10474d58278a238fec8f55086ee594bbac91` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/96961340749b1b8b017cc43df68e10474d58278a238fec8f55086ee594bbac91) |
-| guarded-deadline | Lock (neg test 1)            | `4f89b119980a015b25950f22239edfb3ac67fc32046da1b8b7cc41d41068dfce` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/4f89b119980a015b25950f22239edfb3ac67fc32046da1b8b7cc41d41068dfce) |
+| guarded-deadline | Lock                         | `4ad527199d4de4470008e0cee1d91dfe58d3a0afff3ba090f6ba80305eccec34` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/4ad527199d4de4470008e0cee1d91dfe58d3a0afff3ba090f6ba80305eccec34) |
+| guarded-deadline | Unlock (42 + past)           | `ed310148b9dd66d78825aa56d07e6c8a5bca58063f48922fe81aa462cb1c29e5` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/ed310148b9dd66d78825aa56d07e6c8a5bca58063f48922fe81aa462cb1c29e5) |
+| guarded-deadline | Lock (neg tests)             | `264381e68cb51d927c2f8ff860547539870d5226632d8bb55903af23e7dfbebf` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/264381e68cb51d927c2f8ff860547539870d5226632d8bb55903af23e7dfbebf) |
 | guarded-deadline | Unlock (99 + past)           | N/A                                                                | Correctly rejected | N/A |
-| guarded-deadline | Lock (neg test 2)            | `fbd17575e5cab969537085e2cef4588d49652010b3d2ccc96ae549f946b6ced0` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/fbd17575e5cab969537085e2cef4588d49652010b3d2ccc96ae549f946b6ced0) |
 | guarded-deadline | Unlock (42 + before)         | N/A                                                                | Correctly rejected | N/A |
-| hash-lock        | Lock                         | `7022c07bb5d887aaee91178f8703f414619dde638a59b7f429f05c2d7267c759` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/7022c07bb5d887aaee91178f8703f414619dde638a59b7f429f05c2d7267c759) |
-| hash-lock        | Unlock (correct preimage)    | `3fa25261b0c8bd11305f0e18158cae0637b22774970ab75c07e4ccb1b5cac3da` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/3fa25261b0c8bd11305f0e18158cae0637b22774970ab75c07e4ccb1b5cac3da) |
-| hash-lock        | Lock (neg test)              | `efa4dcd0e1c09d11f8bbd035cf710268829b59db8efa812f7aec1618f7ff5a9f` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/efa4dcd0e1c09d11f8bbd035cf710268829b59db8efa812f7aec1618f7ff5a9f) |
+| hash-lock        | Lock                         | `eca466250acbcd37a6ccdf106c89eb575043beef6f65b05793c2e344166899d5` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/eca466250acbcd37a6ccdf106c89eb575043beef6f65b05793c2e344166899d5) |
+| hash-lock        | Unlock (correct preimage)    | `a38b79f28c2239f3d996ee9884b1686023bbc34a22fa761632aac3adb6fd4761` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/a38b79f28c2239f3d996ee9884b1686023bbc34a22fa761632aac3adb6fd4761) |
+| hash-lock        | Lock (neg test)              | `e1498bb9a809823f4cfaa5c36cc983a2d0f3a18182481d9f734663f185b9f83d` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/e1498bb9a809823f4cfaa5c36cc983a2d0f3a18182481d9f734663f185b9f83d) |
 | hash-lock        | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A |
-| hash-verify      | Lock                         | `908ad5ecddd9538470d40caac2a249b08fc94e9d636d8b00e560403ac047f467` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/908ad5ecddd9538470d40caac2a249b08fc94e9d636d8b00e560403ac047f467) |
-| hash-verify      | Unlock (correct preimage)    | `a6478099a5815554723ee204281cad574609aef72a5f8a4859c6440c5b876431` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/a6478099a5815554723ee204281cad574609aef72a5f8a4859c6440c5b876431) |
-| hash-verify      | Lock (neg test)              | `67c2e9c0b307d58a0fb737f9e9fdf5bc2d787f5665d6e35f300fa7c153b9e655` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/67c2e9c0b307d58a0fb737f9e9fdf5bc2d787f5665d6e35f300fa7c153b9e655) |
+| hash-verify      | Lock                         | `938010e857dfba508f2594a44ba947dbcf1301a960fbee9b3ec38c43741a7690` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/938010e857dfba508f2594a44ba947dbcf1301a960fbee9b3ec38c43741a7690) |
+| hash-verify      | Unlock (correct preimage)    | `9acdc91a883120cd41a52415e24f9c3e497f44d9b3510cbc221b7926bf3a64d2` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/9acdc91a883120cd41a52415e24f9c3e497f44d9b3510cbc221b7926bf3a64d2) |
+| hash-verify      | Lock (neg test)              | `80ba9b2d928b43d86eaaaf64c5978bc1627b59e417547dee26a25463374894ec` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/80ba9b2d928b43d86eaaaf64c5978bc1627b59e417547dee26a25463374894ec) |
 | hash-verify      | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A |
-| oracle           | Lock                         | `79274c370c741d44eef3730b5945be13dd1fb41a937dd3220df213df14214aef` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/79274c370c741d44eef3730b5945be13dd1fb41a937dd3220df213df14214aef) |
-| oracle           | Unlock (operator)            | `aa0376d3a7ed27382cf1ede24d19fa39ae7f8bb38505825099cd0c746b645da3` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/aa0376d3a7ed27382cf1ede24d19fa39ae7f8bb38505825099cd0c746b645da3) |
-| oracle           | Lock (neg test)              | `ff6d20243d50693c80efb5cf98565bb622db22e5e47bd08a0bbab450f9fbf01b` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/ff6d20243d50693c80efb5cf98565bb622db22e5e47bd08a0bbab450f9fbf01b) |
+| oracle           | Lock                         | `3c5d6e4bc2accae8dc11049ce48b164471dbc7a1be05db1cc0f517401d5e8156` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/3c5d6e4bc2accae8dc11049ce48b164471dbc7a1be05db1cc0f517401d5e8156) |
+| oracle           | Unlock (operator)            | `73d939a4221940e302e3bdd636ffdd25c82ce453570d362bf0dae201b61b6341` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/73d939a4221940e302e3bdd636ffdd25c82ce453570d362bf0dae201b61b6341) |
 | oracle           | Unlock (non-operator)        | N/A                                                                | Correctly rejected | N/A |
-| treasury         | Lock                         | `737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037) |
-| treasury         | Unlock (admin withdraw, r=0) | `e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836) |
-| treasury         | Lock (deposit test)          | `309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274) |
-| treasury         | Unlock (deposit, r=1)        | `eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52) |
-| treasury         | Lock (neg test)              | `0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a) |
+| treasury         | Lock                         | `4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328) |
+| treasury         | Unlock (admin withdraw, r=0) | `f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91) |
+| treasury         | Lock (deposit test)          | `c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe) |
+| treasury         | Unlock (deposit, r=1)        | `56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518) |
 | treasury         | Unlock (non-admin)           | N/A                                                                | Correctly rejected | N/A |
-| one-shot-nft     | Seed split                   | `55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/55a7e7e0422d50e8ad53616ad041fb11d134072c878567ededfed3b57717ca94) |
-| one-shot-nft     | Mint (with seed UTxO)        | `3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/3db715dcb44a4ad1bb22f03e7c2a751483033c73811d9648c1bd0688c999c09e) |
+| one-shot-nft     | Mint (with seed UTxO)        | `c9c3ac929ee47af810541d6687a4512bc8cc0485a019e8f1d0712c0981dc4f94` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/c9c3ac929ee47af810541d6687a4512bc8cc0485a019e8f1d0712c0981dc4f94) |
 | one-shot-nft     | Mint again (seed consumed)   | N/A                                                                | Correctly rejected | N/A |
 
 Failed unlock/mint transactions do not produce TX hashes - they are rejected at the build stage by `cardano-cli` (script evaluation error), confirming the Plutus script correctly rejects the invalid input.
@@ -194,7 +190,7 @@ Failed unlock/mint transactions do not produce TX hashes - they are rejected at 
 | Output format               | Cardano `.plutus` text envelope (PlutusV3)                                               |
 | Script purposes             | Spending validators + minting policies                                                   |
 | Testnet                     | Cardano Preview (testnet-magic 2)                                                        |
-| Node version                | cardano-node 10.5.4                                                                      |
-| CLI version                 | cardano-cli 10.4.0.0                                                                     |
+| Node version                | cardano-node 11.0.1                                                                      |
+| CLI version                 | cardano-cli 11.0.0.0                                                                     |
 | Supported platforms         | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux                |
 | Internal testing scope      | 9 in-scope contracts, positive + negative cases each, all fully operational; 4 advanced use cases planned for future milestones |

@@ -61,7 +61,9 @@ info "TEST 1: Beneficiary claims after deadline"
 
 LOCK1_TX="$(lock_or_reuse "vesting-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" 5000000 0)"
 
-CHANGE_ADDR="$BENEFICIARY_ADDR"
+# paysAtLeast: beneficiary must receive the full locked value, so pay it
+# explicitly (funded from the wallet) instead of as script-minus-fee change.
+PAYOUT_ADDR="$BENEFICIARY_ADDR"
 EXTRA_BUILD_ARGS=(--required-signer-hash "$BENEFICIARY_PKH")
 EXTRA_SKEYS=("$BENEFICIARY_SKEY")
 
@@ -69,7 +71,7 @@ echo ""
 info "Unlocking as beneficiary with --invalid-before ${CURRENT_SLOT}..."
 UNLOCK1_TX="$(full_unlock "vesting-t1" "$WALLET_ADDR" "$SCRIPT_ADDR" "$PAYMENT_SKEY" "$PLUTUS_FILE" 0 "$CURRENT_SLOT" "")"
 success "Test 1 PASSED: beneficiary claim accepted."
-unset EXTRA_BUILD_ARGS EXTRA_SKEYS CHANGE_ADDR
+unset EXTRA_BUILD_ARGS EXTRA_SKEYS PAYOUT_ADDR
 unset SCRIPT_UTXO
 
 # TEST 2: non-beneficiary tries

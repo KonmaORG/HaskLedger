@@ -87,6 +87,39 @@ get_first_utxo() {
   ' 2>/dev/null || echo ""
 }
 
+# get_first_utxo_excluding <address> <exclude_id> [min_lovelace]
+#   Like get_first_utxo but skips one UTxO id -- used to pick a funding input
+#   that isn't the collateral (cardano-cli rejects a UTxO as both).
+get_first_utxo_excluding() {
+  local addr="$1"
+  local exclude="$2"
+  local min_lovelace="${3:-2000000}"
+
+  cardano-cli conway query utxo \
+    --address "$addr" \
+    --testnet-magic "$TESTNET_MAGIC" \
+    --out-file /dev/stdout \
+  | jq -r --argjson min "$min_lovelace" --arg excl "$exclude" '
+    to_entries
+    | map({id: .key, lovelace: .value.value.lovelace})
+    | map(select(.lovelace >= $min and .id != $excl))
+    | first
+    | "\(.id) \(.lovelace)"
+  ' 2>/dev/null || echo ""
+}
+
+# get_utxo_lovelace <address> <utxo_id>
+#   Lovelace in a specific UTxO, or empty if not found.
+get_utxo_lovelace() {
+  local addr="$1"
+  local uid="$2"
+  cardano-cli conway query utxo \
+    --address "$addr" \
+    --testnet-magic "$TESTNET_MAGIC" \
+    --out-file /dev/stdout \
+  | jq -r --arg id "$uid" '.[$id].value.lovelace // empty' 2>/dev/null || echo ""
+}
+
 # get_tip_slot
 #   Returns current slot number.
 get_tip_slot() {
@@ -272,8 +305,16 @@ submit_tx() {
     --testnet-magic "$TESTNET_MAGIC" \
     --tx-file "$signed_file" >&2
 
-  # Extract tx hash from the signed file (only this goes to stdout)
-  cardano-cli conway transaction txid --tx-file "$signed_file"
+  # Extract tx hash from the signed file (only this goes to stdout).
+  # cardano-cli 11 prints JSON {"txhash": "..."}; older versions print the
+  # bare hash. Normalize to the bare hash either way.
+  local txid_out
+  txid_out="$(cardano-cli conway transaction txid --tx-file "$signed_file")"
+  if [[ "$txid_out" == *txhash* ]]; then
+    printf '%s' "$txid_out" | jq -r '.txhash'
+  else
+    printf '%s\n' "$txid_out"
+  fi
 }
 
 # try_reuse_utxo <script_addr> [min_lovelace]
@@ -318,7 +359,8 @@ full_lock() {
   local script_addr="$3"
   local skey="$4"
   local lock_amount="$5"
-  local datum_value="$6"
+  # Optional: callers that set DATUM_FILE omit this (set -u would trip on $6).
+  local datum_value="${6:-0}"
 
   info "Finding wallet UTxO..."
   local utxo_info
@@ -385,10 +427,21 @@ full_unlock() {
     info "Script UTxO: ${script_utxo} (override)"
   else
     info "Finding script UTxO..."
-    local script_info
-    script_info="$(get_first_utxo "$script_addr")"
+    # Retry: querying right after block confirmation can race the node's
+    # UTxO-set update, and lock_or_reuse can't propagate SCRIPT_UTXO out of
+    # its command-substitution subshell, so we always scan here.
+    local script_info=""
+    local tries=0
+    while (( tries < 10 )); do
+      script_info="$(get_first_utxo "$script_addr")"
+      if [[ -n "$script_info" && "$script_info" != "null null" ]]; then
+        break
+      fi
+      tries=$(( tries + 1 ))
+      sleep 5
+    done
     if [[ -z "$script_info" || "$script_info" == "null null" ]]; then
-      fail "No UTxO at script address."
+      fail "No UTxO at script address (after retries)."
       return 1
     fi
     script_utxo="${script_info%% *}"
@@ -405,6 +458,30 @@ full_unlock() {
   fi
   local coll_utxo="${coll_info%% *}"
   info "Collateral: ${coll_utxo}"
+
+  # Optional full-value payout. Contracts with paysAtLeast (escrow, vesting)
+  # require the payee to receive at least the locked lovelace, so the payout
+  # can't come out of the script UTxO minus fee. Fund it from a separate
+  # wallet UTxO (distinct from collateral) and pay the payee the exact script
+  # value; fee + change fall on the wallet.
+  local fund_utxo=""
+  local payout_amount=""
+  if [[ -n "${PAYOUT_ADDR:-}" ]]; then
+    payout_amount="${PAYOUT_AMOUNT:-$(get_utxo_lovelace "$script_addr" "$script_utxo")}"
+    if [[ -z "$payout_amount" ]]; then
+      fail "Could not read script UTxO value for payout."
+      return 1
+    fi
+    info "Finding funding UTxO (distinct from collateral)..."
+    local fund_info
+    fund_info="$(get_first_utxo_excluding "$wallet_addr" "$coll_utxo" 2000000)"
+    if [[ -z "$fund_info" || "$fund_info" == "null null" ]]; then
+      fail "No funding UTxO distinct from collateral (wallet needs >=2 UTxOs)."
+      return 1
+    fi
+    fund_utxo="${fund_info%% *}"
+    info "Funding: ${fund_utxo}, paying ${payout_amount} to ${PAYOUT_ADDR}"
+  fi
 
   local redeemer_file
   if [[ -n "${REDEEMER_FILE:-}" ]]; then
@@ -427,6 +504,11 @@ full_unlock() {
     --tx-in-collateral "$coll_utxo"
     --change-address "${CHANGE_ADDR:-$wallet_addr}"
   )
+
+  if [[ -n "${PAYOUT_ADDR:-}" ]]; then
+    build_args+=(--tx-in "$fund_utxo")
+    build_args+=(--tx-out "${PAYOUT_ADDR}+${payout_amount}")
+  fi
 
   if [[ -n "$invalid_before" ]]; then
     build_args+=(--invalid-before "$invalid_before")
@@ -483,10 +565,21 @@ try_unlock() {
     info "Script UTxO: ${script_utxo} (override)"
   else
     info "Finding script UTxO..."
-    local script_info
-    script_info="$(get_first_utxo "$script_addr")"
+    # Retry: querying right after block confirmation can race the node's
+    # UTxO-set update, and lock_or_reuse can't propagate SCRIPT_UTXO out of
+    # its command-substitution subshell, so we always scan here.
+    local script_info=""
+    local tries=0
+    while (( tries < 10 )); do
+      script_info="$(get_first_utxo "$script_addr")"
+      if [[ -n "$script_info" && "$script_info" != "null null" ]]; then
+        break
+      fi
+      tries=$(( tries + 1 ))
+      sleep 5
+    done
     if [[ -z "$script_info" || "$script_info" == "null null" ]]; then
-      fail "No UTxO at script address."
+      fail "No UTxO at script address (after retries)."
       return 1
     fi
     script_utxo="${script_info%% *}"

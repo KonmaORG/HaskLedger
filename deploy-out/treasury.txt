@@ -1,10 +1,10 @@
-[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-treasury.sh
-[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[nix haskledger ~/code/haskledger-init/haskledger/deploy]$ ./deploy-treasury.sh
+[INFO] cardano-cli: cardano-cli 11.0.0.0 - linux-x86_64 - ghc-9.6
 [INFO] Node synced: 100.00%
 
 ------------------------------------------------------------
 [INFO] Deploying: treasury
-  Script address: addr_test1wqtkxu0euk7y7jj37nrp6z2z62q6jcdpdfa4w7p0wx9n65cjgeh0a
+  Script address: addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0
 
   Test 1: admin withdraw (r=0) (should SUCCEED)
   Test 2: deposit (r=1)        (should SUCCEED)
@@ -14,105 +14,97 @@
 [INFO] TEST 1: Admin withdraws
 [INFO] Locking 5 ADA...
 [INFO] Finding wallet UTxO...
-[INFO] Using UTxO: 79be369b658cdafbbb00a1560a9d0df3d849121c3c65c9d90f15f12dcc379d79#1 (9352928162 lovelace)
-Estimated transaction fee: 173773 Lovelace
+[INFO] Using UTxO: 8866f33bb9f577ef93fd7d28223c9e5a477e42c5d7827592c949462d33876902#1 (9191310748 lovelace)
+Estimated transaction fee: 175269 Lovelace
 [INFO] Submitting lock TX...
 Transaction successfully submitted. Transaction hash is:
-{"txhash":"737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037"}
-[OK] Lock TX: 737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037
-[INFO] Waiting for next block (current: 4065931)...
-[OK] TX included in block 4065932 (after 5s).
+{"txhash":"4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328"}
+[OK] Lock TX: 4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328
+[INFO] Waiting for next block (current: 4479220)...
+[OK] TX included in block 4479221 (after 5s).
 
 [INFO] Unlocking as admin (r=0) with continuing output for strict eval...
 [INFO] Finding script UTxO...
-[INFO] Script UTxO: 737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037#0 (5000000 lovelace)
+[INFO] Script UTxO: 4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328#0 (5000000 lovelace)
 [INFO] Finding collateral UTxO...
-[INFO] Collateral: 737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037#1
-Estimated transaction fee: 254613 Lovelace
+[INFO] Collateral: 4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328#1
+Estimated transaction fee: 273009 Lovelace
 [INFO] Submitting unlock TX...
 Transaction successfully submitted. Transaction hash is:
-{"txhash":"e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836"}
-[OK] Unlock TX: e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836
-[INFO] Waiting for next block (current: 4065933)...
-[OK] TX included in block 4065934 (after 115s).
+{"txhash":"f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91"}
+[OK] Unlock TX: f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91
+[INFO] Waiting for next block (current: 4479221)...
+[OK] TX included in block 4479222 (after 35s).
 [OK] Test 1 PASSED: admin withdraw accepted.
 
 [INFO] TEST 2: Anyone deposits
 [INFO] Locking 5 ADA...
 [INFO] Finding wallet UTxO...
-[INFO] Using UTxO: 737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037#1 (9347754389 lovelace)
-Estimated transaction fee: 173773 Lovelace
+[INFO] Using UTxO: 4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328#1 (9186135479 lovelace)
+Estimated transaction fee: 175269 Lovelace
 [INFO] Submitting lock TX...
 Transaction successfully submitted. Transaction hash is:
-{"txhash":"309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274"}
-[OK] Lock TX: 309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274
-[INFO] Waiting for next block (current: 4065934)...
-[OK] TX included in block 4065935 (after 40s).
-[INFO] Fee input: 0936bd7d6d7df5d2b71dd295ee84235bc8a1edbcd5efb23b1af0b0588cdfc324#0
+{"txhash":"c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe"}
+[OK] Lock TX: c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe
+[INFO] Waiting for next block (current: 4479222)...
+[OK] TX included in block 4479223 (after 10s).
+[INFO] Fee input: 14315da271019fd978bcd287b6868df383ad368748b8e7bf9fe04f1300429aea#0
 
 [INFO] Unlocking with deposit redeemer (r=1) + continuing output...
 [INFO] Finding script UTxO...
-[INFO] Script UTxO: 309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274#0 (5000000 lovelace)
+[INFO] Script UTxO: c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe#0 (5000000 lovelace)
 [INFO] Finding collateral UTxO...
-[INFO] Collateral: 309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274#1
-Estimated transaction fee: 250825 Lovelace
+[INFO] Collateral: c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe#1
+Estimated transaction fee: 274864 Lovelace
 [INFO] Submitting unlock TX...
 Transaction successfully submitted. Transaction hash is:
-{"txhash":"eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52"}
-[OK] Unlock TX: eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52
-[INFO] Waiting for next block (current: 4065935)...
-[OK] TX included in block 4065936 (after 35s).
+{"txhash":"56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518"}
+[OK] Unlock TX: 56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518
+[INFO] Waiting for next block (current: 4479223)...
+[OK] TX included in block 4479224 (after 5s).
 [OK] Test 2 PASSED: deposit accepted.
 
 [INFO] TEST 3: Non-admin tries to withdraw
-[INFO] Locking 5 ADA...
-[INFO] Finding wallet UTxO...
-[INFO] Using UTxO: 309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274#1 (9342580616 lovelace)
-Estimated transaction fee: 173773 Lovelace
-[INFO] Submitting lock TX...
-Transaction successfully submitted. Transaction hash is:
-{"txhash":"0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a"}
-[OK] Lock TX: 0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a
-[INFO] Waiting for next block (current: 4065936)...
-[OK] TX included in block 4065937 (after 45s).
+[INFO] Reusing existing UTxO: 56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518#0
 
 [INFO] Attempting withdraw with payment key (should fail)...
 [INFO] Finding script UTxO...
-Command failed: transaction build  Error: The following scripts have execution failures:
+Command failed: transaction build
+Error: The following scripts have execution failures:
 the script for transaction input 0 (in ascending order of the TxIds) failed with:
-Script hash: 581c176371f9e5bc4f4a51f4c61d0942d281a961a16a7b57782f718b3d53
+Script hash: 581cf2c5585a0746d0108889b83262e9e9c342692a6ae144d59ec38af926
 Script language: PlutusV3
-Protocol version: Version 10
+Protocol version: Version 11
 Script arguments:
-   ScriptInfo: SpendingScript (TxOutRef {txOutRefId = 0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a, txOutRefIdx = 0}) (Just (Datum {getDatum = B "H,\255\240g\148\135\&6<)\n\245\&1\165\n\134o\DC1O\224\234\162p\175\175$[\215"}))
+   ScriptInfo: SpendingScript (TxOutRef {txOutRefId = 56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518, txOutRefIdx = 0}) (Just (Datum {getDatum = B "H,\255\240g\148\135\&6<)\n\245\&1\165\n\134o\DC1O\224\234\162p\175\175$[\215"}))
    TxInfo:
-     TxId: 6bae7a8420456f7fbe6c2ae110d30de047df67ca3cc24ee6fec9393260fa629a
-     Inputs: [ 0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [("",5000000)]})]}} addressed to
-                                                                                       ScriptCredential: 176371f9e5bc4f4a51f4c61d0942d281a961a16a7b57782f718b3d53 (no staking credential)
+     TxId: a1f9264a91ea13fd0ae126f84223669249e1cce70422ae60afd177ea7e4228ef
+     Inputs: [ 56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [(0x,5000000)]})]}} addressed to
+                                                                                       ScriptCredential: f2c5585a0746d0108889b83262e9e9c342692a6ae144d59ec38af926 (no staking credential)
                                                                                        with datum
                                                                                        inline datum :  SCz/8GeUhzY8KQr1MaUKhm8RT+DqonCvryRb1w==
                                                                                        with referenceScript
                                                                                         ]
      Reference inputs: []
-     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [("",2000000)]})]}} addressed to
-                  ScriptCredential: 176371f9e5bc4f4a51f4c61d0942d281a961a16a7b57782f718b3d53 (no staking credential)
+     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [(0x,2000000)]})]}} addressed to
+                  ScriptCredential: f2c5585a0746d0108889b83262e9e9c342692a6ae144d59ec38af926 (no staking credential)
                   with datum
                   inline datum :  SCz/8GeUhzY8KQr1MaUKhm8RT+DqonCvryRb1w==
                   with referenceScript
 
-              , - Value {getValue = Map {unMap = [(,Map {unMap = [("",9340406843)]}),(7efdfc9bae8afc3cb7a4b8fc8ac4d8e5e45846a6f518020c7a9cf2c6,Map {unMap = [("ACCESS",10)]})]}} addressed to
+              , - Value {getValue = Map {unMap = [(,Map {unMap = [(0x,3000000)]})]}} addressed to
                   PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
                   with datum
                   no datum
                   with referenceScript
                    ]
      Fee: 0
-     Value minted: UnsafeMintValue (Map {unMap = []})
+     Value minted: UnsafeMintValue {unMintValue = Map {unMap = []}}
      TxCerts: []
      Wdrl: []
      Valid range: (-∞ , +∞)
      Signatories: [9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0]
-     Redeemers: [ ( Spending (TxOutRef {txOutRefId = 0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a, txOutRefIdx = 0})
+     Redeemers: [ ( Spending (TxOutRef {txOutRefId = 56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518, txOutRefIdx = 0})
                 , 0 ) ]
      Datums: []
      Votes: []
@@ -123,9 +115,18 @@ Script arguments:
      0
 Script evaluation error: An error has occurred:
 The machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.
+Caused by: (error)
 Script execution logs:
-Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggBwf6X2h98AZmJLIADbElrAT+n/BgNJVSocJPydl+djoA/9h5n9h5n9h6n1gcF2Nx+eW8T0pR9MYdCULSgalhoWp7V3gvcYs9U//YeoD/oUChQBoATEtA2HufWBxILP/wZ5SHNjwpCvUxpQqGbxFP4OqicK+vJFvX/9h6gP///4Cf2Hmf2Hmf2HqfWBwXY3H55bxPSlH0xh0JQtKBqWGhantXeC9xiz1T/9h6gP+hQKFAGgAehIDYe59YHEgs//BnlIc2PCkK9TGlCoZvEU/g6qJwr68kW9f/2HqA/9h5n9h5n9h5n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP/YeoD/okChQBsAAAACLLtMO1gcfv38m66K/Dy3pLj8isTY5eRYRqb1GAIMepzyxqFGQUNDRVNTCth5gNh6gP//AKCAoNh5n9h5n9h5gNh6gP/YeZ/Ye4DYeoD//59YHJr/+iciegugXvhtaGlfpxz6B4VTXmfSmFgvlMD/odh6n9h5n1ggBwf6X2h98AZmJLIADbElrAT+n/BgNJVSocJPydl+djoA//8AoFgga656hCBFb3++bCrhENMN4EffZ8o8wk7m/sk5MmD6YpqggNh6gNh6gP8A2Hqf2HmfWCAHB/pfaH3wBmYksgANsSWsBP6f8GA0lVKhwk/J2X52OgD/2HmfWBxILP/wZ5SHNjwpCvUxpQqGbxFP4OqicK+vJFvX////
-Script base64 encoded bytes: WQTSAQEAMjIyMjIyMjIyMjIyMjIyMiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjUzMAwzMAwzMAwBAzARMBIyMjMjIlMzVzRgIAAiAmJqZCRkACZmAmZuvACAHAGABMBgAEwAjAZABIzACACABIyJTM1c0YCAAIgJiamQkZAAmZgJmbrwAgBwBgATAYABMAIwGQASMwAgAgAQETdQAcYCZgKmAsYCZgKGAqYCxgJmAoYChgKmAsAuAaAUAIZmAYASZgCmAkZkZEpmauaMA4AEQERNTISMgATMwETN15qrnQAjdSkQEAMBoAIAEwFgATACMBcAEjMAIAIAEjIlMzVzRgHAAiAiJqZCRkACZmAiZuvNVc6AEbqUiBADAaACABMBYAEwAjAXABIzACACABMAczIyJTM1c0YBwAIgIiamQkZAAmZgImbrzVXOgBG6lIgQAwGgAgATAWABMAIwFwASMwAgAgASMiUzNXNGAcACICImpkJGQAJmYCJm681VzoARupSIEAMBoAIAEwFgATACMBcAEjMAIAIAEwBzATMBQwFTAWMBMwFDAVMBYyMyMiUzNXNGAeACICQmpkJGQAJmYCRm68wGTAbMBwAIAYAIAEwFwATACMBgAEjMAIAIAEjIlMzVzRgHgAiAkJqZCRkACZmAkZuvMBkwGzAcACAGACABMBcAEwAjAYABIzACACABAHMBMwFTAWMBMwFDAUMBUwFgFzASMyMiUzNXNGAcACICImpkJGQAJmYCJm681VzoARupSJADAaACABMBYAEwAjAXABIzACACABIyJTM1c0YBwAIgIiamQkZAAmZgImbrzVXOgBG6lIgQAwGgAgATAWABMAIwFwASMwAgAgATAHMyMiUzNXNGAcACICImpkJGQAJmYCJm681VzoARupSIEAMBoAIAEwFgATACMBcAEjMAIAIAEjIlMzVzRgHAAiAiJqZCRkACZmAiZuvNVc6AEbqUiBADAaACABMBYAEwAjAXABIzACACABMAcwEzAUMBUwFjIzIyJTM1c0YB4AIgJCamQkZAAmZgJGbrzAZMBswHAAgBgAgATAXABMAIwGAASMwAgAgASMiUzNXNGAeACICQmpkJGQAJmYCRm68wGTAbMBwAIAYAIAEwFwATACMBgAEjMAIAIAEAkwEzAVMBYwEzAUMBUwFjIzIyJTM1c0YB4AIgJCamQkZAAmZgJGbrzAZMBswHAAgBgAgATAXABMAIwGAASMwAgAgASMiUzNXNGAeACICQmpkJGQAJmYCRm68wGTAbMBwAIAYAIAEwFwATACMBgAEjMAIAIAE3WGAoYCxgLmAoYCxgLgMGAmYCpgLGAmYChgKGAqYCwC4BQAQAIAYkZAAsJABJMlFxJusMA0wDzAQMA0wDzAQARdWbrDALMAwwDDANMA4wCzANMA4A8zAIMAkwCjALMAwwDQDgBEoK6NXNJABG6hIAA3WGAIYApgCmAKYApgCmAKYApgCmAMYA5gCGAMYA4BBmACYARgBmAIYApgDADpAAOHdaroVdEquedUUgA0wQPYeoAApgED2HmAADqXUEbqTcwACSYBA9h5gAAjdSbugASN1JvBABSYgASk1VzpuqABpRpQOudaRuZN1wAJJMRu7N1wAJG8I3XAAw==
+Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggVvfB5z963ogG5XOzdrofaC68LdRlVilGbZtOy4CZRRgA/9h5n9h5n9h6n1gc8sVYWgdG0BCIibgyYunpw0JpKmrhRNWew4r5Jv/YeoD/oUChQBoATEtA2HufWBxILP/wZ5SHNjwpCvUxpQqGbxFP4OqicK+vJFvX/9h6gP///4Cf2Hmf2Hmf2HqfWBzyxVhaB0bQEIiJuDJi6enDQmkqauFE1Z7Divkm/9h6gP+hQKFAGgAehIDYe59YHEgs//BnlIc2PCkK9TGlCoZvEU/g6qJwr68kW9f/2HqA/9h5n9h5n9h5n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP/YeoD/oUChQBoALcbA2HmA2HqA//8AoICg2Hmf2Hmf2HmA2HqA/9h5n9h7gNh6gP//n1gcmv/6JyJ6C6Be+G1oaV+nHPoHhVNeZ9KYWC+UwP+h2Hqf2HmfWCBW98HnP3reiAblc7N2uh9oLrwt1GVWKUZtm07LgJlFGAD//wCgWCCh+SZKkeoT/QrhJvhCI2aSSeHM5wQirmCv0XfqfkIo76CA2HqA2HqA/wDYep/YeZ9YIFb3wec/et6IBuVzs3a6H2guvC3UZVYpRm2bTsuAmUUYAP/YeZ9YHEgs//BnlIc2PCkK9TGlCoZvEU/g6qJwr68kW9f///8=
+Script base64 encoded bytes: WQWXAQEAMjIyMjIyMjIyMjIyMjIyMjIyMjIyMiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjI1MzATMzATMzATAaMwFjMwIwGAFxIjIAEzNXNGbrwATV0JqrnjdUauhNXRGqueN1Rq6E1dEauiNVc8bqgIzN0qQARgcpAAABAKAJACGZgJgImZgJmYA5gOGASZmBGYBhgOmA8YD5gQGA6YDxgPmBAZmBGAgAcJEZAAmZq5ozdeauhNVc8bqgATV0JqrnjdUauhNXRGrojVXPG6oCMAEAIAoSIyMjIyMjIyMjIzMAcAIzAGMAQzMC4AEAUSIyABMzVzRm681VzoAJupSJADN2BqrngATVXPAAgBGAIZmBcACAKJEZAAmZq5ozdeaq50AE3UpFADN2BqrngATVXPAAgBAFm6swCACTMAYwAgCAATdSkQEAVXOmYAJuoSAAN1CQADsFc069Vc8YDhgEmZgRmAYYDpgPGA+YEBmYEYBoBwkRkZGRkZGRkZGRmYAhmAKAEYAxgEGASYAxgDmAQYBJmYFwAIAYkRkACZmrmjN15q6E1VzxuqABNXQmqueN1Rq6E1dEauiNVc8bqgLgAQAgCgCzdYYApgDmAQYApgDmAQBWYAhgDGAOAQbqEgAFc069XQq6JVc86oAoSIyMjIyMjIyMjIzMAcAIzAGMAQzMC4AEAUSIyABMzVzRm681VzoAJupSIQAzdgaq54AE1VzwAIARgCGZgXAAgCiRGQAJmauaM3XmqudABN1KRQAzdgaq54AE1VzwAIAQBZurMAgAkzAGMAIAgAE3UpEBAFVzpmACbqEgADdQkAA7BXNOvVXPGZgJmYDZgOGZgRgIAHCRGRkZGRkZGRkZGRmYApmAMAEYA5gEmAUYA5gEGASYBRmYF4AYAgkRkACZmrmjN15q6E1VzxuqABNXQmqueN1Rq6E1dEauiNVc8bqgLwAQAgAQDDdQZuAN1oBaQARgCmAOYBBgCmAMYA5gEAEm6wwBDAGMAcwBDAGMAcCo3UJAAK5p16uhV0Sq551QCpmAsYDpgPGA8YD5gQGZgRgGgHCRGRkZGRkZGRkZGZgCGYAoARgDGAQYBJgDGAOYBBgEmZgXAAgBiRGQAJmauaM3XmroTVXPG6oAE1dCaq543VGroTV0Rq6I1VzxuqAuABACAKALN1hgCmAOYBBgCmAOYBAFZgCGAMYA4BBuoSAAVzTr1dCrolVzzqgBQEgEgEgAgAQAxIyABYSMgAUmSZKJm6VIAQzV0BgMGA0YDZgMGAyYDRgNmAwYDJgMmA0YDYDhgZJAAOAcSbqUiQBVc6ZgAgCACOwdWYBhgIGAiYCJgJGAmYCBgJGAmAoYAKQADqDAJMA0wDzAQMA0wDzAQARMwCjALMAwwDTAOMA8BAARKCuaM3SgAmBGkAAkAE68zdKkAAYECQABgAmAKYAxgDGAMYAxgDGAMYAxgDGAOYBBgCmAOYBABLrDMAEwAjADMAQwBTAGAHSAAcO61XQq6JVc86oA0iIzMwDSIikAORGYAZmYAwAIAgAYAUAIAGAEoAJEUgAwA4AQpABpgQPYeoAApgED2HmAADqXUEbqTcwACSYBA9h5gAAjdSbugASN1JvBABSYjIwAiMwAgAgASMAIjMAIAIAEgASIiIlMzMzV0gAwmRmoAxqrnQATVXPAAibqgBhNQBDdWAMJqAGbrABhNQAjdaAMJqACbrgBik1VzpuqABpRpQOudaRuZN1wAJJMRu7N1wAJG8I3XAAlIANL1wUvW9cFL1vW9cFL1vW9b1wUvW9b1vW9cFL1vW9b1vW9cFL1vW9b1vW9b1wUvW9b1vW9b1vW9cFL1vW9b1vW9b1vW9cFL1vW9b1vW9b1vW9b1wUvW9b1vW9b1vW9b1vW9cAB
+
+CallStack (from HasCallStack):
+  fromExceptTCli, called at src/Cardano/CLI/EraBased/Transaction/Run.hs:298:7 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Transaction.Run
+  runTransactionBuildCmd, called at src/Cardano/CLI/EraBased/Transaction/Run.hs:102:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Transaction.Run
+  runTransactionCmds, called at src/Cardano/CLI/EraBased/Run.hs:61:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Run
+  runCmds, called at src/Cardano/CLI/EraBased/Run.hs:35:35 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Run
+  runAnyEraCommand, called at src/Cardano/CLI/Run.hs:56:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.Run
+  runClientCommand, called at app/cardano-cli.hs:58:14 in cardano-cli-11.0.0.0-DP01eOLXcc22wWHvPuOBL9-cardano-cli:Main
 
 [OK] TX correctly failed at build stage.
 [OK] Test 3 PASSED: non-admin withdraw correctly rejected.
@@ -133,18 +134,18 @@ Script base64 encoded bytes: WQTSAQEAMjIyMjIyMjIyMjIyMjIyMiMjIyMjIyMjIyMjIyMjIyM
 ------------------------------------------------------------
 [OK] treasury tests complete!
 
-  Script address:              addr_test1wqtkxu0euk7y7jj37nrp6z2z62q6jcdpdfa4w7p0wx9n65cjgeh0a
-                               https://preview.cardanoscan.io/address/addr_test1wqtkxu0euk7y7jj37nrp6z2z62q6jcdpdfa4w7p0wx9n65cjgeh0a
-  Lock TX (test 1):            737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037
-                               https://preview.cardanoscan.io/transaction/737f74f7f73e7ccb302641cfae5596d67f4e78266ea20648446393f198cb1037
-  Unlock TX (admin withdraw):  e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836
-                               https://preview.cardanoscan.io/transaction/e20839c078f89fcb9365457f14a02ed32fa86af2544549f861bbfaf038a04836
-  Lock TX (test 2):            309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274
-                               https://preview.cardanoscan.io/transaction/309f8f53b7033119d8fb4439f7b730db7ae72dd5a6e5e97331d99a633f303274
-  Unlock TX (deposit):         eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52
-                               https://preview.cardanoscan.io/transaction/eee50d587e38a91c5fb6b464ea65847303338127904d9d5cf2e4bbf2df722c52
-  Lock TX (test 3):            0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a
-                               https://preview.cardanoscan.io/transaction/0707fa5f687df0066624b2000db125ac04fe9ff060349552a1c24fc9d97e763a
+  Script address:              addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0
+                               https://preview.cardanoscan.io/address/addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0
+  Lock TX (test 1):            4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328
+                               https://preview.cardanoscan.io/transaction/4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328
+  Unlock TX (admin withdraw):  f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91
+                               https://preview.cardanoscan.io/transaction/f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91
+  Lock TX (test 2):            c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe
+                               https://preview.cardanoscan.io/transaction/c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe
+  Unlock TX (deposit):         56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518
+                               https://preview.cardanoscan.io/transaction/56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518
+  Lock TX (test 3):            reused
+                               https://preview.cardanoscan.io/transaction/reused
   Unlock TX (non-admin):       rejected (as expected)
 ------------------------------------------------------------
-[nix haskledger ~/code/haskledger-init]$
+[nix haskledger ~/code/haskledger-init/haskledger/deploy]$

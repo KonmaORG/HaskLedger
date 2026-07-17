@@ -10,45 +10,51 @@ module HaskLedger.Internal.Data
   )
 where
 
-import Covenant.ASG (ASGBuilder, Id, Ref (AnId), app', builtin1)
+import Control.Monad.Except (MonadError)
+import Control.Monad.HashCons (MonadHashCons)
+import Control.Monad.Reader (MonadReader)
+import Covenant.ASG (ASGEnv, ASGNode, CovenantTypeError, Id, Ref (AnId), app', builtin1)
 import Covenant.Prim (OneArgFunc (FstPair, HeadList, SndPair, TailList, UnConstrData))
 
-unconstrData :: Ref -> ASGBuilder Id
+-- These stay Ref-level but run in any monad with the ASG capabilities, so they
+-- work in raw ASGBuilder and inside Contract recipes alike.
+
+unconstrData :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Id
 unconstrData x = do
   f <- builtin1 UnConstrData
   app' f [x]
 
-unconstrTag :: Ref -> ASGBuilder Ref
+unconstrTag :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Ref
 unconstrTag x = do
   pair <- AnId <$> unconstrData x
   AnId <$> fstPair pair
 
-unconstrFields :: Ref -> ASGBuilder Ref
+unconstrFields :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Ref
 unconstrFields x = do
   pair <- AnId <$> unconstrData x
   AnId <$> sndPair pair
 
-fstPair :: Ref -> ASGBuilder Id
+fstPair :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Id
 fstPair x = do
   f <- builtin1 FstPair
   app' f [x]
 
-sndPair :: Ref -> ASGBuilder Id
+sndPair :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Id
 sndPair x = do
   f <- builtin1 SndPair
   app' f [x]
 
-headList :: Ref -> ASGBuilder Id
+headList :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Id
 headList x = do
   f <- builtin1 HeadList
   app' f [x]
 
-tailList :: Ref -> ASGBuilder Id
+tailList :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Ref -> m Id
 tailList x = do
   f <- builtin1 TailList
   app' f [x]
 
-nthField :: Int -> Ref -> ASGBuilder Ref
+nthField :: (MonadHashCons Id ASGNode m, MonadError CovenantTypeError m, MonadReader ASGEnv m) => Int -> Ref -> m Ref
 nthField 0 list = AnId <$> headList list
 nthField n list = do
   rest <- AnId <$> tailList list

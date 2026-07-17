@@ -1,4 +1,9 @@
 -- | Hash verify: preimage must match multiple known hashes from datum.
+--
+-- Pedagogical: shows one preimage checked against two different hash
+-- functions (blake2b_224 and keccak_256) from the datum. Same mempool
+-- preimage-exposure caveat as the hash-lock -- no secrecy once spent, no
+-- signature binding. Not meant to guard real funds on its own.
 module HashVerify (hashVerify) where
 
 import HaskLedger

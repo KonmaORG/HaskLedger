@@ -9,6 +9,7 @@ module HaskLedger.Validator
     after, before,
     -- Output safety
     paysTo, continuingOutput, valuePreserved,
+    totalLovelaceTo, paysAtLeast, singleOwnScriptInput, inlineDatumEquals,
     -- Own UTxO
     ownInput, ownValue,
     -- Value
@@ -36,16 +37,16 @@ where
 import HaskLedger.Auth (signedBy)
 import HaskLedger.Bool ((.&&), (.||))
 import HaskLedger.ByteString (equalsByteString, mkByteString, emptyByteString)
-import HaskLedger.Contract (validator, mintingPolicy, require, requireAll, pass, Contract, Expr, Condition)
+import HaskLedger.Contract (validator, mintingPolicy, require, requireAll, pass, Contract, Expr, Condition, expr, resolveM)
 import HaskLedger.Crypto (blake2b_256, blake2b_224, sha2_256, keccak_256, sha3_256, ripemd_160)
 import HaskLedger.Data (asInt, asByteString, asList, equalsData, mkByteStringData,
-  mkIntData, mkInt, constrData, consList)
-import HaskLedger.Internal.Data (unconstrFields, nthField, headList, unconstrTag)
+  mkIntData, mkInt, constrData, consList, unconstrFields, nthField)
+import HaskLedger.Internal.Data qualified as I
 import HaskLedger.Ledger (theRedeemer, txValidRange, txOutputs, txInputs, txMint,
-  txSignatories, txOutAddress, txOutValue, txInInfoOutRef, txInInfoResolved,
+  txSignatories, txOutAddress, txOutValue, txOutDatum, txInInfoOutRef, txInInfoResolved,
   after, theScriptInfo)
-import HaskLedger.List (anyList, allList, countList, findList)
-import HaskLedger.Case (mkNil)
+import HaskLedger.List (anyList, allList, countList, findList, foldList)
+import HaskLedger.Case (mkNil, ifThenElse)
 import HaskLedger.Num ((.==), (./=), (.<), (.<=), (.>), (.>=))
 import HaskLedger.Value (valueOf, lovelaceOf, ownCurrencySymbol, mintedAmount)
 
@@ -63,26 +64,26 @@ theDatum = do
   info <- theScriptInfo
   fs <- unconstrFields info
   maybeDatum <- nthField 1 fs
-  -- maybeDatum = Constr 0 [datum] for Just. Skip caseMaybe to avoid
-  -- creating a lambda whose arg Z ix0 collides with outer scope.
+  -- maybeDatum = Constr 0 [datum] for Just. Spending validators always have a
+  -- datum, so it's always Just -- branching is pointless, pull the field directly.
   justFs <- unconstrFields maybeDatum
   nthField 0 justFs
 
 -- Upper bound of validity range <= deadline.
 before :: Contract Expr -> Contract Expr -> Contract Condition
-before rangeM deadlineM = do
-  range <- rangeM
-  deadline <- deadlineM
-  fs <- unconstrFields range
-  ub <- nthField 1 fs
-  ubFs <- unconstrFields ub
-  ext <- nthField 0 ubFs
-  cl <- nthField 1 ubFs
-  extFs <- unconstrFields ext
-  td <- AnId <$> headList extFs
+before rangeM deadlineM = expr $ do
+  range <- resolveM rangeM
+  deadline <- resolveM deadlineM
+  fs <- I.unconstrFields range
+  ub <- I.nthField 1 fs
+  ubFs <- I.unconstrFields ub
+  ext <- I.nthField 0 ubFs
+  cl <- I.nthField 1 ubFs
+  extFs <- I.unconstrFields ext
+  td <- AnId <$> I.headList extFs
   unI <- builtin1 UnIData
   t <- AnId <$> app' unI [td]
-  tag <- unconstrTag cl
+  tag <- I.unconstrTag cl
   one <- lit (AnInteger 1)
   eq <- builtin2 EqualsInteger
   closed <- AnId <$> app' eq [tag, AnId one]
@@ -141,3 +142,46 @@ paysTo outputsM pkhM = do
     outPkh <- nthField 0 credFs
     equalsData (pure outPkh) (pure pkh)
     ) (pure outputs)
+
+-- Sum of lovelace over outputs whose payment credential is pkh. ifThenElse is
+-- strict so lovelaceOf runs on every output -- that's fine, it's total since
+-- every Value carries an ADA entry.
+totalLovelaceTo :: Contract Expr -> Contract Expr -> Contract Expr
+totalLovelaceTo outputsM pkhM =
+  asInt (foldList (mkIntData (mkInt 0)) step outputsM)
+  where
+    step out acc =
+      ifThenElse (credMatches out)
+        (mkIntData (asInt acc + lovelaceOf (txOutValue out)))
+        acc
+    -- Same credential extraction chain as paysTo: address -> credential -> PKH.
+    credMatches outM = do
+      out <- outM
+      pkh <- pkhM
+      addr <- txOutAddress (pure out)
+      addrFs <- unconstrFields addr
+      cred <- nthField 0 addrFs
+      credFs <- unconstrFields cred
+      outPkh <- nthField 0 credFs
+      equalsData (pure outPkh) (pure pkh)
+
+-- Outputs pay the credential at least amt in total.
+paysAtLeast :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Condition
+paysAtLeast outputsM pkhM amtM = totalLovelaceTo outputsM pkhM .>= amtM
+
+-- Exactly one tx input sits at the own script address. Double-satisfaction
+-- guard; spending contexts only (uses ownInput).
+singleOwnScriptInput :: Contract Condition
+singleOwnScriptInput = do
+  inp <- ownInput
+  ownAddr <- txOutAddress (txInInfoResolved (pure inp))
+  inputs <- asList txInputs
+  countList (\i -> equalsData (txOutAddress (txInInfoResolved i)) (pure ownAddr))
+    (pure inputs) .== 1
+
+-- Output carries this exact inline datum. Constructs the OutputDatum wrapper
+-- (Constr 2 [d]) and compares whole -- total, never destructures a
+-- NoOutputDatum.
+inlineDatumEquals :: Contract Expr -> Contract Expr -> Contract Condition
+inlineDatumEquals outM datM =
+  equalsData (txOutDatum outM) (constrData (mkInt 2) (consList datM mkNil))

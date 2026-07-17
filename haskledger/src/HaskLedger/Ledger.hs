@@ -36,9 +36,8 @@ module HaskLedger.Ledger
   )
 where
 
-import Covenant.ASG (Ref (AnArg, AnId), app', arg, builtin1, builtin2, builtin3, lit)
+import Covenant.ASG (Ref (AnId), app', builtin1, builtin2, builtin3, lit)
 import Covenant.Constant (AConstant (AnInteger))
-import Covenant.DeBruijn (DeBruijn (Z))
 import Covenant.Index (ix0)
 import Covenant.Prim
   ( OneArgFunc (UnIData),
@@ -47,32 +46,22 @@ import Covenant.Prim
   )
 import Data.ByteString (ByteString)
 import HaskLedger.ByteString (mkByteString)
-import HaskLedger.Contract (Condition, Contract, Expr)
-import HaskLedger.Data (consList, constrData, mkByteStringData, mkInt, mkIntData)
-import HaskLedger.Internal.Data
-  ( headList,
-    nthField,
-    unconstrFields,
-    unconstrTag,
-  )
+import HaskLedger.Contract (Condition, Contract, Depth (Depth), Expr, argExpr, expr, resolveM)
+import HaskLedger.Data (consList, constrData, mkByteStringData, mkInt, mkIntData, nthField, unconstrFields)
+import HaskLedger.Internal.Data qualified as I
 import HaskLedger.Case (mkNil)
 
 -- Field N from TxInfo.
 txInfoField :: Int -> Contract Expr
-txInfoField n = do
-  info <- theTxInfo
-  fs <- unconstrFields info
-  nthField n fs
+txInfoField n = theTxInfo >>= unconstrFields >>= nthField n
 
 -- Field N from a Constr-encoded value.
 fieldOf :: Int -> Contract Expr -> Contract Expr
-fieldOf n valM = do
-  v <- valM
-  fs <- unconstrFields v
-  nthField n fs
+fieldOf n valM = valM >>= unconstrFields >>= nthField n
 
+-- The validator's own arg, owned at the validator body depth.
 scriptContext :: Contract Expr
-scriptContext = AnArg <$> arg Z ix0
+scriptContext = argExpr (Depth 1) ix0
 
 txInfo :: Contract Expr -> Contract Expr
 txInfo = fieldOf 0
@@ -161,19 +150,19 @@ theScriptInfo = fieldOf 2 scriptContext
 
 -- Lower bound of validity range >= deadline.
 after :: Contract Expr -> Contract Expr -> Contract Condition
-after rangeM deadlineM = do
-  range <- rangeM
-  deadline <- deadlineM
-  fs <- unconstrFields range
-  lb <- nthField 0 fs
-  lbFs <- unconstrFields lb
-  ext <- nthField 0 lbFs
-  cl <- nthField 1 lbFs
-  extFs <- unconstrFields ext
-  td <- AnId <$> headList extFs
+after rangeM deadlineM = expr $ do
+  range <- resolveM rangeM
+  deadline <- resolveM deadlineM
+  fs <- I.unconstrFields range
+  lb <- I.nthField 0 fs
+  lbFs <- I.unconstrFields lb
+  ext <- I.nthField 0 lbFs
+  cl <- I.nthField 1 lbFs
+  extFs <- I.unconstrFields ext
+  td <- AnId <$> I.headList extFs
   unI <- builtin1 UnIData
   t <- AnId <$> app' unI [td]
-  tag <- unconstrTag cl
+  tag <- I.unconstrTag cl
   one <- lit (AnInteger 1)
   eq <- builtin2 EqualsInteger
   closed <- AnId <$> app' eq [tag, AnId one]

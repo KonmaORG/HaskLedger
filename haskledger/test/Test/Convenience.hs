@@ -44,8 +44,8 @@ tests = testGroup "Convenience combinators"
             (mkScriptContext defaultTxInfo
               (Map [(B "my-policy", Map [(B "my-token", I 42)])]))
 
-      , testCase "wrong CS crashes valueOf (asMap on default I 0)" $
-          assertEvalFailure "cs-miss" $ evalValidator
+      , testCase "wrong CS yields 0" $
+          assertEvalSuccess "cs-miss" $ evalValidator
             (validator "t" $ require "v" $
               valueOf theRedeemer
                 (mkCurrencySymbol "wrong-cs")

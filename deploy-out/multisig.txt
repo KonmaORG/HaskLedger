@@ -1,10 +1,10 @@
-[nix haskledger ~/code/haskledger-init]$ bash haskledger/deploy/deploy-multisig.sh
-[INFO] cardano-cli: cardano-cli 10.4.0.0 - linux-x86_64 - ghc-8.10
+[nix haskledger ~/code/haskledger-init/haskledger/deploy]$ ./deploy-multisig.sh
+[INFO] cardano-cli: cardano-cli 11.0.0.0 - linux-x86_64 - ghc-9.6
 [INFO] Node synced: 100.00%
 
 ------------------------------------------------------------
 [INFO] Deploying: multisig (2-of-3)
-  Script address: addr_test1wzkt4jh76mzus3jdctq7knc9wge9hg9vncqfks2n2dhat3cm0ra6v
+  Script address: addr_test1wzl8cm0qfqshttgvph7ffp3jr6v28p6r3mmyupsr0skz2qqnv2vyw
 
   Test 1: 2 of 3 signers (should SUCCEED)
   Test 2: 1 of 3 signers (should FAIL)
@@ -13,16 +13,113 @@
 [INFO] TEST 1: Two authorized signers
 [INFO] Locking 5 ADA...
 [INFO] Finding wallet UTxO...
-[INFO] Using UTxO: d42e27bf9e3de361fb28f3d3c8a12fe1f9879d9f0e356af3358805552fe5e4bf#1 (9295420057 lovelace)
+[INFO] Using UTxO: 03a23887c2215ec8ea6633d755936948911482b5bb5aea5393e6d604b75cfaff#1 (9212614785 lovelace)
 Estimated transaction fee: 178085 Lovelace
 [INFO] Submitting lock TX...
 Transaction successfully submitted. Transaction hash is:
-{"txhash":"208e8d548d63ba176556c048264d97ad9525b3ed8da5324cc930250c59187528"}
-[OK] Lock TX: 208e8d548d63ba176556c048264d97ad9525b3ed8da5324cc930250c59187528
-[INFO] Waiting for next block (current: 4068081)...
-[OK] TX included in block 4068082 (after 10s).
+{"txhash":"e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154"}
+[OK] Lock TX: e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154
+[INFO] Waiting for next block (current: 4479195)...
+[OK] TX included in block 4479196 (after 10s).
 
 [INFO] Unlocking with signer1 + signer2...
 [INFO] Finding script UTxO...
-[FAIL] No UTxO at script address.
-[nix haskledger ~/code/haskledger-init]$
+[INFO] Script UTxO: e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154#0 (5000000 lovelace)
+[INFO] Finding collateral UTxO...
+[INFO] Collateral: e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154#1
+Estimated transaction fee: 224857 Lovelace
+[INFO] Submitting unlock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"813cb2441e222bbe80195cd1d8226827204ce161cf85cb58b88527ffe8744ec1"}
+[OK] Unlock TX: 813cb2441e222bbe80195cd1d8226827204ce161cf85cb58b88527ffe8744ec1
+[INFO] Waiting for next block (current: 4479196)...
+[OK] TX included in block 4479197 (after 15s).
+[OK] Test 1 PASSED: 2-of-3 accepted.
+
+[INFO] TEST 2: Only one signer
+[INFO] Locking 5 ADA...
+[INFO] Finding wallet UTxO...
+[INFO] Using UTxO: e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154#1 (9207436700 lovelace)
+Estimated transaction fee: 178085 Lovelace
+[INFO] Submitting lock TX...
+Transaction successfully submitted. Transaction hash is:
+{"txhash":"8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3"}
+[OK] Lock TX: 8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3
+[INFO] Waiting for next block (current: 4479197)...
+[OK] TX included in block 4479198 (after 15s).
+
+[INFO] Attempting unlock with only signer1 (should fail)...
+[INFO] Finding script UTxO...
+Command failed: transaction build
+Error: The following scripts have execution failures:
+the script for transaction input 0 (in ascending order of the TxIds) failed with:
+Script hash: 581cbe7c6de0482175ad0c0dfc9486321e98a387438ef64e06037c2c2500
+Script language: PlutusV3
+Protocol version: Version 11
+Script arguments:
+   ScriptInfo: SpendingScript (TxOutRef {txOutRefId = 8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3, txOutRefIdx = 0}) (Just (Datum {getDatum = Constr 0 [I 2,B "\177\149\205\SI\145Y\201\168\159\160\t,L\169\216$Lp/\SO]\177\144\US-\178\232L",B "\131[\224 \EOT7\185\128\133\138\&4\174\247\SOHA\143%/2:\161\229&\174\213\222\188\133",B "\153a2\192\"oI\RS\216\173o\DLEg\NUL\159\158p\151,\179Mj.\vqP\140\220"]}))
+   TxInfo:
+     TxId: eb4354b01cbe8b0fbeecdd89aff69d8855c12618bd67142593fc4f0d669ded01
+     Inputs: [ 8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3!0 -> - Value {getValue = Map {unMap = [(,Map {unMap = [(0x,5000000)]})]}} addressed to
+                                                                                       ScriptCredential: be7c6de0482175ad0c0dfc9486321e98a387438ef64e06037c2c2500 (no staking credential)
+                                                                                       with datum
+                                                                                       inline datum :  <2,
+                                                                                       sZXND5FZyaifoAksTKnYJExwLw5dsZAfLbLoTA==,
+                                                                                       g1vgIAQ3uYCFijSu9wFBjyUvMjqh5Sau1d68hQ==,
+                                                                                       mWEywCJvSR7YrW8QZwCfnnCXLLNNai4LcVCM3A==>
+                                                                                       with referenceScript
+                                                                                        ]
+     Reference inputs: []
+     Outputs: [ - Value {getValue = Map {unMap = [(,Map {unMap = [(0x,5000000)]})]}} addressed to
+                  PubKeyCredential: 9afffa27227a0ba05ef86d68695fa71cfa0785535e67d298582f94c0 (no staking credential)
+                  with datum
+                  no datum
+                  with referenceScript
+                   ]
+     Fee: 0
+     Value minted: UnsafeMintValue {unMintValue = Map {unMap = []}}
+     TxCerts: []
+     Wdrl: []
+     Valid range: (-∞ , +∞)
+     Signatories: [b195cd0f9159c9a89fa0092c4ca9d8244c702f0e5db1901f2db2e84c]
+     Redeemers: [ ( Spending (TxOutRef {txOutRefId = 8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3, txOutRefIdx = 0})
+                , 0 ) ]
+     Datums: []
+     Votes: []
+     Proposal Procedures: []
+     Current Treasury Amount:
+     Treasury Donation:
+   Redeemer:
+     0
+Script evaluation error: An error has occurred:
+The machine terminated because of an error, either from a built-in function or from an explicit use of 'error'.
+Caused by: (error)
+Script execution logs:
+Script base64 encoded arguments: 2Hmf2Hmfn9h5n9h5n1ggjuwd++MMJIibvKY702+vMSy7o31vKZM+Ur/v0cHQ3PMA/9h5n9h5n9h6n1gcvnxt4Eghda0MDfyUhjIemKOHQ472TgYDfCwlAP/YeoD/oUChQBoATEtA2Huf2HmfAlgcsZXND5FZyaifoAksTKnYJExwLw5dsZAfLbLoTFgcg1vgIAQ3uYCFijSu9wFBjyUvMjqh5Sau1d68hVgcmWEywCJvSR7YrW8QZwCfnnCXLLNNai4LcVCM3P//2HqA////gJ/YeZ/YeZ/YeZ9YHJr/+iciegugXvhtaGlfpxz6B4VTXmfSmFgvlMD/2HqA/6FAoUAaAExLQNh5gNh6gP//AKCAoNh5n9h5n9h5gNh6gP/YeZ/Ye4DYeoD//59YHLGVzQ+RWcmon6AJLEyp2CRMcC8OXbGQHy2y6Ez/odh6n9h5n1ggjuwd++MMJIibvKY702+vMSy7o31vKZM+Ur/v0cHQ3PMA//8AoFgg60NUsBy+iw++7N2Jr/adiFXBJhi9ZxQlk/xPDWad7QGggNh6gNh6gP8A2Hqf2HmfWCCO7B374wwkiJu8pjvTb68xLLujfW8pkz5Sv+/RwdDc8wD/2Hmf2HmfAlgcsZXND5FZyaifoAksTKnYJExwLw5dsZAfLbLoTFgcg1vgIAQ3uYCFijSu9wFBjyUvMjqh5Sau1d68hVgcmWEywCJvSR7YrW8QZwCfnnCXLLNNai4LcVCM3P////8=
+Script base64 encoded bytes: WQIDAQEAMjIyMjIyMjIyMjIyMjIyMjIyMjIyIyMjIyMjIyMjIyMjIyMjIyMjI1MzAHMwBADTAOMzAVAMAKEiMgATM1c0ZmrmjN14AJq6E1dEaq543VGroTVXPG6o1dCauiNVc8bqjV0Jq6I1dEaq543VAKpRMzVzRm68AE1dCauiNXRGqueN1Rq6E1VzxuqNXQmrojVXPG6o1dCauiNXRGqueN1QCqUTN14AJq6E1dEauiNXRGqueN1Rq6E1VzxuqNXQmrojVXPG6o1dCauiNXRGqueN1QCpuoM3AG60AJIAIAIAIAEAMSMgAWEjIAFJkmcS4BIAJXNJRdeYAKQADqDdYYAZgCGAIYAhgCGAIYAhgCGAIYApgDGAGYApgDADmACYARgCGAKYARgCGAKYARgBmAIYApgBGAGYAZgCGAKAM61XQq6JVc86oA0iIzMwDSIikAORGYAZmYAwAIAgAYAUAIAGAEoAJEUgAwA4AQpABpgBA9h6gACmAQPYeYAAOpdQRupNzAAJJgED2HmAACN1Ju6ABI3Um8EAFJiMjACIzACACABIwAiMwAgAgASABIiIiUzMzNXSADCZGagDGqudABNVc8ACJuqAGE1AEN1YAwmoAZusAGE1ACN1oAwmoAJuuAGKTVXOm6oAGlGlA651pG5k3XAAkkxG7s3XAAkbwjdcACE=
+
+CallStack (from HasCallStack):
+  fromExceptTCli, called at src/Cardano/CLI/EraBased/Transaction/Run.hs:298:7 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Transaction.Run
+  runTransactionBuildCmd, called at src/Cardano/CLI/EraBased/Transaction/Run.hs:102:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Transaction.Run
+  runTransactionCmds, called at src/Cardano/CLI/EraBased/Run.hs:61:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Run
+  runCmds, called at src/Cardano/CLI/EraBased/Run.hs:35:35 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.EraBased.Run
+  runAnyEraCommand, called at src/Cardano/CLI/Run.hs:56:5 in cardano-cli-11.0.0.0-DbgJAJWdTSWmMNUHLqpe:Cardano.CLI.Run
+  runClientCommand, called at app/cardano-cli.hs:58:14 in cardano-cli-11.0.0.0-DP01eOLXcc22wWHvPuOBL9-cardano-cli:Main
+
+[OK] TX correctly failed at build stage.
+[OK] Test 2 PASSED: single signer correctly rejected.
+
+------------------------------------------------------------
+[OK] multisig tests complete!
+
+  Script address:           addr_test1wzl8cm0qfqshttgvph7ffp3jr6v28p6r3mmyupsr0skz2qqnv2vyw
+                            https://preview.cardanoscan.io/address/addr_test1wzl8cm0qfqshttgvph7ffp3jr6v28p6r3mmyupsr0skz2qqnv2vyw
+  Lock TX (test 1):         e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154
+                            https://preview.cardanoscan.io/transaction/e7cb099d0d1fe052631c6c789c1ec86843abf548fc9cfd180da39d3296aff154
+  Unlock TX (2-of-3):       813cb2441e222bbe80195cd1d8226827204ce161cf85cb58b88527ffe8744ec1
+                            https://preview.cardanoscan.io/transaction/813cb2441e222bbe80195cd1d8226827204ce161cf85cb58b88527ffe8744ec1
+  Lock TX (test 2):         8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3
+                            https://preview.cardanoscan.io/transaction/8eec1dfbe30c24889bbca63bd36faf312cbba37d6f29933e52bfefd1c1d0dcf3
+  Unlock TX (1-of-3):       rejected (as expected)
+------------------------------------------------------------
+[nix haskledger ~/code/haskledger-init/haskledger/deploy]$

@@ -21,7 +21,7 @@ import Covenant.Prim
     TwoArgFunc (AppendByteString, ConsByteString, EqualsByteString,
                 IndexByteString, LessThanByteString, LessThanEqualsByteString),
   )
-import HaskLedger.Contract (Condition, Contract, Expr)
+import HaskLedger.Contract (Condition, Contract, Expr, expr)
 import HaskLedger.Internal.Builtin (liftBuiltin1, liftBuiltin2)
 
 equalsByteString :: Contract Expr -> Contract Expr -> Contract Condition
@@ -46,10 +46,10 @@ consByteString :: Contract Expr -> Contract Expr -> Contract Expr
 consByteString = liftBuiltin2 ConsByteString
 
 mkByteString :: ByteString -> Contract Expr
-mkByteString bs = AnId <$> lit (AByteString bs)
+mkByteString bs = expr (AnId <$> lit (AByteString bs))
 
 mkString :: Text -> Contract Expr
-mkString s = AnId <$> lit (AString s)
+mkString s = expr (AnId <$> lit (AString s))
 
 emptyByteString :: Contract Expr
 emptyByteString = mkByteString ""

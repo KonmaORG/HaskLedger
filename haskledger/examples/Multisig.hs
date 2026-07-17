@@ -1,4 +1,10 @@
 -- | Multisig: threshold-of-3 authorized signers must sign.
+--
+-- Guarantees: at least `threshold` of the three datum keys appear in the
+-- transaction's required signers.
+-- Does NOT guarantee: protection against a datum that lists the same key
+-- twice -- the ledger deduplicates required signers, so a repeated key still
+-- contributes only one signature toward the threshold. Set distinct keys.
 module Multisig (multisig) where
 
 import HaskLedger

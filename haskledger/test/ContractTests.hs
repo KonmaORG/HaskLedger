@@ -31,6 +31,7 @@ import Test.OneShotNFT qualified
 import Test.Oracle qualified
 import Test.TokenGate qualified
 import Test.Treasury qualified
+import Test.Validator qualified
 import Test.Vesting qualified
 
 main :: IO ()
@@ -89,6 +90,7 @@ main = defaultMain $ testGroup "HaskLedger Contracts"
   , Test.Treasury.tests
   , Test.Oracle.tests
   , Test.HashVerify.tests
+  , Test.Validator.tests
   ]
   where
     dl = 1769904000000

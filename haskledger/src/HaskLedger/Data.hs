@@ -16,6 +16,9 @@ module HaskLedger.Data
     isNullList,
     chooseList,
     chooseData,
+    unconstrFields,
+    unconstrTag,
+    nthField,
   )
 where
 
@@ -27,8 +30,9 @@ import Covenant.Prim
     ThreeArgFunc (ChooseList),
     TwoArgFunc (ConstrData, EqualsData, MkCons, MkPairData),
   )
-import HaskLedger.Contract (Condition, Contract, Expr)
+import HaskLedger.Contract (Condition, Contract, Expr, expr, resolve, resolveM)
 import HaskLedger.Internal.Builtin (liftBuiltin1, liftBuiltin2, liftBuiltin3)
+import HaskLedger.Internal.Data qualified as I
 
 asInt :: Contract Expr -> Contract Expr
 asInt = liftBuiltin1 UnIData
@@ -43,7 +47,7 @@ asMap :: Contract Expr -> Contract Expr
 asMap = liftBuiltin1 UnMapData
 
 mkInt :: Integer -> Contract Expr
-mkInt n = AnId <$> lit (AnInteger n)
+mkInt n = expr (AnId <$> lit (AnInteger n))
 
 mkIntData :: Contract Expr -> Contract Expr
 mkIntData = liftBuiltin1 IData
@@ -82,7 +86,23 @@ chooseList = liftBuiltin3 ChooseList
 -- All 6 branches strict. Order: data, constr, map, list, int, bs.
 chooseData :: Contract Expr -> Contract Expr -> Contract Expr -> Contract Expr
            -> Contract Expr -> Contract Expr -> Contract Expr
-chooseData datM constrM mp listM intM bsM = do
-  d <- datM; c <- constrM; m <- mp; l <- listM; i <- intM; b <- bsM
+chooseData datM constrM mp listM intM bsM = expr $ do
+  d <- resolveM datM
+  c <- resolveM constrM
+  m <- resolveM mp
+  l <- resolveM listM
+  i <- resolveM intM
+  b <- resolveM bsM
   op <- builtin6 ChooseData
   AnId <$> app' op [d, c, m, l, i, b]
+
+-- Data destructuring at the Expr level. The recipe re-derives under handlers,
+-- so a field pulled at depth 1 and used at depth 2 shifts its args correctly.
+unconstrFields :: Expr -> Contract Expr
+unconstrFields e = expr (resolve e >>= I.unconstrFields)
+
+unconstrTag :: Expr -> Contract Expr
+unconstrTag e = expr (resolve e >>= I.unconstrTag)
+
+nthField :: Int -> Expr -> Contract Expr
+nthField n e = expr (resolve e >>= I.nthField n)

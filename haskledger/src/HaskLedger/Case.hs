@@ -15,10 +15,8 @@ module HaskLedger.Case
   )
 where
 
-import Covenant.ASG (Ref (AnArg, AnId), app', arg, builtin1, builtin2, builtin3, builtin6, ctor, force, lam, lit, thunk)
+import Covenant.ASG (Ref (AnId), app', builtin1, builtin2, builtin3, builtin6, ctor, force, lit, thunk)
 import Covenant.Constant (AConstant (AnInteger))
-import Covenant.DeBruijn (DeBruijn (Z))
-import Covenant.Index (ix0)
 import Covenant.Prim
   ( OneArgFunc (FstPair, HeadList, ListData, MapData, NullList, SndPair, TailList, UnBData, UnConstrData, UnIData, UnListData, UnMapData),
     SixArgFunc (ChooseData),
@@ -28,7 +26,7 @@ import Covenant.Prim
 import Covenant.Type (CompT (Comp0), CompTBody (ReturnT, (:--:>)), ValT, dataTypeT)
 import Data.Vector qualified as Vector
 import Data.Wedge (Wedge (There))
-import HaskLedger.Contract (Condition, Contract, Expr)
+import HaskLedger.Contract (Condition, Contract, Expr, expr, resolveM, withLam)
 import HaskLedger.Data (constrData, consList, mkInt, mkPairData)
 
 dataTy :: ValT a
@@ -42,7 +40,7 @@ mkJust xM = constrData (mkInt 0) (consList xM mkNil)
 
 -- Empty list via c2uplc special-cased ctor.
 mkNil :: Contract Expr
-mkNil = AnId <$> ctor "List" "Nil" mempty (Vector.singleton (There (dataTypeT "Data")))
+mkNil = expr (AnId <$> ctor "List" "Nil" mempty (Vector.singleton (There (dataTypeT "Data"))))
 
 mkCons :: Contract Expr -> Contract Expr -> Contract Expr
 mkCons = consList
@@ -56,10 +54,10 @@ ifThenElse
   -> Contract Expr
   -> Contract Expr
   -> Contract Expr
-ifThenElse condM trueBranch falseBranch = do
-  cond <- condM
-  t <- trueBranch
-  f <- falseBranch
+ifThenElse condM trueBranch falseBranch = expr $ do
+  cond <- resolveM condM
+  t <- resolveM trueBranch
+  f <- resolveM falseBranch
   ite <- builtin3 IfThenElse
   AnId <$> app' ite [cond, t, f]
 
@@ -69,8 +67,8 @@ caseMaybe
   -> (Contract Expr -> Contract Expr)
   -> Contract Expr
   -> Contract Expr
-caseMaybe scrutM justHandler nothingVal = do
-  scrut <- scrutM
+caseMaybe scrutM justHandler nothingVal = expr $ do
+  scrut <- resolveM scrutM
   ucF <- builtin1 UnConstrData
   fpF <- builtin1 FstPair
   spF <- builtin1 SndPair
@@ -82,13 +80,13 @@ caseMaybe scrutM justHandler nothingVal = do
   zero <- AnId <$> lit (AnInteger 0)
   isJust <- AnId <$> app' eqF [tag, zero]
   let branchT = Comp0 $ dataTy :--:> ReturnT dataTy
-  justThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    p <- AnId <$> app' ucF [dataArg]
-    fields <- AnId <$> app' spF [p]
-    val <- AnId <$> app' hlF [fields]
-    justHandler (pure val))
-  nothingThunk <- thunk =<< lam branchT nothingVal
+  justThunk <- thunk =<< withLam branchT (\dataArgM ->
+    justHandler (expr $ do
+      dataArg <- resolveM dataArgM
+      p <- AnId <$> app' ucF [dataArg]
+      fields <- AnId <$> app' spF [p]
+      AnId <$> app' hlF [fields]))
+  nothingThunk <- thunk =<< withLam branchT (\_ -> nothingVal)
   selected <- app' ite [isJust, AnId justThunk, AnId nothingThunk]
   forced <- force (AnId selected)
   AnId <$> app' forced [scrut]
@@ -110,8 +108,8 @@ caseData
   -> (Contract Expr -> Contract Expr)
   -> (Contract Expr -> Contract Expr)
   -> Contract Expr
-caseData scrutM constrHandler mapHandler listHandler iHandler bHandler = do
-  scrut <- scrutM
+caseData scrutM constrHandler mapHandler listHandler iHandler bHandler = expr $ do
+  scrut <- resolveM scrutM
   ucF <- builtin1 UnConstrData
   fpF <- builtin1 FstPair
   spF <- builtin1 SndPair
@@ -121,44 +119,52 @@ caseData scrutM constrHandler mapHandler listHandler iHandler bHandler = do
   ubF <- builtin1 UnBData
   cd  <- builtin6 ChooseData
   let branchT = Comp0 $ dataTy :--:> ReturnT dataTy
-  constrThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    p <- AnId <$> app' ucF [dataArg]
-    tag <- AnId <$> app' fpF [p]
-    fields <- AnId <$> app' spF [p]
-    constrHandler (pure tag) (pure fields))
-  mapThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    pairs <- AnId <$> app' umF [dataArg]
-    mapHandler (pure pairs))
-  listThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    items <- AnId <$> app' ulF [dataArg]
-    listHandler (pure items))
-  iThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    n <- AnId <$> app' uiF [dataArg]
-    iHandler (pure n))
-  bThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    bs <- AnId <$> app' ubF [dataArg]
-    bHandler (pure bs))
+  constrThunk <- thunk =<< withLam branchT (\dataArgM ->
+    constrHandler
+      (expr $ do
+        dataArg <- resolveM dataArgM
+        p <- AnId <$> app' ucF [dataArg]
+        AnId <$> app' fpF [p])
+      (expr $ do
+        dataArg <- resolveM dataArgM
+        p <- AnId <$> app' ucF [dataArg]
+        AnId <$> app' spF [p]))
+  mapThunk <- thunk =<< withLam branchT (\dataArgM ->
+    mapHandler (expr $ do
+      dataArg <- resolveM dataArgM
+      AnId <$> app' umF [dataArg]))
+  listThunk <- thunk =<< withLam branchT (\dataArgM ->
+    listHandler (expr $ do
+      dataArg <- resolveM dataArgM
+      AnId <$> app' ulF [dataArg]))
+  iThunk <- thunk =<< withLam branchT (\dataArgM ->
+    iHandler (expr $ do
+      dataArg <- resolveM dataArgM
+      AnId <$> app' uiF [dataArg]))
+  bThunk <- thunk =<< withLam branchT (\dataArgM ->
+    bHandler (expr $ do
+      dataArg <- resolveM dataArgM
+      AnId <$> app' ubF [dataArg]))
   selected <- app' cd [scrut, AnId constrThunk, AnId mapThunk, AnId listThunk, AnId iThunk, AnId bThunk]
   forced <- force (AnId selected)
   AnId <$> app' forced [scrut]
 
--- Pair dispatch. Single constructor, no branching.
+-- Pair dispatch. Single constructor, no branching. Each projection is its own
+-- recipe so a captured field re-derives under a deeper lam.
 unpair
   :: Contract Expr
   -> (Contract Expr -> Contract Expr -> Contract Expr)
   -> Contract Expr
-unpair scrutM handler = do
-  scrut <- scrutM
-  fpF <- builtin1 FstPair
-  spF <- builtin1 SndPair
-  a <- AnId <$> app' fpF [scrut]
-  b <- AnId <$> app' spF [scrut]
-  handler (pure a) (pure b)
+unpair scrutM handler =
+  handler
+    (expr $ do
+      scrut <- resolveM scrutM
+      fpF <- builtin1 FstPair
+      AnId <$> app' fpF [scrut])
+    (expr $ do
+      scrut <- resolveM scrutM
+      spF <- builtin1 SndPair
+      AnId <$> app' spF [scrut])
 
 -- Pair list dispatch. Delegates to caseBuiltinPairList.
 casePairList
@@ -192,8 +198,8 @@ caseBuiltinListWith
   -> Contract Expr
   -> (Contract Expr -> Contract Expr -> Contract Expr)
   -> Contract Expr
-caseBuiltinListWith wrapOp unwrapOp listM nilVal consHandler = do
-  list <- listM
+caseBuiltinListWith wrapOp unwrapOp listM nilVal consHandler = expr $ do
+  list <- resolveM listM
   nullF   <- builtin1 NullList
   wrapF   <- builtin1 wrapOp
   unwrapF <- builtin1 unwrapOp
@@ -203,13 +209,17 @@ caseBuiltinListWith wrapOp unwrapOp listM nilVal consHandler = do
   isEmpty <- AnId <$> app' nullF [list]
   wrapped <- AnId <$> app' wrapF [list]
   let branchT = Comp0 $ dataTy :--:> ReturnT dataTy
-  nilThunk  <- thunk =<< lam branchT nilVal
-  consThunk <- thunk =<< lam branchT (do
-    dataArg <- AnArg <$> arg Z ix0
-    listArg <- AnId <$> app' unwrapF [dataArg]
-    h <- AnId <$> app' hlF [listArg]
-    t <- AnId <$> app' tlF [listArg]
-    consHandler (pure h) (pure t))
+  nilThunk  <- thunk =<< withLam branchT (\_ -> nilVal)
+  consThunk <- thunk =<< withLam branchT (\dataArgM ->
+    consHandler
+      (expr $ do
+        dataArg <- resolveM dataArgM
+        listArg <- AnId <$> app' unwrapF [dataArg]
+        AnId <$> app' hlF [listArg])
+      (expr $ do
+        dataArg <- resolveM dataArgM
+        listArg <- AnId <$> app' unwrapF [dataArg]
+        AnId <$> app' tlF [listArg]))
   selected <- app' ite [isEmpty, AnId nilThunk, AnId consThunk]
   forced <- force (AnId selected)
   AnId <$> app' forced [wrapped]

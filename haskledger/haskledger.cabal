@@ -90,6 +90,7 @@ library
     covenant ==1.3.0,
     directory,
     filepath,
+    mtl >=2.3.1 && <3,
     optics-core,
     plutus-core ==1.51.0.0,
     plutus-ledger-api,
@@ -189,7 +190,6 @@ test-suite haskledger-contracts
   hs-source-dirs: test, examples
   other-modules:
     TestHelper
-    WalletConfig
     AlwaysSucceeds
     Deadline
     Escrow
@@ -212,47 +212,16 @@ test-suite haskledger-contracts
     Test.Treasury
     Test.Oracle
     Test.HashVerify
+    Test.Validator
 
--- Cata scope bug dumps — run separately, single-threaded
-test-suite dump-oracle-asg
+-- S Z spike: shifted arg refs through the full pipeline (capture bug fix prerequisite)
+test-suite spike-sz
   import: test-lang
   type: exitcode-stdio-1.0
-  ghc-options: -with-rtsopts=-N1
-  main-is: DumpOracleASG.hs
-  hs-source-dirs: test, examples
+  main-is: SpikeSZ.hs
+  hs-source-dirs: test
   other-modules:
-    Oracle
-    WalletConfig
-
-test-suite dump-oracle-uplc
-  import: test-lang
-  type: exitcode-stdio-1.0
-  ghc-options: -with-rtsopts=-N1
-  main-is: DumpOracleUPLC.hs
-  hs-source-dirs: test, examples
-  other-modules:
-    Oracle
-    WalletConfig
-
-test-suite dump-multisig-asg
-  import: test-lang
-  type: exitcode-stdio-1.0
-  ghc-options: -with-rtsopts=-N1
-  main-is: DumpMultisigASG.hs
-  hs-source-dirs: test, examples
-  other-modules:
-    Multisig
-    WalletConfig
-
-test-suite dump-multisig-uplc
-  import: test-lang
-  type: exitcode-stdio-1.0
-  ghc-options: -with-rtsopts=-N1
-  main-is: DumpMultisigUPLC.hs
-  hs-source-dirs: test, examples
-  other-modules:
-    Multisig
-    WalletConfig
+    TestHelper
 
 -- Example contracts executable
 executable haskledger-examples
@@ -273,7 +242,6 @@ executable haskledger-examples
     TokenGate,
     Treasury,
     Vesting,
-    WalletConfig,
   build-depends:
     base >=4.19.0.0 && <5,
     covenant ==1.3.0,
