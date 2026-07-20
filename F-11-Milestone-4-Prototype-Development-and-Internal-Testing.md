@@ -94,7 +94,7 @@ Negative cases are rejected at the `cardano-cli transaction build` stage with a 
 
 Beyond the nine contracts validated above, four more advanced use cases are planned for future milestones. They build on the validated core with richer structured-datum handling, multi-party authorization, and token-gated spending, and sit outside this milestone's committed scope. Early prototypes live in the repository (`haskledger/examples/`), but they are not part of the validated contract set for this milestone.
 
-| Use case   | Pattern it will demonstrate                                         | Status                     |
+| Use case   | Pattern it will demonstrate                                        | Status                     |
 | ---------- | ------------------------------------------------------------------ | -------------------------- |
 | escrow     | Two-party escrow: seller claim after deadline, buyer refund before | Planned - future milestone |
 | vesting    | Time-locked beneficiary payout driven by a structured datum        | Planned - future milestone |
@@ -111,8 +111,8 @@ Cardanoscan links follow the pattern `https://preview.cardanoscan.io/transaction
 
 ### Script addresses
 
-| Contract                 | Script Address / Policy ID                                        | Link |
-| ------------------------ | ----------------------------------------------------------------- | ---- |
+| Contract                 | Script Address / Policy ID                                        | Link                                                                                                           |
+| ------------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | always-succeeds          | `addr_test1wqv4uprqnvm0tjkqlqvwlqgqudwjya4dctetw58v363cd4grdsqr8` | [View](https://preview.cardanoscan.io/address/addr_test1wqv4uprqnvm0tjkqlqvwlqgqudwjya4dctetw58v363cd4grdsqr8) |
 | redeemer-match           | `addr_test1wq0wjvxsyh6alc2zk0mddg5n5mu9dze2p70act3ycxm82qgha4pea` | [View](https://preview.cardanoscan.io/address/addr_test1wq0wjvxsyh6alc2zk0mddg5n5mu9dze2p70act3ycxm82qgha4pea) |
 | deadline                 | `addr_test1wz9499mfd7a2ajsl9ty7j74swxjh50z5vxyqn9e5m3szfeg2pke27` | [View](https://preview.cardanoscan.io/address/addr_test1wz9499mfd7a2ajsl9ty7j74swxjh50z5vxyqn9e5m3szfeg2pke27) |
@@ -121,45 +121,45 @@ Cardanoscan links follow the pattern `https://preview.cardanoscan.io/transaction
 | hash-verify              | `addr_test1wqf0nl7cv5g2gr4zckvx5lyy5cgfffn8mr7r2yeh40gwync2s3q39` | [View](https://preview.cardanoscan.io/address/addr_test1wqf0nl7cv5g2gr4zckvx5lyy5cgfffn8mr7r2yeh40gwync2s3q39) |
 | oracle                   | `addr_test1wp3crs3wzgh6p6zqmv985p9k4az2akfwpe50c5awnsher4gepq4c4` | [View](https://preview.cardanoscan.io/address/addr_test1wp3crs3wzgh6p6zqmv985p9k4az2akfwpe50c5awnsher4gepq4c4) |
 | treasury                 | `addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0` | [View](https://preview.cardanoscan.io/address/addr_test1wrev2kz6qardqyyg3xurychfa8p5y6f2dts5f4v7cw90jfswehrn0) |
-| one-shot-nft (policy ID) | `d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b`        | [View](https://preview.cardanoscan.io/tokenPolicy/d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b) |
+| one-shot-nft (policy ID) | `d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b`        | [View](https://preview.cardanoscan.io/tokenPolicy/d4fa8709e259888e1733870d5929b62ccc77bb617758f146e0f04e8b)    |
 
 ### Confirmed transactions
 
-| Contract         | Transaction                  | TX Hash                                                            | Result             | Link |
-| ---------------- | ---------------------------- | ------------------------------------------------------------------ | ------------------ | ---- |
+| Contract         | Transaction                  | TX Hash                                                            | Result             | Link                                                                                                                |
+| ---------------- | ---------------------------- | ------------------------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | always-succeeds  | Lock                         | `1c69652c5aa86056d2df07b27bf237a5443906b621569b661438c6136b08c45c` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/1c69652c5aa86056d2df07b27bf237a5443906b621569b661438c6136b08c45c) |
 | always-succeeds  | Unlock                       | `7f4804395cbea73e3edc8cc6953d871753f60726390503c09f7022999ec522ef` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/7f4804395cbea73e3edc8cc6953d871753f60726390503c09f7022999ec522ef) |
 | redeemer-match   | Lock                         | `b0fbc5bc20f31972ae7a5822e3a13e38061618017c914111f053cad3ed1bd3c4` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/b0fbc5bc20f31972ae7a5822e3a13e38061618017c914111f053cad3ed1bd3c4) |
 | redeemer-match   | Unlock (r=42)                | `f735830cbf0b5040ac8a5e5803538bb3b39891a80d575b495ef58c62508af373` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/f735830cbf0b5040ac8a5e5803538bb3b39891a80d575b495ef58c62508af373) |
 | redeemer-match   | Lock (neg test)              | `cedc50be4dfa21ffa6715824ee6918ae13cd62bc9cd815bab36df372c974370a` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/cedc50be4dfa21ffa6715824ee6918ae13cd62bc9cd815bab36df372c974370a) |
-| redeemer-match   | Unlock (r=99)                | N/A                                                                | Correctly rejected | N/A |
+| redeemer-match   | Unlock (r=99)                | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | deadline         | Lock                         | `5dbe8cbd6b0ed6ec4c36220f5244bcd2b6719db39fb8e1857d0ff3bdbdedaaa5` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/5dbe8cbd6b0ed6ec4c36220f5244bcd2b6719db39fb8e1857d0ff3bdbdedaaa5) |
 | deadline         | Unlock (past deadline)       | `8d1366dede4dbe3524ed7e4dd0dffed90caf690fb55e69a2b7dfa07178433aef` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/8d1366dede4dbe3524ed7e4dd0dffed90caf690fb55e69a2b7dfa07178433aef) |
 | deadline         | Lock (neg test)              | `e3ecd7f0d49c598b3531b8f9c0d806529d5517edc471a7835f0d680652c6886d` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/e3ecd7f0d49c598b3531b8f9c0d806529d5517edc471a7835f0d680652c6886d) |
-| deadline         | Unlock (before deadline)     | N/A                                                                | Correctly rejected | N/A |
+| deadline         | Unlock (before deadline)     | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | guarded-deadline | Lock                         | `4ad527199d4de4470008e0cee1d91dfe58d3a0afff3ba090f6ba80305eccec34` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/4ad527199d4de4470008e0cee1d91dfe58d3a0afff3ba090f6ba80305eccec34) |
 | guarded-deadline | Unlock (42 + past)           | `ed310148b9dd66d78825aa56d07e6c8a5bca58063f48922fe81aa462cb1c29e5` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/ed310148b9dd66d78825aa56d07e6c8a5bca58063f48922fe81aa462cb1c29e5) |
 | guarded-deadline | Lock (neg tests)             | `264381e68cb51d927c2f8ff860547539870d5226632d8bb55903af23e7dfbebf` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/264381e68cb51d927c2f8ff860547539870d5226632d8bb55903af23e7dfbebf) |
-| guarded-deadline | Unlock (99 + past)           | N/A                                                                | Correctly rejected | N/A |
-| guarded-deadline | Unlock (42 + before)         | N/A                                                                | Correctly rejected | N/A |
+| guarded-deadline | Unlock (99 + past)           | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
+| guarded-deadline | Unlock (42 + before)         | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | hash-lock        | Lock                         | `eca466250acbcd37a6ccdf106c89eb575043beef6f65b05793c2e344166899d5` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/eca466250acbcd37a6ccdf106c89eb575043beef6f65b05793c2e344166899d5) |
 | hash-lock        | Unlock (correct preimage)    | `a38b79f28c2239f3d996ee9884b1686023bbc34a22fa761632aac3adb6fd4761` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/a38b79f28c2239f3d996ee9884b1686023bbc34a22fa761632aac3adb6fd4761) |
 | hash-lock        | Lock (neg test)              | `e1498bb9a809823f4cfaa5c36cc983a2d0f3a18182481d9f734663f185b9f83d` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/e1498bb9a809823f4cfaa5c36cc983a2d0f3a18182481d9f734663f185b9f83d) |
-| hash-lock        | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A |
+| hash-lock        | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | hash-verify      | Lock                         | `938010e857dfba508f2594a44ba947dbcf1301a960fbee9b3ec38c43741a7690` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/938010e857dfba508f2594a44ba947dbcf1301a960fbee9b3ec38c43741a7690) |
 | hash-verify      | Unlock (correct preimage)    | `9acdc91a883120cd41a52415e24f9c3e497f44d9b3510cbc221b7926bf3a64d2` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/9acdc91a883120cd41a52415e24f9c3e497f44d9b3510cbc221b7926bf3a64d2) |
 | hash-verify      | Lock (neg test)              | `80ba9b2d928b43d86eaaaf64c5978bc1627b59e417547dee26a25463374894ec` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/80ba9b2d928b43d86eaaaf64c5978bc1627b59e417547dee26a25463374894ec) |
-| hash-verify      | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A |
+| hash-verify      | Unlock (wrong preimage)      | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | oracle           | Lock                         | `3c5d6e4bc2accae8dc11049ce48b164471dbc7a1be05db1cc0f517401d5e8156` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/3c5d6e4bc2accae8dc11049ce48b164471dbc7a1be05db1cc0f517401d5e8156) |
 | oracle           | Unlock (operator)            | `73d939a4221940e302e3bdd636ffdd25c82ce453570d362bf0dae201b61b6341` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/73d939a4221940e302e3bdd636ffdd25c82ce453570d362bf0dae201b61b6341) |
-| oracle           | Unlock (non-operator)        | N/A                                                                | Correctly rejected | N/A |
+| oracle           | Unlock (non-operator)        | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | treasury         | Lock                         | `4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/4cb2ac0b31369172b0535a9ebe7421fe64cbc1988baa0a19c0733a4c84b5b328) |
 | treasury         | Unlock (admin withdraw, r=0) | `f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/f34f9c64c2d63d0a24d735339c85ae93cc0e1f3e3376cbbf4b945ae6b85c6c91) |
 | treasury         | Lock (deposit test)          | `c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe` | Confirmed          | [View](https://preview.cardanoscan.io/transaction/c633095f292bd3b1e9658ce285a826540b8762ffeeaf839540e15181be405afe) |
 | treasury         | Unlock (deposit, r=1)        | `56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/56f7c1e73f7ade8806e573b376ba1f682ebc2dd4655629466d9b4ecb80994518) |
-| treasury         | Unlock (non-admin)           | N/A                                                                | Correctly rejected | N/A |
+| treasury         | Unlock (non-admin)           | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 | one-shot-nft     | Mint (with seed UTxO)        | `c9c3ac929ee47af810541d6687a4512bc8cc0485a019e8f1d0712c0981dc4f94` | Succeeded          | [View](https://preview.cardanoscan.io/transaction/c9c3ac929ee47af810541d6687a4512bc8cc0485a019e8f1d0712c0981dc4f94) |
-| one-shot-nft     | Mint again (seed consumed)   | N/A                                                                | Correctly rejected | N/A |
+| one-shot-nft     | Mint again (seed consumed)   | N/A                                                                | Correctly rejected | N/A                                                                                                                 |
 
 Failed unlock/mint transactions do not produce TX hashes - they are rejected at the build stage by `cardano-cli` (script evaluation error), confirming the Plutus script correctly rejects the invalid input.
 
@@ -167,30 +167,31 @@ Failed unlock/mint transactions do not produce TX hashes - they are rejected at 
 
 ## Evidence of Milestone Completion
 
-| Evidence                                                    | Link / Location                                                                                                                                                                                                                                                                                                                               |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Prototype code                                              | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                        |
-| Detailed test reports (raw on-chain logs)                   | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                                  |
-| Reproducible deploy/test scripts                            | [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy)                                                                                                                                                                                                                                                    |
-| Example contract sources                                    | [`haskledger/examples/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/examples)                                                                                                                                                                                                                                                |
-| Testnet deployment proof                                    | See Transaction Evidence tables above (Preview Cardanoscan)                                                                                                                                                                                                                                                                                   |
-| Documentation                                               | [README](https://github.com/KonmaORG/HaskLedger/blob/main/README.md), [User Guide](https://github.com/KonmaORG/HaskLedger/blob/main/docs/user-guide.md), [Architecture](https://github.com/KonmaORG/HaskLedger/blob/main/docs/architecture.md), [Deployment Guide](https://github.com/KonmaORG/HaskLedger/blob/main/docs/deployment-guide.md) |
+| Evidence                                  | Link / Location                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prototype code                            | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                        |
+| Prototype demonstration video             | [Video](https://drive.google.com/file/d/1YxsfksK8i5yn1sVuGS-GSZX6RDj60Hz1/view?usp=sharing)                                                                                                                                                                                                                                                   |
+| Detailed test reports (raw on-chain logs) | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                                  |
+| Reproducible deploy/test scripts          | [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy)                                                                                                                                                                                                                                                    |
+| Example contract sources                  | [`haskledger/examples/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/examples)                                                                                                                                                                                                                                                |
+| Testnet deployment proof                  | See Transaction Evidence tables above (Preview Cardanoscan)                                                                                                                                                                                                                                                                                   |
+| Documentation                             | [README](https://github.com/KonmaORG/HaskLedger/blob/main/README.md), [User Guide](https://github.com/KonmaORG/HaskLedger/blob/main/docs/user-guide.md), [Architecture](https://github.com/KonmaORG/HaskLedger/blob/main/docs/architecture.md), [Deployment Guide](https://github.com/KonmaORG/HaskLedger/blob/main/docs/deployment-guide.md) |
 
 ---
 
 ## Technical Details
 
-| Component                   | Details                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------- |
-| Language                    | Haskell (GHC 9.12.2)                                                                     |
-| Build system                | Nix flakes + Cabal                                                                       |
-| Intermediate representation | Covenant (MLabs)                                                                         |
-| Code generator              | c2uplc (MLabs)                                                                           |
-| Target                      | UPLC (Untyped Plutus Lambda Calculus)                                                    |
-| Output format               | Cardano `.plutus` text envelope (PlutusV3)                                               |
-| Script purposes             | Spending validators + minting policies                                                   |
-| Testnet                     | Cardano Preview (testnet-magic 2)                                                        |
-| Node version                | cardano-node 11.0.1                                                                      |
-| CLI version                 | cardano-cli 11.0.0.0                                                                     |
-| Supported platforms         | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux                |
+| Component                   | Details                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Language                    | Haskell (GHC 9.12.2)                                                                                                            |
+| Build system                | Nix flakes + Cabal                                                                                                              |
+| Intermediate representation | Covenant (MLabs)                                                                                                                |
+| Code generator              | c2uplc (MLabs)                                                                                                                  |
+| Target                      | UPLC (Untyped Plutus Lambda Calculus)                                                                                           |
+| Output format               | Cardano `.plutus` text envelope (PlutusV3)                                                                                      |
+| Script purposes             | Spending validators + minting policies                                                                                          |
+| Testnet                     | Cardano Preview (testnet-magic 2)                                                                                               |
+| Node version                | cardano-node 11.0.1                                                                                                             |
+| CLI version                 | cardano-cli 11.0.0.0                                                                                                            |
+| Supported platforms         | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux                                                       |
 | Internal testing scope      | 9 in-scope contracts, positive + negative cases each, all fully operational; 4 advanced use cases planned for future milestones |
