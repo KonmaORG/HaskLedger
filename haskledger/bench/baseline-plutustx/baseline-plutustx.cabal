@@ -1,0 +1,41 @@
+cabal-version:   3.0
+name:            baseline-plutustx
+version:         0.1.0.0
+synopsis:        PlutusTx baseline contracts for HaskLedger benchmarking
+build-type:      Simple
+
+-- plutus-tx-plugin 1.51.0.0 sets `buildable: False` outside GHC 9.6.x, so this
+-- is not a preference -- nothing else will build.
+tested-with:     GHC ==9.6.7
+
+executable baseline-gen
+  -- GHC2021 for ImportQualifiedPost; TemplateHaskell and OverloadedStrings are
+  -- per-module pragmas so they stay off where they are not wanted.
+  default-language: GHC2021
+  hs-source-dirs:   app, src
+  main-is:          Main.hs
+  other-modules:    Contracts
+
+  -- Flags the plugin needs to see unfoldings and to stop GHC from rewriting
+  -- code out from under it. See the plutus-tx readme.
+  ghc-options:
+    -Wall
+    -fobject-code
+    -fno-ignore-interface-pragmas
+    -fno-omit-interface-pragmas
+    -fno-full-laziness
+    -fno-spec-constr
+    -fno-specialise
+    -fno-strictness
+    -fno-unbox-strict-fields
+    -fno-unbox-small-strict-fields
+    -fplugin-opt PlutusTx.Plugin:target-version=1.1.0
+
+  build-depends:
+    , base              >=4.18 && <5
+    , directory
+    , filepath
+    , plutus-core       ==1.51.0.0
+    , plutus-ledger-api ==1.51.0.0
+    , plutus-tx         ==1.51.0.0
+    , plutus-tx-plugin  ==1.51.0.0

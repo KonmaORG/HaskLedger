@@ -38,9 +38,61 @@ Nine contracts were compiled through the full HaskLedger pipeline and **executed
 
 This milestone extends the prototype beyond Milestone 3's spending validators to include a working **minting policy** path (`one-shot-nft`), demonstrating both Plutus script purposes from the same eDSL.
 
-#### Efficiency
+#### Efficiency and throughput, measured against the standard toolchain
 
-The prototype compiles eDSL contracts directly to compact UPLC and emits standard PlutusV3 `.plutus` envelopes. Measured on-chain costs for the validating (spend/mint) transactions show low, predictable fees that scale with contract complexity rather than with eDSL verbosity:
+"Improvement" needs a baseline. The baseline is the same contracts written in idiomatic PlutusTx (the standard Haskell toolchain for Cardano), compiled with the official `plutus-tx-plugin`, pinned to the same plutus version (1.51.0.0), and evaluated on byte-identical ScriptContext inputs. Both sides are measured by `haskledger-bench` ([`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench)): script size as the flat-encoded bytes a transaction witness carries, and CPU/memory execution units counted by the Plutus CEK machine with plutus-core's default cost model - the same cost model the chain charges with. Every number reproduces offline from the public repository with `cabal run haskledger-bench`; the PlutusTx baseline envelopes are committed under `haskledger/bench/baseline-plutustx/out/` so the comparison can be verified without building the baseline toolchain.
+
+**Head-to-head** (ratios are PlutusTx over HaskLedger - 3.0x means the PlutusTx version costs three times as much):
+
+| Contract         | HL bytes | PlutusTx bytes | size ratio | HL steps   | PlutusTx steps | steps ratio | HL mem | PlutusTx mem | mem ratio |
+| ---------------- | -------- | -------------- | ---------- | ---------- | -------------- | ----------- | ------ | ------------ | --------- |
+| always-succeeds  | 161      | 2,533          | 15.7x      | 976,100    | 25,561,498     | 26.2x       | 6,200  | 101,575      | 16.4x     |
+| redeemer-match   | 192      | 2,545          | 13.3x      | 1,984,619  | 25,794,575     | 13.0x       | 9,662  | 102,608      | 10.6x     |
+| deadline         | 372      | 3,258          | 8.8x       | 10,710,190 | 30,778,058     | 2.9x        | 32,383 | 132,941      | 4.1x      |
+| guarded-deadline | 407      | 3,269          | 8.0x       | 11,860,171 | 31,118,972     | 2.6x        | 36,349 | 134,375      | 3.7x      |
+| hash-lock        | 223      | 2,561          | 11.5x      | 3,833,672  | 26,528,932     | 6.9x        | 14,082 | 105,077      | 7.5x      |
+
+The gap has a structural cause: idiomatic PlutusTx decodes the entire ScriptContext up front (a ~25.5M-step floor visible in every baseline row), while HaskLedger's compilation pipeline destructures only the fields a contract actually reads.
+
+**Throughput.** Cardano bounds each block's script execution budget (62,000,000 memory units, 20,000,000,000 steps). Cheaper validation means more validating transactions per block - this is the throughput lever a contract toolchain controls; block and network limits are Cardano's. Max script executions per block, execution-budget bound:
+
+| Contract         | HaskLedger scripts/block | PlutusTx scripts/block |
+| ---------------- | ------------------------ | ---------------------- |
+| always-succeeds  | 10,000                   | 610                    |
+| redeemer-match   | 6,416                    | 604                    |
+| deadline         | 1,867                    | 466                    |
+| guarded-deadline | 1,686                    | 461                    |
+| hash-lock        | 4,402                    | 590                    |
+
+(The block body also caps at 90,112 bytes, which binds first for small transactions; HaskLedger's 8-16x smaller scripts help against that limit too.)
+
+**Full cost surface, all nine in-scope contracts** (positive-case execution; script fee = `priceMem * memory + priceSteps * steps`, the execution component of the fee):
+
+| Contract            | Script bytes | CPU steps  | Memory  | Script fee (lovelace) | % of tx step limit | % of tx mem limit |
+| ------------------- | ------------ | ---------- | ------- | --------------------- | ------------------ | ----------------- |
+| always-succeeds     | 161          | 976,100    | 6,200   | 429                   | 0.010%             | 0.044%            |
+| redeemer-match      | 192          | 1,984,619  | 9,662   | 701                   | 0.020%             | 0.069%            |
+| deadline            | 372          | 10,710,190 | 32,383  | 2,641                 | 0.107%             | 0.231%            |
+| guarded-deadline    | 407          | 11,860,171 | 36,349  | 2,953                 | 0.119%             | 0.260%            |
+| hash-lock           | 223          | 3,833,672  | 14,082  | 1,089                 | 0.038%             | 0.101%            |
+| hash-verify         | 307          | 9,928,491  | 24,792  | 2,147                 | 0.099%             | 0.177%            |
+| oracle              | 1,217        | 57,281,751 | 175,296 | 14,245                | 0.573%             | 1.252%            |
+| treasury (withdraw) | 1,434        | 71,249,262 | 209,954 | 17,252                | 0.712%             | 1.500%            |
+| treasury (deposit)  | 1,434        | 67,648,503 | 200,836 | 16,466                | 0.676%             | 1.435%            |
+| one-shot-nft        | 1,279        | 49,663,574 | 161,392 | 12,894                | 0.497%             | 1.153%            |
+
+The heaviest contract uses 1.5% of a single transaction's memory budget and 0.7% of its step budget; the four simple validators stay under 0.3%. That headroom is why every validating transaction below confirmed in the next block.
+
+**Methodology notes, stated up front:**
+
+- The baseline is PlutusTx as its documentation and templates teach it - the cost of the standard developer path, not the theoretical floor of the platform. Hand-optimized `BuiltinData` code can narrow the gap, but abandons the typed model both toolchains exist to provide. Baseline source is committed; anyone can substitute their own envelopes into the harness.
+- Execution units use plutus-core 1.51's default cost model (the model current node releases ship). Ratios divide the model out; the harness also accepts a live `protocol-parameters` dump for fee/capacity inputs.
+- Per-block capacity is derived from published block limits, not an observed block-filling run; the 90,112-byte body cap is an additional bound that smaller scripts also relieve.
+- Benchmark contexts are minimal reconstructions of the validated on-chain cases. Larger real-world contexts cost more for both sides and widen the gap (the baseline decodes the whole context; HaskLedger reads only the fields it uses), so these numbers are the conservative ones.
+
+#### On-chain fees (corroborating evidence)
+
+Measured network fees for the validating (spend/mint) transactions on the preview testnet. These include the size-based fee component (`txFeeFixed + txFeePerByte * txSize`) on top of the execution fees above, and scale with contract complexity rather than with eDSL verbosity:
 
 | Contract         | Validating TX     | Network fee (lovelace) | Notes                            |
 | ---------------- | ----------------- | ---------------------- | -------------------------------- |
@@ -61,7 +113,7 @@ Observations from internal testing:
 - **Cost tracks logic, not abstraction.** The eDSL's high-level combinators (e.g. `after` hides 10+ levels of `Data` destructuring) add no measurable on-chain overhead - fees are governed by the underlying script work, confirming the compilation pipeline produces efficient UPLC.
 - Every validating transaction was **included in the next block** after submission, confirming the scripts evaluate within Cardano's execution-unit budget with margin to spare.
 
-> Per-transaction efficiency (fee, script size, ex-unit budget) is what the prototype controls; aggregate network throughput is governed by Cardano L1 itself. The figures above are the measured, controllable cost surface.
+> Benchmark methodology, raw results, and reproduction steps: [`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench) (`bench-results.md`). The harness exits nonzero if any validator rejects its positive-case input, so published numbers cannot come from a silently failing script.
 
 ### Criterion 2 - Internal testing results validate operational effectiveness and highlight areas for further optimization
 
@@ -170,6 +222,7 @@ Failed unlock/mint transactions do not produce TX hashes - they are rejected at 
 | Evidence                                  | Link / Location                                                                                                                                                                                                                                                                                                                               |
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prototype code                            | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                        |
+| Throughput/efficiency benchmark           | [`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench) - harness, PlutusTx baseline project, `bench-results.md`                                                                                                                                                                                              |
 | Prototype demonstration video             | [Video](https://drive.google.com/file/d/1YxsfksK8i5yn1sVuGS-GSZX6RDj60Hz1/view?usp=sharing)                                                                                                                                                                                                                                                   |
 | Detailed test reports (raw on-chain logs) | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                                  |
 | Reproducible deploy/test scripts          | [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy)                                                                                                                                                                                                                                                    |
