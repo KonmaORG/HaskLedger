@@ -234,7 +234,7 @@ The report also documents the changed circumstances around the originally planne
 
 | Evidence | Link |
 | -------- | ---- |
-| Final Project Closeout Report | **[TODO: public PDF link]** |
+| Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Repository | https://github.com/KonmaORG/HaskLedger |
 | Milestone 1 PoA | [`F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md) |
 | Milestone 2 PoA | [`F-11-Milestone-2-POA-Design-Document-Validation.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-2-POA-Design-Document-Validation.md) |
@@ -269,7 +269,7 @@ The video is accompanied by the public repository and the technical reports, so 
 | Evidence | Link |
 | -------- | ---- |
 | Final Project Closeout Video | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
-| Final Project Closeout Report | **[TODO: public PDF link]** |
+| Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Repository | https://github.com/KonmaORG/HaskLedger |
 
 ---
@@ -295,7 +295,7 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | Evidence | Link / Location |
 | -------- | --------------- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
-| Final Project Closeout Report | **[TODO: public PDF link]** |
+| Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Final Project Closeout Video | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
 | Community and Expert Validation record | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
 | MLabs Validation record | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
