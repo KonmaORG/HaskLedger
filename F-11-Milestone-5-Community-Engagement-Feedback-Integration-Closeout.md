@@ -286,7 +286,7 @@ For Milestone 5, the proposal anticipated review by developers or consultants as
 
 The project team can be held accountable for building the funded solution, publishing it, making it independently inspectable, testing it, demonstrating it on Cardano, measuring it against a reproducible baseline, seeking external scrutiny, responding to technical feedback, documenting its limitations and providing complete closeout evidence. All of that has been delivered. Further delay would not add HaskLedger development; it would only leave completion dependent on organisations outside the project.
 
-We respectfully request assessment of Milestone 5 on the body of work delivered, the evidence provided, the expert and technical-community engagement that did occur, and the reasonable efforts made toward the original external-review intention. If a formal change request is the preferred way to record this adjustment, the team is ready to submit one.
+We respectfully request assessment of Milestone 5 on the body of work delivered, the evidence provided, the expert and technical-community engagement that did occur, and the reasonable efforts made toward the original external-review intention.
 
 ---
 
