@@ -93,14 +93,10 @@ HaskLedger compiles through MLabs' Covenant intermediate representation (v1.3.0)
 
 | Evidence | Link |
 | -------- | ---- |
-| Internal Konma Labz session records | **[TODO: public link]** |
-| Internal session plan and completed feedback forms | **[TODO: public link]** |
-| External-review outreach record (redacted for privacy) | **[TODO: public link]** |
 | Vendored MLabs toolchain | [covenant/](https://github.com/KonmaORG/HaskLedger/tree/main/covenant), [c2uplc/](https://github.com/KonmaORG/HaskLedger/tree/main/c2uplc) |
 | Capture-bug fix design and results | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md) |
-| Upstream `cata` bug report and local c2uplc patch record | **[TODO: public link to `cata-bug-report.md` and `c2uplc-changes.md`]** |
 | Repository | https://github.com/KonmaORG/HaskLedger |
-| Review candidate version | **[TODO: tag or commit link]** |
+
 
 ### Criterion 2 - The Feedback Integration Report documents feedback, responses and actions taken
 
@@ -129,9 +125,6 @@ No feedback item is silently omitted. The report also records where the external
 
 | Evidence | Link |
 | -------- | ---- |
-| Final Community Feedback Integration Report | **[TODO: public PDF link]** |
-| Feedback Integration Matrix | **[TODO: public link]** |
-| Feedback-to-commit mapping | **[TODO: public XLSX or link]** |
 | Repository commit history | https://github.com/KonmaORG/HaskLedger/commits/main |
 
 ### Criterion 3 - Actions taken in response to feedback and findings are incorporated into the prototype
@@ -199,7 +192,7 @@ Milestone 4 was approved after resubmission with the dedicated Throughput and Ef
 | PlutusTx baseline | [`haskledger/bench/baseline-plutustx/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench/baseline-plutustx) |
 | Milestone 4 Throughput and Efficiency Addendum | [`F-11-Milestone-4-Throughput-Efficiency-Addendum.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Throughput-Efficiency-Addendum.md) |
 | Security-hardening specification | [`docs/contract-hardening.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/contract-hardening.md) |
-| Advanced contracts and their on-chain proof | **[TODO: public link to `docs/advanced-contracts.md`]** |
+| Advanced contracts and their on-chain proof | **[`docs/advanced-contracts.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/advanced-contracts.md)** |
 | Capture-bug fix | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md) |
 
 ### Criterion 4 - Final Project Closeout Report
@@ -259,9 +252,8 @@ The video is accompanied by the public repository and the technical reports, so 
 
 | Evidence | Link |
 | -------- | ---- |
-| Final Project Closeout Video | **[TODO: video link]** |
+| Final Project Closeout Video | **[`Video Link`](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing)** |
 | Final Project Closeout Report | **[TODO: public PDF link]** |
-| Community Feedback Integration Report | **[TODO: public PDF link]** |
 | Repository | https://github.com/KonmaORG/HaskLedger |
 
 ---
@@ -287,14 +279,10 @@ HaskLedger is complete, open source, documented, reproducible and available to t
 | Evidence | Link / Location |
 | -------- | --------------- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
-| Final release | **[TODO: `v1.0.0-catalyst-closeout` release link]** |
-| Community Feedback Integration Report | **[TODO: public PDF link]** |
-| Feedback Integration Matrix and feedback-to-commit mapping | **[TODO: public link]** |
 | Final Project Closeout Report | **[TODO: public PDF link]** |
-| Final Project Closeout Video | **[TODO: video link]** |
-| Internal Konma Labz testing evidence | **[TODO: public link]** |
-| External-review outreach record (redacted) | **[TODO: public link]** |
-| MLabs toolchain engagement | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md), **[TODO: `cata-bug-report.md` and `c2uplc-changes.md` links]** |
+| Final Project Closeout Video | **[`Video`](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing)** |
+| Internal Konma Labz testing evidence | **[`/haskledger/bench`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench)** |
+| MLabs toolchain engagement | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md), 
 | Benchmark harness, results and PlutusTx baseline | [`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench) |
 | On-chain deployment logs | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out) |
 | Security hardening | [`docs/contract-hardening.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/contract-hardening.md) |
