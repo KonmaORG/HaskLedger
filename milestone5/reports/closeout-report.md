@@ -100,9 +100,11 @@ Full tables (all contracts, fees, capacity bounds): `haskledger/bench/bench-resu
 
 HaskLedger sought outside scrutiny from its design stage onward, not only at closeout.
 
+**External review of the final prototype.** On 23 September 2026, Koz Ross, head developer of Covenant at MLabs, reviewed HaskLedger's Haskell implementation and documentation (public repository at commit `84078da`). He found HaskLedger "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a separate front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken, with Aiken-level documentation and tooling as the long-term target. The review and the response to each point are published in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). An official copy on MLabs letterhead is to follow, with the same content.
+
 **Internal developer review.** On 19 July 2026, Vinit Inamke (HaskLedger core developer) and Sangeet Muralidhar reviewed the prototype at commit [`14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0), covering setup from the project documentation, the example contracts and benchmark harness, and deliberate failure cases with invalid datum and redeemer inputs.
 
-**Expert validation.** Feedback was gathered from engineers and researchers across the Haskell and Cardano ecosystem, mostly on the design:
+**Design-stage expert validation (2024).** Before the prototype existed, feedback on the design was gathered from engineers and researchers across the Haskell and Cardano ecosystem. This is historical context and was assessed under Milestone 2:
 
 | Expert | Background | Engagement |
 | ------ | ---------- | ---------- |
@@ -125,7 +127,16 @@ The expert feedback, meeting takeaways and outreach evidence are published in th
 
 ## 8. Feedback-driven improvements
 
-Every recorded feedback item has a documented response and outcome in the Milestone 5 Proof of Achievement: 17 items, of which 8 were implemented, 5 partially implemented, and 4 not implemented with a technical rationale.
+Every recorded feedback item has a documented response and outcome in the Milestone 5 Proof of Achievement.
+
+**From the prototype review (EXT-ML-01 to EXT-ML-04).** The documentation was rewritten for library users in response to Koz Ross's review, in commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92):
+
+- **Sparse user documentation (implemented).** A documentation index, getting started, an API reference covering every exported function, a task-based user guide, the datum and redeemer of every example contract, and a security guide.
+- **Compilation strategy and outputs (implemented).** A compilation page covering the pipeline stages, the Plutus V3 types as Plutus Data, laziness, sharing, `cata` loops, variable naming and how to inspect each stage's output.
+- **Testing helpers (partially implemented).** A testing guide documents the off-chain helpers with a worked example. Shipping them as a library module is still to do.
+- **Aiken-level documentation and tooling (long-term target).** A comparison page states the current gaps: typed datums, a built-in test runner and CIP-57 blueprints.
+
+**From the design stage.** 17 items, of which 8 were implemented, 5 partially implemented, and 4 not implemented with a technical rationale.
 
 **Implemented.**
 
@@ -203,6 +214,8 @@ Stated in the source and docs, not discovered by users:
 | Item | Link |
 | ---- | ---- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
+| Release | [`v1.0.0-catalyst-closeout`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0-catalyst-closeout) |
+| External prototype review, Koz Ross (MLabs) | [review record and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 | Closeout video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
 | Closeout video (archival original, Google Drive) | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing |
 | Milestone 5 PoA | [`F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md) |
