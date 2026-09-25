@@ -1,37 +1,30 @@
-# HaskLedger Deployment Guide
+# Deployment guide
 
-## Prerequisites
+This guide puts HaskLedger contracts on the Cardano Preview testnet: setting up a node, creating wallets, and running the deploy scripts that lock funds, spend them with valid transactions, and check that invalid ones are refused. It ends with the `cardano-cli` flags you need to do the same for your own contracts.
 
-### Software
+## What you need
 
-| Software       | Version           | Purpose                                         |
-| -------------- | ----------------- | ----------------------------------------------- |
-| `cardano-node` | 10.x              | Local Cardano node connected to Preview testnet |
-| `cardano-cli`  | 10.x (Conway era) | Transaction building, signing, and submission   |
-| `jq`           | any               | JSON processing for UTxO queries                |
-| Nix            | with flakes       | Build system for HaskLedger                     |
+| Tool | Version | Used for |
+| --- | --- | --- |
+| `cardano-node` | 10.x or later | a local node on the Preview testnet |
+| `cardano-cli` | 10.x or later, Conway era (tested with 11.0) | building, signing and submitting transactions |
+| `jq`, `bc` | any | reading query output in the scripts |
+| HaskLedger dev shell | see [Getting started](getting-started.md) | compiling the contracts |
 
-### Testnet Node Setup
+`cardano-node` and `cardano-cli` are not part of the HaskLedger Nix shell. Install them from the [cardano-node releases](https://github.com/IntersectMBO/cardano-node/releases) page.
 
-1. Download `cardano-node` and `cardano-cli` from the [official releases](https://github.com/IntersectMBO/cardano-node/releases).
+## 1. Run a Preview node
 
-2. Download the Preview testnet configuration files:
+Download the Preview configuration:
 
 ```bash
 mkdir -p ~/cardano/preview && cd ~/cardano/preview
-
-# Download config files
-curl -O https://book.play.dev.cardano.org/environments/preview/config.json
-curl -O https://book.play.dev.cardano.org/environments/preview/topology.json
-curl -O https://book.play.dev.cardano.org/environments/preview/byron-genesis.json
-curl -O https://book.play.dev.cardano.org/environments/preview/shelley-genesis.json
-curl -O https://book.play.dev.cardano.org/environments/preview/alonzo-genesis.json
-curl -O https://book.play.dev.cardano.org/environments/preview/conway-genesis.json
-curl -O https://book.play.dev.cardano.org/environments/preview/checkpoints.json
-curl -O https://book.play.dev.cardano.org/environments/preview/peer-snapshot.json
+for f in config topology byron-genesis shelley-genesis alonzo-genesis conway-genesis checkpoints peer-snapshot; do
+  curl -O "https://book.play.dev.cardano.org/environments/preview/$f.json"
+done
 ```
 
-3. Start the node:
+Start the node:
 
 ```bash
 cardano-node run \
@@ -41,384 +34,165 @@ cardano-node run \
   --config config.json
 ```
 
-4. Set the socket path environment variable:
+In the shell you will deploy from, point `cardano-cli` at it:
 
 ```bash
 export CARDANO_NODE_SOCKET_PATH=~/cardano/preview/node.socket
-```
-
-5. Wait for the node to sync (check progress with):
-
-```bash
 cardano-cli conway query tip --testnet-magic 2
 ```
 
-Look for `"syncProgress": "100.00"`. The Preview testnet typically syncs in 1-3 hours.
+Wait until `syncProgress` reads `100.00`. The deploy scripts refuse to run before that. A first sync usually takes a few hours.
 
-## Step 1: Compile the Contracts
+## 2. Compile the contracts
 
-From the HaskLedger repository root, inside the Nix development shell:
+From the repository root, inside the dev shell:
 
 ```bash
 nix develop
 cabal run haskledger-examples
 ```
 
-This produces `.plutus` files in two directories:
+This writes the `.plutus` files the deploy scripts read, into `examples/ms3/` and `examples/ms4/`. The one-shot NFT is the exception: its policy is compiled at deploy time for a seed from your wallet, as described below.
 
-MS3 contracts (in `examples/ms3/`):
-- `always-succeeds.plutus`
-- `redeemer-match.plutus`
-- `deadline.plutus`
-- `guarded-deadline.plutus`
-
-MS4 contracts (in `examples/ms4/`):
-- `hash-lock.plutus`
-- `hash-verify.plutus`
-- `vesting.plutus`
-- `escrow.plutus`
-- `one-shot-nft.plutus`
-- `token-gate.plutus`
-- `multisig.plutus`
-- `treasury.plutus`
-- `oracle.plutus`
-
-## Step 2: Set Up a Testnet Wallet
+## 3. Create and fund wallets
 
 ```bash
 bash haskledger/deploy/setup-wallet.sh
 ```
 
-This script:
+This creates a key pair and address for each role the example contracts use: `payment`, `beneficiary`, `seller`, `buyer`, `signer1`, `signer2`, `signer3`, `admin` and `operator`. The keys go to `haskledger/deploy/keys/`, which git ignores. Back them up if you care about the funds.
 
-1. Generates a payment key pair (`payment.vkey` and `payment.skey`) in `haskledger/deploy/keys/`
-2. Derives a Preview testnet address
-3. Checks the wallet balance
+Fund the `payment` wallet from the [Preview faucet](https://docs.cardano.org/cardano-testnets/tools/faucet/). It pays for every lock, fee and collateral. Most scripts lock 5 ADA per test; keep at least 50 test ADA in the wallet to run them all. Escrow and multisig also sign with role keys; fund those wallets too if the script asks.
 
-If the wallet is empty, fund it using the [Cardano Preview faucet](https://docs.cardano.org/cardano-testnets/tools/faucet/). You need at least 50 test ADA for all contract deployments.
+Run `setup-wallet.sh` again at any time to see the balances. It keeps existing keys.
 
-After funding, re-run `setup-wallet.sh` to confirm the balance.
+The contracts read every key hash from their datums, so nothing needs recompiling after you create wallets.
 
-## Step 3: Deploy Contracts
+## 4. Run the deploy scripts
 
-Each contract has a deploy script with positive and negative tests.
-
-### Always-Succeeds
-
-```bash
-bash haskledger/deploy/deploy-always-succeeds.sh
-```
-
-This script:
-
-1. **Locks** 5 ADA at the script address with an inline datum
-2. **Unlocks** the ADA with any redeemer (should always succeed)
-
-Expected output: Lock TX hash and Unlock TX hash.
-
-### Redeemer-Match
-
-```bash
-bash haskledger/deploy/deploy-redeemer-match.sh
-```
-
-This script runs two tests:
-
-1. **Test 1 (positive):** Locks 5 ADA, then unlocks with redeemer `42` should succeed
-2. **Test 2 (negative):** Locks 5 ADA, then attempts unlock with redeemer `99` should be rejected
-
-Expected output:
-
-- Test 1: Lock TX + Unlock TX (success)
-- Test 2: Lock TX + "TX correctly failed at build stage" (script rejection)
-
-### Deadline
-
-```bash
-bash haskledger/deploy/deploy-deadline.sh
-```
-
-This script runs two tests:
-
-1. **Test 1 (positive):** Locks 5 ADA, then unlocks with `--invalid-before` set to the current slot (which is after the deadline) should succeed
-2. **Test 2 (negative):** Locks 5 ADA, then attempts unlock with `--invalid-before` set to a slot before the deadline should be rejected
-
-Expected output:
-
-- Test 1: Lock TX + Unlock TX (success)
-- Test 2: Lock TX + "TX correctly failed" (script rejection)
-
-### Guarded-Deadline
-
-```bash
-bash haskledger/deploy/deploy-guarded-deadline.sh
-```
-
-This script runs three tests:
-
-1. **Test 1 (positive):** Locks 5 ADA, then unlocks with redeemer `42` and `--invalid-before` set past the deadline should succeed
-2. **Test 2 (negative - wrong redeemer):** Locks 5 ADA, then attempts unlock with redeemer `99` past the deadline - should be rejected
-3. **Test 3 (negative before deadline):** Locks 5 ADA, then attempts unlock with redeemer `42` before the deadline should be rejected
-
-Expected output:
-
-- Test 1: Lock TX + Unlock TX (success)
-- Test 2: Lock TX + "TX correctly failed" (wrong redeemer)
-- Test 3: Lock TX + "TX correctly failed" (before deadline)
-
-### Hash Lock
-
-```bash
-bash haskledger/deploy/deploy-hash-lock.sh
-```
-
-Datum: `{"bytes": "<blake2b_256 hash of preimage>"}`. Redeemer: `{"bytes": "<preimage hex>"}`.
-
-The script computes `blake2b_256("vinitisgod")` and locks it as a ByteString datum. Unlock requires providing the preimage.
-
-1. **Test 1 (positive):** Correct preimage — should succeed
-2. **Test 2 (negative):** Wrong preimage — should be rejected
-
-### Vesting
+Each contract has a script that runs its positive and negative cases:
 
 ```bash
 bash haskledger/deploy/deploy-vesting.sh
 ```
 
-Datum: `{"constructor": 0, "fields": [{"bytes": "<beneficiaryPKH>"}, {"int": 1769904000000}]}`. Redeemer: `{"int": 0}`.
+| Script | Should succeed | Should be refused |
+| --- | --- | --- |
+| `deploy-always-succeeds.sh` | lock and unlock | |
+| `deploy-redeemer-match.sh` | redeemer 42 | redeemer 99 |
+| `deploy-deadline.sh` | after the deadline | before the deadline |
+| `deploy-guarded-deadline.sh` | 42 and after | wrong redeemer; before the deadline |
+| `deploy-hash-lock.sh` | correct preimage | wrong preimage |
+| `deploy-hash-verify.sh` | correct preimage | wrong preimage |
+| `deploy-vesting.sh` | beneficiary after the deadline | wrong signer; before the deadline |
+| `deploy-escrow.sh` | seller claims; buyer refunds | wrong signer claims |
+| `deploy-token-gate.sh` | spend while holding the gate token | spend without it |
+| `deploy-multisig.sh` | 2 of 3 sign | 1 of 3 signs |
+| `deploy-treasury.sh` | admin withdraws; anyone deposits | non-admin withdraws |
+| `deploy-oracle.sh` | operator updates | non-operator updates |
+| `deploy-one-shot-nft.sh` | mint with the seed | mint again with another UTxO |
 
-The contract checks: (1) current time is past deadline, (2) beneficiary signed, (3) change pays to beneficiary.
+Each script prints the transaction hashes of the successful steps, with [Preview Cardanoscan](https://preview.cardanoscan.io) links, and the build output of the refused ones.
 
-1. **Test 1 (positive):** Beneficiary signs after deadline with change to beneficiary — should succeed
-2. **Test 2 (negative):** Non-beneficiary signs — should be rejected
-3. **Test 3 (negative):** Beneficiary signs before deadline — should be rejected
+A refused transaction never reaches the chain. `cardano-cli conway transaction build` runs the script while building and stops with `Script evaluation error` when the contract says no. That message is the evidence for a negative test. There is no transaction hash to show, and no collateral is lost.
 
-Requires wallets: `payment`, `beneficiary`.
+The token-gate script creates its own native-token policy from the payment key and mints the gate token before testing.
 
-### Escrow
+### The one-shot NFT
 
-```bash
-bash haskledger/deploy/deploy-escrow.sh
-```
-
-Datum: `{"constructor": 0, "fields": [{"bytes": "<sellerPKH>"}, {"bytes": "<buyerPKH>"}, {"int": 1769904000000}]}`. Redeemer: `{"int": 1}` (claim) or `{"int": 0}` (refund).
-
-Claim (r=1): seller signs after deadline, change to seller. Refund (r=0): buyer signs before deadline (`--invalid-hereafter`), change to buyer.
-
-1. **Test 1 (positive):** Seller claims after deadline — should succeed
-2. **Test 2 (positive):** Buyer refunds before deadline — should succeed
-3. **Test 3 (negative):** Wrong signer tries to claim — should be rejected
-
-Requires wallets: `payment`, `seller`, `buyer`.
-
-### One-Shot NFT
+The NFT policy has its seed UTxO built into the script, so each mint needs its own compile. `deploy-one-shot-nft.sh` does this for you: it picks a UTxO from the payment wallet as the seed, compiles the policy for it with
 
 ```bash
-bash haskledger/deploy/deploy-one-shot-nft.sh
+cabal run haskledger-examples -- one-shot-nft <txhash>#<index> <out.plutus>
 ```
 
-Minting policy — no inline datum. Redeemer: `{"int": 0}` (mint) or `{"int": 1}` (burn). No changes from MS3.
+then mints the token and tries a second mint with a different UTxO, which must be refused. The script runs this compile inside the dev shell, or through `nix develop` if you start it from a plain shell, so Nix must be available on the machine you deploy from.
 
-### Token Gate
+## Deploying your own contract
+
+The deploy scripts are plain bash around `cardano-cli`. `haskledger/deploy/common.sh` holds the shared helpers (UTxO queries, signing, submitting, waiting for a block, time conversion), and any `deploy-*.sh` makes a good template. The flags that matter:
+
+### Locking funds
+
+Send to the script address with an inline datum:
 
 ```bash
-bash haskledger/deploy/deploy-token-gate.sh
-```
+SCRIPT_ADDR=$(cardano-cli conway address build \
+  --payment-script-file examples/mine/owner-lock.plutus \
+  --testnet-magic 2)
 
-Datum: `{"constructor": 0, "fields": [{"bytes": "<gatePolicyID>"}, {"bytes": "<tokenNameHex>"}]}`. Redeemer: `{"int": 0}`.
-
-The script creates a native minting policy, mints ACCESS tokens, then tests the gate. The datum contains the gate token's currency symbol and token name.
-
-1. **Test 1 (positive):** Unlock while holding ACCESS token in outputs — should succeed
-2. **Test 2 (negative):** Unlock without ACCESS token — should be rejected
-
-### Multisig
-
-```bash
-bash haskledger/deploy/deploy-multisig.sh
-```
-
-Datum: `{"constructor": 0, "fields": [{"int": 2}, {"bytes": "<signer1PKH>"}, {"bytes": "<signer2PKH>"}, {"bytes": "<signer3PKH>"}]}`. Redeemer: `{"int": 0}`.
-
-The contract counts how many of the 3 authorized signers signed and checks it meets the threshold (2).
-
-1. **Test 1 (positive):** 2 of 3 signers sign — should succeed
-2. **Test 2 (negative):** Only 1 signer — should be rejected
-
-Requires wallets: `payment`, `signer1`, `signer2`, `signer3`.
-
-### Treasury
-
-```bash
-bash haskledger/deploy/deploy-treasury.sh
-```
-
-Datum: `{"bytes": "<adminPKH>"}`. Redeemer: `{"int": 0}` (withdraw) or `{"int": 1}` (deposit).
-
-Withdraw (r=0) requires admin signature. Deposit (r=1) requires `valuePreserved` — a continuing output at the script address with at least the locked amount.
-
-1. **Test 1 (positive):** Admin withdraws — should succeed
-2. **Test 2 (positive):** Deposit with continuing output — should succeed
-3. **Test 3 (negative):** Non-admin tries to withdraw — should be rejected
-
-Requires wallets: `payment`, `admin`.
-
-### Oracle
-
-```bash
-bash haskledger/deploy/deploy-oracle.sh
-```
-
-Datum: `{"bytes": "<operatorPKH>"}`. Redeemer: `{"int": 0}`.
-
-The contract requires the operator's signature and `valuePreserved` — a continuing output at the script address preserving the locked value.
-
-1. **Test 1 (positive):** Operator signs with continuing output — should succeed
-2. **Test 2 (negative):** Non-operator signs — should be rejected
-
-Requires wallets: `payment`, `operator`.
-
-### Hash Verify
-
-```bash
-bash haskledger/deploy/deploy-hash-verify.sh
-```
-
-Datum: `{"constructor": 0, "fields": [{"bytes": "<blake2b_224 hash>"}, {"bytes": "<keccak_256 hash>"}]}`. Redeemer: `{"bytes": "<preimage hex>"}`.
-
-The contract verifies the redeemer preimage matches both hashes stored in the datum. Requires `python3` for keccak_256 computation.
-
-1. **Test 1 (positive):** Correct preimage — should succeed
-2. **Test 2 (negative):** Wrong preimage — should be rejected
-
-## How Deployment Works
-
-### Locking Funds at a Script Address
-
-A lock transaction sends ADA to a script address with an inline datum:
-
-```
 cardano-cli conway transaction build \
   --testnet-magic 2 \
-  --tx-in <WALLET_UTXO> \
-  --tx-out "<SCRIPT_ADDR>+5000000" \
+  --tx-in <wallet utxo> \
+  --tx-out "$SCRIPT_ADDR+5000000" \
   --tx-out-inline-datum-file datum.json \
-  --change-address <WALLET_ADDR> \
+  --change-address <wallet address> \
   --out-file lock.raw
 ```
 
-The script address is derived from the `.plutus` file:
+HaskLedger's `theDatum` reads the datum the ledger resolves for the spent UTxO. Inline datums are the simplest way to make sure one is there.
 
-```
-cardano-cli conway address build \
-  --payment-script-file my-contract.plutus \
-  --testnet-magic 2
-```
+### Spending from the script
 
-### Unlocking Funds (Executing the Validator)
-
-An unlock transaction spends UTxOs at the script address. The Cardano node evaluates the Plutus script as part of transaction validation:
-
-```
+```bash
 cardano-cli conway transaction build \
   --testnet-magic 2 \
-  --tx-in <SCRIPT_UTXO> \
-  --tx-in-script-file my-contract.plutus \
+  --tx-in <script utxo> \
+  --tx-in-script-file examples/mine/owner-lock.plutus \
   --tx-in-inline-datum-present \
   --tx-in-redeemer-file redeemer.json \
-  --tx-in-collateral <COLLATERAL_UTXO> \
-  --change-address <WALLET_ADDR> \
+  --tx-in <wallet utxo for fees> \
+  --tx-in-collateral <wallet utxo> \
+  --required-signer-hash <key hash> \
+  --change-address <wallet address> \
   --out-file unlock.raw
 ```
 
-Key parameters:
+| Flag | Why |
+| --- | --- |
+| `--tx-in-script-file` | the compiled contract |
+| `--tx-in-inline-datum-present` | the datum is stored on the UTxO |
+| `--tx-in-redeemer-file` | the redeemer, as JSON |
+| `--tx-in-collateral` | a key-locked UTxO, lost only if a failing script is submitted anyway |
+| `--required-signer-hash` | puts the key in `txSignatories`, which `signedBy` reads; sign with that key too |
+| `--invalid-before <slot>` | sets the lower bound that `after` reads |
+| `--invalid-hereafter <slot>` | sets the upper bound that `before` reads |
 
-| Parameter                      | Purpose                                                   |
-| ------------------------------ | --------------------------------------------------------- |
-| `--tx-in-script-file`          | The compiled `.plutus` file containing the validator      |
-| `--tx-in-inline-datum-present` | Tells the node the datum is stored inline at the UTxO     |
-| `--tx-in-redeemer-file`        | JSON file with the redeemer value passed to the validator |
-| `--tx-in-collateral`           | Collateral UTxO forfeited if the script fails on-chain    |
+On Preview, slot = POSIX seconds - 1666656000. `common.sh` has `posix_to_slot` and `slot_to_posix`.
 
-For the deadline contract, additional parameters control the validity range:
-
-| Parameter                    | Purpose                                                         |
-| ---------------------------- | --------------------------------------------------------------- |
-| `--invalid-before <SLOT>`    | Transaction is invalid before this slot (sets lower bound)      |
-| `--invalid-hereafter <SLOT>` | Transaction is invalid at or after this slot (sets upper bound) |
-
-### `transaction build` vs `transaction build-raw`
-
-The deploy scripts use `cardano-cli conway transaction build` (not `build-raw`). The `build` command automatically:
-
-- Calculates transaction fees
-- Estimates Plutus script execution units (memory and CPU)
-- Computes the script integrity hash
-- Evaluates the script locally before submission
-
-This means scripts fail at build time if the validator rejects the input you get an immediate error without submitting to the network and losing collateral.
-
-### POSIX Time to Slot Conversion
-
-The Preview testnet has a fixed relationship between POSIX time and slots:
-
-```
-slot = (posix_time - 1666656000) / 1
-```
-
-Where `1666656000` is the Preview testnet system start time (Unix epoch) and the slot length is 1 second.
-
-The deploy scripts include `posix_to_slot` and `slot_to_posix` helper functions for this conversion.
-
-## Verifying Transactions
-
-After deployment, you can verify transactions on the [Preview Cardanoscan explorer](https://preview.cardanoscan.io):
-
-```
-https://preview.cardanoscan.io/transaction/<TX_HASH>
-```
-
-You can also query UTxOs locally:
+### Minting
 
 ```bash
-# Check wallet balance
-cardano-cli conway query utxo \
-  --address $(cat haskledger/deploy/keys/payment.addr) \
-  --testnet-magic 2
-
-# Check script address
-cardano-cli conway query utxo \
-  --address <SCRIPT_ADDR> \
-  --testnet-magic 2
+cardano-cli conway transaction build \
+  ... \
+  --mint "1 <policy id>" \
+  --mint-script-file my-policy.plutus \
+  --mint-redeemer-file redeemer.json \
+  ...
 ```
+
+Get the policy id with `cardano-cli conway transaction policyid --script-file my-policy.plutus`. A token with an empty name is written as the bare policy id; otherwise use `<policy id>.<token name in hex>`.
+
+### Redeemer and datum JSON
+
+`cardano-cli` takes Plutus Data in its detailed JSON form:
+
+```json
+{ "int": 42 }
+{ "bytes": "4ccf012099ce51886861f7d870e3fbe75b66ca2c3d1979b4afcfcd91" }
+{ "constructor": 0, "fields": [ { "bytes": "..." }, { "int": 1769904000000 } ] }
+{ "list": [ { "int": 1 }, { "int": 2 } ] }
+```
+
+The [contracts page](contracts.md) lists the datum and redeemer each example expects.
 
 ## Troubleshooting
 
-### "Node socket not found"
-
-Ensure `CARDANO_NODE_SOCKET_PATH` is set and the node is running:
-
-```bash
-export CARDANO_NODE_SOCKET_PATH=~/cardano/preview/node.socket
-```
-
-### "Node not fully synced"
-
-The deploy scripts check that the node is at 100% sync before proceeding. Wait for the node to finish syncing:
-
-```bash
-cardano-cli conway query tip --testnet-magic 2
-# Look for "syncProgress": "100.00"
-```
-
-### "No suitable UTxO in wallet"
-
-The wallet doesn't have enough ADA. Fund it using the [Preview faucet](https://docs.cardano.org/cardano-testnets/tools/faucet/).
-
-### "Script not found"
-
-Run `cabal run haskledger-examples` first to compile the contracts and generate the `.plutus` files.
-
-### "TX correctly failed at build stage"
-
-Expected for negative tests. The validator rejected the invalid input. `transaction build` evaluates scripts locally before submission, so rejection at build stage confirms the logic works.
+| Message | Meaning |
+| --- | --- |
+| `CARDANO_NODE_SOCKET_PATH not set` or `Node socket not found` | Export the socket path, and check the node is running. |
+| `Node not fully synced` | Wait for `syncProgress` to reach `100.00`. |
+| `No suitable UTxO in wallet` | Fund the payment wallet from the faucet. |
+| `Script not found` | Run `cabal run haskledger-examples` from the repository root. |
+| `Script evaluation error` | The contract refused the transaction. Expected in negative tests; in a positive test, check the datum, redeemer, signers and validity bounds against the contract. |
+| `BadInputsUTxO` | An input was already spent. The node's view can lag a block behind; wait and query again. |

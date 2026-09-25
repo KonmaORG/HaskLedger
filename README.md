@@ -15,7 +15,7 @@ guardedDeadline = validator "guarded-deadline" $ do
     ]
 ```
 
-The combinators handle all the Plutus `Data` destructuring underneath -- that `after` call walks 10+ levels of constructor encoding (interval bounds, closure flags, `UnConstrData`/`SndPair`/`HeadList` chains). You don't touch any of it.
+The combinators handle all the Plutus `Data` destructuring underneath. That `after` call walks 10+ levels of constructor encoding (interval bounds, closure flags, `UnConstrData`/`SndPair`/`HeadList` chains). You don't touch any of it.
 
 # How does it compile?
 
@@ -37,21 +37,25 @@ cabal build all
 cabal run haskledger-examples
 ```
 
-Requires Nix with flakes enabled. The dev shell provides GHC 9.12.2 and all dependencies. Begin with `HaskLedger.Contract` and `HaskLedger.Combinators`, or see the [User Guide](docs/user-guide.md).
+Requires Nix with flakes enabled. The dev shell provides GHC 9.12.2 and all dependencies. New here? Follow [Getting started](docs/getting-started.md).
 
 # What contracts are included?
 
-The example suite spans spending validators and a minting policy, all validated on the Cardano Preview testnet (PlutusV3, Conway era) with positive and negative test cases:
+Thirteen contracts, spanning spending validators and a minting policy, all validated on the Cardano Preview testnet (PlutusV3, Conway era) with positive and negative test cases:
 
-- **always-succeeds** -- ignores inputs, always passes. Pipeline smoke test.
-- **redeemer-match** -- checks the redeemer equals 42.
-- **deadline** -- checks the validity range is past a POSIX timestamp.
-- **guarded-deadline** -- redeemer check + deadline check via `requireAll`.
-- **hash-lock** -- spend by revealing a preimage whose `blake2b_256` matches the datum.
-- **hash-verify** -- preimage must satisfy two hashes (`blake2b_224` and `keccak_256`).
-- **oracle** -- only the datum-named operator may update; the UTxO must continue.
-- **treasury** -- admin withdraws; anyone deposits while value is preserved.
-- **one-shot-nft** -- minting policy that consumes a seed UTxO and mints exactly one token.
+- **always-succeeds**: ignores inputs, always passes. Pipeline smoke test.
+- **redeemer-match**: checks the redeemer equals 42.
+- **deadline**: checks the validity range is past a POSIX timestamp.
+- **guarded-deadline**: redeemer check + deadline check via `requireAll`.
+- **hash-lock**: spend by revealing a preimage whose `blake2b_256` matches the datum.
+- **hash-verify**: preimage must satisfy two hashes (`blake2b_224` and `keccak_256`).
+- **oracle**: only the datum-named operator may update; the UTxO must continue.
+- **treasury**: admin withdraws; anyone deposits while value is preserved.
+- **one-shot-nft**: minting policy that consumes a seed UTxO and mints exactly one token.
+- **vesting**: the beneficiary named in the datum claims the full amount after the deadline.
+- **escrow**: the seller claims after the deadline, or the buyer takes a refund.
+- **token-gate**: spendable only if an output carries a specific token.
+- **multisig**: enough of three listed keys must sign; the keys and the threshold come from the datum.
 
 Each has a deploy script under `haskledger/deploy/` that runs positive and negative tests against a local `cardano-node`. See the [Deployment Guide](docs/deployment-guide.md) for node setup.
 
@@ -61,14 +65,24 @@ Each has a deploy script under `haskledger/deploy/` that runs positive and negat
 haskledger/
   src/
     HaskLedger.hs              -- single import, re-exports everything
-    HaskLedger/Contract.hs     -- Validator, Contract, require, Num instance
-    HaskLedger/Combinators.hs  -- operators, data access, after, boolean logic
-    HaskLedger/Crypto.hs       -- hashing builtins (blake2b, keccak)
+    HaskLedger/Contract.hs     -- core types: Validator, Contract, Expr
+    HaskLedger/Validator.hs    -- validator, mintingPolicy, require, payout guards
+    HaskLedger/Ledger.hs       -- ScriptContext, TxInfo fields, after
+    HaskLedger/Value.hs        -- value lookups and minted amounts
     HaskLedger/Auth.hs         -- signature checks
-    HaskLedger/Value.hs        -- value and minting helpers
-    HaskLedger/Internal/       -- Plutus Data destructuring (not user-facing)
+    HaskLedger/Crypto.hs       -- hashing and BLS12-381 builtins
+    HaskLedger/Case.hs         -- branching on Maybe, List, Data and pairs
+    HaskLedger/Bool.hs         -- boolean operators
+    HaskLedger/Num.hs          -- integer operators
+    HaskLedger/ByteString.hs   -- bytestring operators
+    HaskLedger/List.hs         -- list helpers
+    HaskLedger/Data.hs         -- wrapping and unwrapping Plutus Data
+    HaskLedger/Trace.hs        -- debug tracing
+    HaskLedger/Internal/       -- Data destructuring, builtin lifters (not user-facing)
     HaskLedger/Compile.hs      -- eDSL -> Covenant JSON -> c2uplc -> .plutus
-  examples/                    -- example contracts
+  examples/                    -- the thirteen example contracts
+  test/                        -- six test suites plus a regression spike
+  bench/                       -- throughput benchmark with a PlutusTx baseline
   deploy/                      -- testnet deployment scripts
 covenant/                      -- MLabs Covenant IR (v1.3.0, vendored)
 c2uplc/                        -- MLabs UPLC code generator (v1.0.0, vendored)
@@ -90,10 +104,18 @@ The full pipeline is pure Haskell with no platform-specific code.
 
 # Documentation
 
+Start at the [documentation index](docs/README.md). The main pages:
+
+- [Getting started](docs/getting-started.md): install, build, and compile your first contract
+- [User guide](docs/user-guide.md): datums, redeemers, time, signatures, payments, lists, minting
+- [API reference](docs/api-reference.md): every exported function, grouped by task
+- [Example contracts](docs/contracts.md): all thirteen, with the datum and redeemer each expects
+- [Security](docs/security.md): the attacks to guard against, and the guard for each
+- [Testing](docs/testing.md): testing contracts off-chain and on the Preview testnet
+- [Compilation](docs/compilation.md): what the compiler produces and how Plutus Data is laid out
+- [Deployment guide](docs/deployment-guide.md): Cardano node setup and the Preview testnet
+- [Performance](docs/performance.md): sizes and costs against PlutusTx, and how to reproduce them
 - [Haddock API docs](https://konmaorg.github.io/HaskLedger/haddock/index.html)
-- [User Guide](docs/user-guide.md) -- writing and compiling contracts
-- [Architecture](docs/architecture.md) -- pipeline internals and design decisions
-- [Deployment Guide](docs/deployment-guide.md) -- Cardano node setup, Preview testnet
 
 # License
 

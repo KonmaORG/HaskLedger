@@ -1,203 +1,105 @@
-# HaskLedger Architecture
+# Architecture
 
-## Overview
+This page is for people who want to change HaskLedger itself: where things live, how the modules depend on each other, how a combinator is built, and the rules the codebase follows. To write contracts with HaskLedger, read the [user guide](user-guide.md) instead. For what the compiler produces, read [Compilation](compilation.md).
 
-HaskLedger compiles to Untyped Plutus Lambda Calculus (UPLC) through several stages:
+## Repository layout
 
 ```
-User's Haskell code (type-safe eDSL)
-        |
-        v
-  HaskLedger eDSL combinators
-        |
-        v
-  Covenant Abstract Syntax Graph (ASG)
-        |
-        v
-  Covenant JSON (serialized IR)
-        |
-        v
-  c2uplc code generator
-        |
-        v
-  UPLC (.plutus text envelope)
+haskledger/                 the HaskLedger package
+  src/HaskLedger.hs         re-exports every public module
+  src/HaskLedger/           the library modules
+  examples/                 the thirteen example contracts and the compiler executable
+  test/                     test suites and TestHelper
+  bench/                    size, cost and throughput benchmark, with the PlutusTx baseline
+  deploy/                   Preview testnet deploy scripts
+covenant/                   MLabs Covenant IR (v1.3.0), vendored
+c2uplc/                     MLabs Covenant-to-UPLC code generator (v1.0.0), vendored
+examples/ms3, examples/ms4  compiled .plutus envelopes
+deploy-out/                 logs from the Preview deploy runs
+docs/                       this documentation
+flake.nix, cabal.project    Nix dev shell and cabal project
 ```
 
-## Components
+## Modules
 
-### 1. HaskLedger eDSL (`haskledger/src/`)
+Each module builds on the ones above it:
 
-The user-facing library:
+| Layer | Module | Holds |
+| --- | --- | --- |
+| core | `Contract` | the `Contract` monad, `Expr`, depth tracking, `validator`, `require`, `requireAll`, `pass`, the `Num` instance |
+| primitives | `Internal.Data`, `Internal.Builtin` | raw Data destructuring on Covenant refs; lifting Plutus builtins into `Contract` |
+| builtins | `Data`, `Bool`, `Num`, `ByteString`, `Crypto`, `Trace` | one function per Plutus builtin or small group, plus operators |
+| control | `Case` | lazy branching on `Maybe`, lists and Data; constructors |
+| iteration | `List` | folds and searches over builtin lists, via Covenant `cata` |
+| ledger | `Ledger` | the script context, all `TxInfo` fields, output and input fields, `after` |
+| domain | `Auth`, `Value` | signatures; value lookups and minting |
+| contract kit | `Validator` | `theDatum`, `before`, own-input helpers and the payout guards, plus a curated re-export of what most contracts need |
+| backend | `Compile` | running Covenant and c2uplc, variable renaming, writing envelopes |
 
-- **`HaskLedger.Contract`** - Core types (`Validator`, `Contract`, `Expr`, `Condition`), control flow (`validator`, `require`, `requireAll`, `pass`), and the `Num` instance for integer literals and arithmetic.
-- **`HaskLedger.Combinators`** - Convenience combinators (`theRedeemer`, `theTxInfo`, `txValidRange`), operators (`.==`, `./=`, `.<`, `.<=`, `.>`, `.>=`, `.&&`, `.||`), low-level accessors (`scriptContext`, `txInfo`, `redeemer`, `validRange`), data conversion (`asInt`, `mkInt`), comparisons (`equalsInt`, `lessThanInt`, `lessThanEqInt`), time operations (`after`), and boolean logic (`andBool`, `orBool`, `notBool`).
-- **`HaskLedger.Internal`** - Low-level Plutus data destructuring helpers (`unconstrData`, `unconstrFields`, `nthField`, `headList`, `tailList`, etc.). Not exported to users.
-- **`HaskLedger.Compile`** - Compilation pipeline functions (`compileValidator`, `compileToJSON`, `compileToEnvelope`).
-- **`HaskLedger`** - Re-export module. Users do `import HaskLedger` and get everything.
+`HaskLedger` re-exports all of them, so users need one import.
 
-### 2. Covenant IR (`covenant/`, v1.3.0)
-
-MLabs' intermediate representation library:
-
-- **Abstract Syntax Graph (ASG)** - A typed intermediate representation for Plutus programs. Unlike a tree, the ASG supports sharing (hash-consing) of subexpressions.
-- **`ASGBuilder` monad** - A monadic interface for constructing ASG nodes. This is what `Contract` is a type alias for.
-- **Type system** - `CompT`, `ValT`, and related types that describe Plutus computation and value types.
-- **Builtins** - Access to Plutus builtins (`IfThenElse`, `UnConstrData`, `EqualsInteger`, etc.) via `builtin1`, `builtin2`, `builtin3`.
-- **Serialization** - JSON serialization of the ASG for consumption by code generators.
-- **Ledger types** - Data declarations for all Cardano ledger types (`ScriptContext`, `TxInfo`, `Interval`, etc.).
-
-The eDSL combinators construct Covenant ASG nodes directly.
-
-### 3. c2uplc Code Generator (`c2uplc/`, v1.0.0)
-
-MLabs' code generator, transforms Covenant JSON into UPLC:
-
-- Reads the serialized Covenant ASG (JSON format)
-- Performs lambda lifting, type erasure, and DeBruijn index conversion
-- Produces a `.plutus` text envelope file containing CBOR-encoded UPLC
-
-Invoked as an external process during `compileToEnvelope`.
-
-## Compilation Pipeline in Detail
-
-### Stage 1: eDSL → Covenant ASG
-
-When a user writes:
+## Core types
 
 ```haskell
-myValidator = validator "my-contract" $ do
-  require "check" $
-    asInt theRedeemer .== 42
+newtype Contract a = Contract (ReaderT Depth ASGBuilder a)
+
+data Expr = Expr
+  { exprLevel  :: Depth          -- lambda depth where exprRef is valid
+  , exprRef    :: Ref            -- the Covenant node, valid at exprLevel
+  , exprRecipe :: Contract Expr  -- how to rebuild it at any other depth
+  }
 ```
 
-Each combinator call builds ASG nodes inside the `ASGBuilder` monad:
+`Contract` is Covenant's `ASGBuilder` plus the current lambda depth. `Expr` is a node plus the recipe that built it. `resolve` returns the cached node when used at the depth it was built, and reruns the recipe otherwise, so argument references are correct wherever a value is used. Hash-consing means rerunning a recipe at the same depth returns the same node, so this costs nothing in the output. [The design note](option-a-depth-tracked-expr.md) has the full story.
 
-1. `validator "my-contract" body` calls `lam validatorType body` creates a lambda node with type `Data → Unit`.
-2. `theRedeemer` (= `redeemer scriptContext`) calls `arg Z ix0` to reference the lambda's argument, then `unconstrFields` + `nthField 1` builds `HeadList (TailList (SndPair (UnConstrData ctx)))`.
-3. `asInt (...)` calls `builtin1 UnIData` and `app'` applies the `UnIData` builtin.
-4. `.== 42` desugars to `equalsInt expr (fromInteger 42)`. The `Num` instance's `fromInteger` calls `lit (AnInteger 42)`. The `.==` operator calls `builtin2 EqualsInteger` and `app'`.
-5. `require` uses division-by-zero to reject: `IfThenElse cond 1 0` produces the denominator for `DivideInteger 1 denom`. False → divide by zero → crash. See [Error Model](#error-model) for details.
+## Writing a combinator
 
-The result is a Covenant ASG: a directed acyclic graph of typed nodes with shared subexpressions.
-
-### Stage 2: ASG → Covenant JSON
-
-`compileToJSON` calls Covenant's `compileAndSerialize`, which:
-
-1. Runs `runASGBuilder` with the ledger datatype context to produce the ASG
-2. Wraps it in a `CompilationUnit` with version info and type declarations
-3. Serializes to JSON
-
-The JSON intermediate file is useful for debugging you can inspect the ASG structure before UPLC generation.
-
-### Stage 3: Covenant JSON → UPLC (`.plutus`)
-
-`compileToEnvelope` calls the `c2uplc` executable:
-
-```
-c2uplc my-contract.json
-```
-
-c2uplc reads the JSON, performs code generation, and writes `my-contract-compiled.json` a Cardano text envelope file. HaskLedger renames this to the user's requested output path.
-
-The text envelope format looks like:
-
-```json
-{
-  "type": "PlutusScriptV3",
-  "description": "",
-  "cborHex": "59014f59014c01000033233223232..."
-}
-```
-
-The `cborHex` field contains the CBOR-encoded UPLC program. This is what Cardano nodes evaluate during transaction validation.
-
-## Type System
-
-HaskLedger validators have the type:
-
-```
-Data → Unit
-```
-
-In Covenant's type language: `Comp0 (Datatype "Data" [] :--:> ReturnT (BuiltinFlat UnitT))`
-
-Plutus V3 validators receive a single `Data` argument (the merged script context) and must return `BuiltinUnit` (`()`) on success. Any other return value including integers is treated as a script failure. HaskLedger returns `()` for success and uses division-by-zero for failure (see [Error Model](#error-model)).
-
-## Data Destructuring
-
-Cardano encodes all ledger types as Plutus `Data` values using `Constr` constructors. To access fields, you must:
-
-1. `UnConstrData` decompose a `Data` value into a `Pair(tag, [fields])`
-2. `SndPair` get the fields list
-3. `HeadList` / `TailList` navigate to the nth field
-
-For example, extracting the redeemer from a script context:
-
-```
-ScriptContext = Constr 0 [TxInfo, Redeemer, ScriptPurpose]
-
-redeemer ctx =
-  HeadList (TailList (SndPair (UnConstrData ctx)))
-       ^        ^       ^           ^
-       |        |       |           decompose Data
-       |        |       get fields list
-       |        skip field 0 (TxInfo)
-       get field 1 (Redeemer)
-```
-
-The `nthField n fields` helper encapsulates this pattern it applies `TailList` n times followed by `HeadList`.
-
-The `after` combinator performs the deepest destructuring:
-
-```
-ScriptContext
-  → TxInfo (field 0)
-    → validRange (field 7)
-      → Interval
-        → LowerBound (field 0)
-          → Extended (field 0)
-            → UnConstrData → SndPair → HeadList (the finite time value)
-              → UnIData (convert to Integer → finiteTime)
-          → Bool (field 1 - closure flag)
-            → UnConstrData → FstPair (constructor tag)
-              → EqualsInteger tag 1 → isClosed (builtin Bool)
-        → IfThenElse isClosed
-            (LessThanEqualsInteger deadline finiteTime)        - closed (inclusive)
-            (LessThanEqualsInteger deadline (finiteTime + 1))  - open (exclusive)
-```
-
-This is 10+ levels of data walking, all hidden behind ``txValidRange `after` 1769904000000``. The closure flag determines whether the lower bound is inclusive (`deadline ≤ t`) or exclusive (`deadline ≤ t + 1`, since the interval effectively starts at `t + 1` for integer POSIXTime). Both `IfThenElse` branches are safe boolean comparison results, so UPLC's eager evaluation causes no issues.
-
-## Hash-Consing and Sharing
-
-The Covenant ASG uses hash-consing: structurally identical subexpressions are automatically shared. This means:
+Most combinators are a builtin applied to arguments. `Internal.Builtin` does this for you:
 
 ```haskell
-let info = theTxInfo
-let r    = theRedeemer
+blake2b_256 :: Contract Expr -> Contract Expr
+blake2b_256 = liftBuiltin1 Blake2b_256
 ```
 
-Both `theTxInfo` and `theRedeemer` internally call `unconstrFields` on `scriptContext`, which does `SndPair (UnConstrData ctx)`. In the ASG, the `UnConstrData ctx` and `SndPair` nodes are represented only once, even though they appear in two different combinator chains.
+Written out, that is:
 
-This happens automatically users don't need to think about it.
-
-## Error Model
-
-On-chain, Plutus V3 validators succeed by returning `BuiltinUnit` and fail by throwing a runtime error. HaskLedger compiles `require cond` to:
-
-```
-(\_ -> ()) (DivideInteger 1 (IfThenElse cond 1 0))
+```haskell
+myCombinator :: Contract Expr -> Contract Expr
+myCombinator xM = expr $ do
+  x <- resolveM xM            -- the argument's node at the current depth
+  f <- builtin1 SomePrim      -- the builtin
+  AnId <$> app' f [x]         -- apply it
 ```
 
-`IfThenElse` is used only with safe integer literal branches (`1` and `0`). The result becomes the denominator for `DivideInteger`: when the condition is `True`, `DivideInteger 1 1` evaluates harmlessly to `1`; when `False`, `DivideInteger 1 0` triggers a division-by-zero crash. The `(\_ -> ())` wrapper discards the integer result and returns Unit.
+Always wrap the body in `expr` so the result carries its recipe, and always get argument nodes with `resolveM`.
 
-This design avoids a subtle UPLC pitfall: placing crash expressions directly in `IfThenElse` branches would cause them to be evaluated eagerly (UPLC is call-by-value), crashing the validator regardless of the condition.
+When a combinator needs a lambda, for example a branch or a fold step, build it with `withLam` or `withLam2`. They track the depth and hand the body correctly indexed arguments. Delay branches with `thunk` and pick one with `force`. `caseMaybe` in `Case.hs` and `foldList` in `List.hs` are the reference implementations.
 
-Division by zero was chosen over Covenant's `err` node because `err` generates `AnError` ASG nodes that c2uplc cannot compile. `DivideInteger 1 0` achieves the same effect: an unrecoverable runtime error that causes the Cardano node to reject the transaction.
+## Rules
 
-For `requireAll`, conditions are sequenced with `ChooseUnit`. UPLC's curried application evaluates the first argument before the second, providing left-to-right short-circuit evaluation.
+- **Builtins only.** Do not use Covenant's `match`, `ctor'` or `lazyLam`. c2uplc compiles them through a transformation stage that is not reliable for our use yet. Use builtins with `lam`/`withLam`, `thunk`, `force` and `cata`. The one allowed constructor is the empty list, `ctor "List" "Nil"`, which c2uplc special-cases.
+- **Strict unless you delay.** UPLC is call-by-value. Any branch that must not run has to be a thunk.
+- **The vendored compilers.** `covenant/` and `c2uplc/` are upstream code. The only local changes are scope-handling fixes in `c2uplc/src/Covenant/CodeGen/Common.hs`. Anything else belongs upstream.
+- **Public API.** A new public module goes in `exposed-modules` in `haskledger/haskledger.cabal` and is re-exported from `HaskLedger.hs`. Check that new names do not clash with `TestHelper`; test modules that import both need a `hiding` clause.
+- **Tests with every change.** Every combinator gets a test that it produces the right result and, for anything that checks a value, a test that it fails on the wrong one. Tests that compare a value with itself prove nothing.
+- **Style.** Match the file you are editing. Keep comments short and specific.
 
-## Platform Support
+## Test suites
 
-The pipeline is pure Haskell with no platform-specific code. See the [README](../README.md) for the full platform matrix. The pipeline has been validated end-to-end on `riscv64-linux` via GHC 9.12.2's native RISC-V code generator under QEMU emulation.
+| Suite | Covers |
+| --- | --- |
+| `haskledger-core` | `Contract`, combinators, internal destructuring, literals |
+| `haskledger-matching` | `case` functions, lists, values |
+| `haskledger-ledger` | compilation, example compilation, `TxInfo` fields, a DEX swap scenario |
+| `haskledger-crypto` | signature verification, hashing and the other extended builtins |
+| `haskledger-convenience` | ledger literals, value shortcuts, `countList` |
+| `haskledger-contracts` | the thirteen example contracts, including the attack cases |
+| `spike-sz` | argument references at several lambda depths through the whole pipeline |
+
+```bash
+cabal build all
+cabal test all
+cabal test haskledger-contracts --test-options='-p Escrow'
+```
+
+Test helpers are documented in [Testing](testing.md).
