@@ -262,13 +262,14 @@ A detailed Closeout Video of approximately 12 minutes has been produced for the 
 - open-source outputs; and
 - the project's final status.
 
-The video is accompanied by the public repository and the technical reports, so the claims it makes can be independently examined and reproduced.
+The video is published publicly on YouTube, so it is openly accessible to the Cardano community without any access request or sign-in. The Google Drive copy is retained as the archival original. The video is accompanied by the public repository and the technical reports, so the claims it makes can be independently examined and reproduced.
 
 #### Evidence
 
 | Evidence | Link |
 | -------- | ---- |
-| Final Project Closeout Video | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
+| Final Project Closeout Video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
+| Final Project Closeout Video (archival original, Google Drive) | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
 | Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Repository | https://github.com/KonmaORG/HaskLedger |
 
@@ -286,7 +287,7 @@ For Milestone 5, the proposal anticipated review by developers or consultants as
 
 The project team can be held accountable for building the funded solution, publishing it, making it independently inspectable, testing it, demonstrating it on Cardano, measuring it against a reproducible baseline, seeking external scrutiny, responding to technical feedback, documenting its limitations and providing complete closeout evidence. All of that has been delivered. Further delay would not add HaskLedger development; it would only leave completion dependent on organisations outside the project.
 
-We respectfully request assessment of Milestone 5 on the body of work delivered, the evidence provided, the expert and technical-community engagement that did occur, and the reasonable efforts made toward the original external-review intention.
+We respectfully request assessment of Milestone 5 on the body of work delivered, the evidence provided, the expert and technical-community engagement that did occur, and the reasonable efforts made toward the original external-review intention. If a formal change request is the preferred way to record this adjustment, the team is ready to submit one.
 
 ---
 
@@ -296,7 +297,8 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | -------- | --------------- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
 | Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
-| Final Project Closeout Video | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
+| Final Project Closeout Video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
+| Final Project Closeout Video (archival original, Google Drive) | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
 | Community and Expert Validation record | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
 | MLabs Validation record | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
 | Internal review: version tested | [Commit `14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0) |

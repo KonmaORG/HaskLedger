@@ -203,7 +203,8 @@ Stated in the source and docs, not discovered by users:
 | Item | Link |
 | ---- | ---- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
-| Closeout video | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing |
+| Closeout video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
+| Closeout video (archival original, Google Drive) | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing |
 | Milestone 5 PoA | [`F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md) |
 | Milestone 4 PoA and throughput addendum | [`F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md), [`F-11-Milestone-4-Throughput-Efficiency-Addendum.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Throughput-Efficiency-Addendum.md) |
 | Milestone 3 PoA | [`F-11-Milestone-3-POA-Core-Functionality-Development.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-3-POA-Core-Functionality-Development.md) |
