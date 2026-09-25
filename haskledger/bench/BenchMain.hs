@@ -45,7 +45,7 @@ import UntypedPlutusCore qualified as UPLC
 import UntypedPlutusCore.Evaluation.Machine.Cek qualified as Cek
 
 import HaskLedger.Contract (Validator)
-import Scenarios (Scenario (Scenario), scenarios)
+import Scenarios (Scenario (Scenario), nftSeedTxId, scenarios)
 import TestHelper (compileContract)
 
 import AlwaysSucceeds (alwaysSucceeds)
@@ -75,7 +75,7 @@ validators =
   , ("hash-verify", hashVerify)
   , ("oracle", oracle)
   , ("treasury", treasury)
-  , ("one-shot-nft", oneShotNFT)
+  , ("one-shot-nft", oneShotNFT nftSeedTxId 0)
   ]
 
 -- Contracts with a PlutusTx twin in bench/baseline-plutustx.

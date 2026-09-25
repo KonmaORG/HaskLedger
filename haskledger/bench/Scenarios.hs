@@ -6,6 +6,7 @@
 module Scenarios
   ( Scenario (..)
   , scenarios
+  , nftSeedTxId
   ) where
 
 import Data.ByteString (ByteString)
@@ -119,7 +120,6 @@ nftMintCtx :: Data
 nftMintCtx =
   let dummyTxOut = mkTxOut (mkSimpleAddress "") (mkAdaValue 1000000) mkNoOutputDatum mkNothing
       seedInput = mkTxInInfo (mkTxOutRef nftSeedTxId 0) dummyTxOut
-      -- Redeemer: Constr 0 [I action, seedTxOutRef]
-      mintRedeemer = Constr 0 [I 0, mkTxOutRef nftSeedTxId 0]
+      -- Redeemer: I 0 = mint. The seed is baked into the policy, not passed here.
       txi = mkTxInfoWithFields [(0, List [seedInput]), (4, mkMintValue "" [("", 1)])]
-  in mkScriptContextWithInfo txi mintRedeemer (mkMintingInfo "")
+  in mkScriptContextWithInfo txi (I 0) (mkMintingInfo "")

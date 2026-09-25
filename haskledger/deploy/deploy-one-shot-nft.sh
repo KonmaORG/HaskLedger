@@ -2,15 +2,16 @@
 set -euo pipefail
 
 # One-Shot NFT - consume a specific UTxO to mint exactly one token.
-# The seed TxOutRef is passed via the redeemer at deploy time.
-# No contract recompilation needed — same .plutus file works for any seed.
+# The seed TxOutRef is baked into the policy, so this script picks a seed from
+# the wallet, compiles a policy for it, then mints. The policy id is unique to
+# that seed.
 #
 # Redeemer format:
-#   Mint: Constr 0 [I 0, Constr 0 [B txhash, I ix]]
-#   Burn: Constr 0 [I 1, I 0]
+#   Mint: I 0
+#   Burn: I 1
 #
-# Test 1: mint with seed UTxO present  → SUCCEED
-# Test 2: mint again (seed is gone)    → FAIL
+# Test 1: mint with seed UTxO present            -> SUCCEED
+# Test 2: mint again with another wallet UTxO    -> FAIL
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
@@ -18,37 +19,35 @@ source "${SCRIPT_DIR}/common.sh"
 check_prereqs
 ensure_dirs
 
-PLUTUS_FILE="${PLUTUS_DIR_M4}/one-shot-nft.plutus"
 PAYMENT_SKEY="${KEYS_DIR}/payment.skey"
 PAYMENT_ADDR_FILE="${KEYS_DIR}/payment.addr"
-# Contract uses emptyByteString as token name — mint with empty name to match
+# The contract mints under the empty token name, so the asset has no suffix.
 TOKEN_NAME_HEX=""
 
-if [[ ! -f "$PLUTUS_FILE" ]]; then
-  fail "Script not found: ${PLUTUS_FILE}"
-  echo "  Run first:  cabal run haskledger-examples"
-  exit 1
-fi
 require_wallet payment
 
 WALLET_ADDR="$(cat "$PAYMENT_ADDR_FILE")"
-POLICY_ID="$(cardano-cli conway transaction policyid --script-file "$PLUTUS_FILE")"
 
-# Contract uses emptyByteString as token name — mint asset with no token name suffix
-if [[ -n "$TOKEN_NAME_HEX" ]]; then
-  MINT_ASSET="${POLICY_ID}.${TOKEN_NAME_HEX}"
-else
-  MINT_ASSET="${POLICY_ID}"
-fi
+# Compile the policy for one seed. Runs from the repo root. Outside the Nix dev
+# shell it goes through `nix develop`, since a system cabal usually has the
+# wrong GHC.
+compile_nft() {
+  local seed="$1" out="$2"
+  local root="${SCRIPT_DIR}/../.."
+  if [[ -n "${IN_NIX_SHELL:-}" ]]; then
+    (cd "$root" && cabal run -v0 haskledger-examples -- one-shot-nft "$seed" "$out")
+  else
+    (cd "$root" && nix develop --command cabal run -v0 haskledger-examples -- one-shot-nft "$seed" "$out")
+  fi
+}
 
 echo ""
 echo "------------------------------------------------------------"
 info "Deploying: one-shot-nft"
-echo "  Policy ID:    ${POLICY_ID}"
-echo "  Token name:   (empty — matches contract's emptyByteString)"
+echo "  Token name:   (empty, matches the contract's emptyByteString)"
 echo ""
-echo "  Test 1: Mint with seed UTxO   (should SUCCEED)"
-echo "  Test 2: Mint again (no seed)  (should FAIL)"
+echo "  Test 1: Mint with seed UTxO           (should SUCCEED)"
+echo "  Test 2: Mint again with another UTxO  (should FAIL)"
 echo "------------------------------------------------------------"
 
 # TEST 1: mint with seed UTxO
@@ -125,18 +124,33 @@ if [[ -z "$COLL_INFO" || "$COLL_INFO" == "null null" ]]; then
   info "New seed UTxO: ${SEED_UTXO}"
 
   if [[ -z "$COLL_INFO" || "$COLL_INFO" == "null null" ]]; then
-    fail "Split failed — still only one UTxO (after retries)."
+    fail "Split failed, still only one UTxO (after retries)."
     exit 1
   fi
 fi
 COLL_UTXO="${COLL_INFO%% *}"
 info "Collateral: ${COLL_UTXO}"
 
-# Build mint redeemer: Constr 0 [I 0, Constr 0 [B txhash, I ix]]
+# The seed is final now (the split above may have replaced it), so build the
+# policy for it.
+PLUTUS_FILE="${TX_DIR}/one-shot-nft-${SEED_TXHASH}-${SEED_IX}.plutus"
+info "Compiling policy for seed ${SEED_UTXO}..."
+if ! compile_nft "$SEED_UTXO" "$PLUTUS_FILE"; then
+  fail "Policy compile failed for seed ${SEED_UTXO}."
+  exit 1
+fi
+POLICY_ID="$(cardano-cli conway transaction policyid --script-file "$PLUTUS_FILE")"
+if [[ -n "$TOKEN_NAME_HEX" ]]; then
+  MINT_ASSET="${POLICY_ID}.${TOKEN_NAME_HEX}"
+else
+  MINT_ASSET="${POLICY_ID}"
+fi
+info "Policy ID: ${POLICY_ID}"
+
+# Mint redeemer: I 0
 MINT_REDEEMER="${TX_DIR}/redeemer-nft-mint.json"
-printf '{"constructor": 0, "fields": [{"int": 0}, {"constructor": 0, "fields": [{"bytes": "%s"}, {"int": %s}]}]}' \
-  "$SEED_TXHASH" "$SEED_IX" > "$MINT_REDEEMER"
-info "Mint redeemer: action=0, seed=${SEED_TXHASH}#${SEED_IX}"
+write_int_json 0 "$MINT_REDEEMER"
+info "Mint redeemer: action=0"
 
 RAW="${TX_DIR}/nft-mint.raw"
 SIGNED="${TX_DIR}/nft-mint.signed"
@@ -160,22 +174,46 @@ success "Mint TX: ${MINT_TX}"
 wait_for_block
 success "Test 1 PASSED: NFT minted."
 
-# TEST 2: try to mint again (seed UTxO is consumed)
+# TEST 2: same policy, a different wallet UTxO. The seed baked into the
+# policy is spent, so no other UTxO can satisfy it.
 echo ""
-info "TEST 2: Try to mint again (seed UTxO consumed)"
+info "TEST 2: Try to mint again with another UTxO (seed consumed)"
 
-UTXO_INFO="$(get_first_utxo "$WALLET_ADDR" 5000000)"
-UTXO="${UTXO_INFO%% *}"
-UTXO_TXHASH="${UTXO%#*}"
-UTXO_IX="${UTXO##*#}"
+# Pick a wallet UTxO that is neither the spent seed nor the spent collateral
+# input. The node's UTxO view lags the block, so retry until the change output
+# from the mint shows up.
+UTXO=""
+PICK_TRIES=0
+while (( PICK_TRIES < 10 )); do
+  UTXO_INFO="$(cardano-cli conway query utxo \
+    --address "$WALLET_ADDR" \
+    --testnet-magic "$TESTNET_MAGIC" \
+    --out-file /dev/stdout \
+    | jq -r --arg seed "$SEED_UTXO" --arg coll "$COLL_UTXO" '
+      to_entries
+      | map(select(.key != $seed and .key != $coll and .value.value.lovelace >= 5000000))
+      | first
+      | "\(.key) \(.value.value.lovelace)"
+    ' 2>/dev/null || echo "")"
+  if [[ -n "$UTXO_INFO" && "$UTXO_INFO" != "null null" ]]; then
+    UTXO="${UTXO_INFO%% *}"
+    break
+  fi
+  PICK_TRIES=$(( PICK_TRIES + 1 ))
+  sleep 5
+done
+if [[ -z "$UTXO" ]]; then
+  fail "No unspent wallet UTxO for test 2 (after retries)."
+  exit 1
+fi
 
 COLL_INFO2="$(cardano-cli conway query utxo \
   --address "$WALLET_ADDR" \
   --testnet-magic "$TESTNET_MAGIC" \
   --out-file /dev/stdout \
-  | jq -r --arg skip "$UTXO" '
+  | jq -r --arg skip "$UTXO" --arg seed "$SEED_UTXO" --arg coll "$COLL_UTXO" '
     to_entries
-    | map(select(.key != $skip and .value.value.lovelace >= 5000000))
+    | map(select(.key != $skip and .key != $seed and .key != $coll and .value.value.lovelace >= 5000000))
     | first
     | "\(.key) \(.value.value.lovelace)"
   ' 2>/dev/null || echo "")"
@@ -186,11 +224,13 @@ else
   COLL2="${COLL_INFO2%% *}"
 fi
 
-# Use same seed redeemer — the seed UTxO is gone so script should fail
+# Same policy and redeemer; the seed UTxO is gone, so the policy refuses.
 RAW2="${TX_DIR}/nft-mint2.raw"
 
 info "Attempting second mint (should fail)..."
-if ! cardano-cli conway transaction build \
+# Only a script rejection counts as a pass. Any other build error (bad input,
+# node lag) means the test did not run.
+if BUILD2_OUT="$(cardano-cli conway transaction build \
   --testnet-magic "$TESTNET_MAGIC" \
   --tx-in "$UTXO" \
   --tx-in-collateral "$COLL2" \
@@ -198,10 +238,16 @@ if ! cardano-cli conway transaction build \
   --mint-script-file "$PLUTUS_FILE" \
   --mint-redeemer-file "$MINT_REDEEMER" \
   --change-address "$WALLET_ADDR" \
-  --out-file "$RAW2" 2>&1; then
-  success "Test 2 PASSED: second mint correctly rejected (seed UTxO gone)."
-else
+  --out-file "$RAW2" 2>&1)"; then
+  echo "$BUILD2_OUT"
   fail "ERROR: Second mint unexpectedly passed build! Contract may be broken."
+  exit 1
+fi
+echo "$BUILD2_OUT"
+if [[ "$BUILD2_OUT" == *"Script evaluation error"* ]]; then
+  success "Test 2 PASSED: the policy rejected a second mint (seed UTxO gone)."
+else
+  fail "Test 2 INCONCLUSIVE: build failed, but not in the script. See output above."
   exit 1
 fi
 

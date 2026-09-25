@@ -44,7 +44,7 @@ main = defaultMain $ testGroup "HaskLedger Contracts"
       , testCase "hash-lock"       $ assertCompiles "hl" hashLock
       , testCase "vesting"         $ assertCompiles "vs" vesting
       , testCase "escrow"          $ assertCompiles "es" escrow
-      , testCase "one-shot-nft"    $ assertCompiles "nft" oneShotNFT
+      , testCase "one-shot-nft"    $ assertCompiles "nft" (oneShotNFT "seed" 0)
       , testCase "token-gate"      $ assertCompiles "tg" tokenGate
       , testCase "multisig"        $ assertCompiles "ms" multisig
       , testCase "treasury"        $ assertCompiles "tr" treasury

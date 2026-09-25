@@ -10,37 +10,50 @@ import OneShotNFT (oneShotNFT)
 tests :: TestTree
 tests = testGroup "OneShotNFT"
   [ testCase "mint with seed UTxO" $
-      assertEvalSuccess "mint" $ evalValidator oneShotNFT (mintCtx [seedInput] 1)
+      assertEvalSuccess "mint" $ evalValidator policy (mintCtx [seedInput] 1)
+  -- One-shot: once the seed is spent, no other UTxO can stand in for it.
   , testCase "mint without seed" $
-      assertEvalFailure "no-seed" $ evalValidator oneShotNFT (mintCtx [otherInput] 1)
+      assertEvalFailure "no-seed" $ evalValidator policy (mintCtx [otherInput] 1)
+  -- The seed lives in the script: a policy built for another seed refuses a
+  -- transaction that spends this one.
+  , testCase "policy for another seed" $
+      assertEvalFailure "other-seed" $ evalValidator (oneShotNFT otherTxId 0) (mintCtx [seedInput] 1)
+  -- Same txid, other output index: the index is part of the baked ref too.
+  , testCase "policy for another seed index" $
+      assertEvalFailure "other-index" $ evalValidator (oneShotNFT seedTxId 1) (mintCtx [seedInput] 1)
+  -- A valid mint shape only passes under action 0.
+  , testCase "mint shape under burn action" $
+      assertEvalFailure "action-1" $ evalValidator policy (actionMintCtx 1)
+  , testCase "mint shape under unknown action" $
+      assertEvalFailure "action-2" $ evalValidator policy (actionMintCtx 2)
   , testCase "mint wrong quantity" $
-      assertEvalFailure "qty-2" $ evalValidator oneShotNFT (mintCtx [seedInput] 2)
+      assertEvalFailure "qty-2" $ evalValidator policy (mintCtx [seedInput] 2)
   , testCase "burn" $
-      assertEvalSuccess "burn" $ evalValidator oneShotNFT (burnCtx (-1))
+      assertEvalSuccess "burn" $ evalValidator policy (burnCtx (-1))
   , testCase "burn qty 0" $
-      assertEvalFailure "burn-0" $ evalValidator oneShotNFT (burnCtx 0)
+      assertEvalFailure "burn-0" $ evalValidator policy (burnCtx 0)
   , testCase "empty inputs" $
-      assertEvalFailure "empty" $ evalValidator oneShotNFT (mintCtx [] 1)
+      assertEvalFailure "empty" $ evalValidator policy (mintCtx [] 1)
   , testCase "seed among many" $
-      assertEvalSuccess "among" $ evalValidator oneShotNFT (mintCtx [otherInput, seedInput, otherInput2] 1)
+      assertEvalSuccess "among" $ evalValidator policy (mintCtx [otherInput, seedInput, otherInput2] 1)
   -- H2: mint the one legit token PLUS an extra name under the same policy. The
   -- empty-TN quantity is still 1, so the old contract minted the extra for free.
   , testCase "mint smuggles extra token name" $
-      assertEvalFailure "smuggle-mint" $ evalValidator oneShotNFT smuggleMintCtx
+      assertEvalFailure "smuggle-mint" $ evalValidator policy smuggleMintCtx
   -- H2: burn -1 of the empty TN while minting a positive quantity of another
   -- name in the same tx.
   , testCase "burn smuggles positive mint" $
-      assertEvalFailure "smuggle-burn" $ evalValidator oneShotNFT smuggleBurnCtx
+      assertEvalFailure "smuggle-burn" $ evalValidator policy smuggleBurnCtx
   ]
   where
     seedTxId  = "\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67\x89"
     otherTxId = "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x00"
     mintCS    = ""
 
-    -- Redeemer: Constr 0 [I action, seedTxOutRef]
-    seedOutRef = Constr 0 [B seedTxId, I 0]
-    mintRedeemer = Constr 0 [I 0, seedOutRef]
-    burnRedeemer = Constr 0 [I 1, I 0]  -- dummy second field (strict eval)
+    -- The seed is baked into the policy, so the redeemer is just the action.
+    policy = oneShotNFT seedTxId 0
+    mintRedeemer = I 0
+    burnRedeemer = I 1
 
     dummyTxOut = mkTxOut (mkSimpleAddress "") (mkAdaValue 1000000) mkNoOutputDatum mkNothing
 
@@ -55,6 +68,11 @@ tests = testGroup "OneShotNFT"
     mintCtx inputs qty =
       let txi = mkTxInfoWithFields [(0, List inputs), (4, mintMap qty)]
       in mkScriptContextWithInfo txi mintRedeemer mintingInfo
+
+    -- Seed spent and exactly one token minted, under any action number.
+    actionMintCtx action =
+      let txi = mkTxInfoWithFields [(0, List [seedInput]), (4, mintMap 1)]
+      in mkScriptContextWithInfo txi (I action) mintingInfo
 
     burnCtx qty =
       let txi = mkTxInfoWithFields [(4, mintMap qty)]
