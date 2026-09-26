@@ -8,6 +8,10 @@ so the process goes smoothly for everyone.
 Check the ['good first issue'](https://github.com/KonmaORG/HaskLedger/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)
 label for tasks suited to newcomers.
 
+# Reviewing
+
+Reviews count as contributions. Test the latest release, open an issue for each thing you find, and leave your overall view on the [pinned review issue](https://github.com/KonmaORG/HaskLedger/issues/6). [Reviewing HaskLedger](docs/reviewing.md) has a suggested review path and the questions we most want answered.
+
 # Project structure
 
 - `haskledger/` - The eDSL library (where contributions go)
@@ -19,7 +23,7 @@ label for tasks suited to newcomers.
 If you're addressing a specific issue, name your branch `yourname/issue-number`
 (e.g. `vinit/234`). Otherwise, name it something descriptive.
 
-PRs go to `master`. Tag a code owner (see `CODEOWNERS`) for review.
+PRs go to `main`. Tag a code owner (see `CODEOWNERS`) for review.
 
 # Build
 
@@ -37,5 +41,6 @@ The following will not be accepted:
 
 - Modifications to the vendored `covenant/` or `c2uplc/` directories. Report
   upstream bugs to their respective repos.
-- Changes that break the compilation pipeline. All four example contracts must
-  compile and produce valid Plutus V3 envelopes.
+- Changes that break the compilation pipeline. All thirteen example contracts
+  must compile and produce valid Plutus V3 envelopes, and `cabal test all` must
+  pass.

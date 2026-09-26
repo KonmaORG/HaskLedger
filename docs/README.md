@@ -49,6 +49,6 @@ Engineering records from the project. Useful if you want the reasoning behind a 
 - [Depth-tracked expressions](option-a-depth-tracked-expr.md): how HaskLedger keeps variable references correct inside nested functions.
 - [Advanced contracts on-chain](advanced-contracts.md): escrow, vesting, token gate and multisig, with the Preview transactions that show them accepting and rejecting.
 
-## Getting help
+## Reviewing and getting help
 
-Open an issue at [github.com/KonmaORG/HaskLedger/issues](https://github.com/KonmaORG/HaskLedger/issues). For security problems, follow [SECURITY.md](../SECURITY.md) instead of opening a public issue.
+To review HaskLedger and send us findings, see [Reviewing HaskLedger](reviewing.md). For anything else, open an issue at [github.com/KonmaORG/HaskLedger/issues](https://github.com/KonmaORG/HaskLedger/issues). For security problems, follow [SECURITY.md](../SECURITY.md) instead of opening a public issue.

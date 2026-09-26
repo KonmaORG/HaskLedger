@@ -77,7 +77,9 @@ HaskLedger is young. Datums are read by field index rather than through typed re
 
 # External review
 
-Koz Ross, head developer for Covenant at MLabs, reviewed HaskLedger on 23 September 2026. His review, word for word, and what changed in response are [here](milestone5/external-review/koz-ross-mlabs-2026-09-23.md). More reviews are in progress. If you want to review HaskLedger, open an issue.
+Koz Ross, head developer for Covenant at MLabs, reviewed HaskLedger on 23 September 2026: [his review and our responses](milestone5/external-review/koz-ross-mlabs-2026-09-23.md), and the [official letter](milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
+
+Want to review HaskLedger too? See [Reviewing HaskLedger](docs/reviewing.md): open an issue for each thing you find, and leave your overall view on the [pinned review issue](https://github.com/KonmaORG/HaskLedger/issues/6).
 
 # What does the project look like?
 

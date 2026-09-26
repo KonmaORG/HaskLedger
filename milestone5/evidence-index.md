@@ -19,6 +19,8 @@ Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://git
 ## Feedback, responses and changes
 
 - Feedback table with responses and outcomes: [PoA, Criterion 2](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md#prototype-review-feedback-milestone-5)
+- Each feedback item as a public GitHub issue with our response: EXT-ML-01 [#2](https://github.com/KonmaORG/HaskLedger/issues/2) and EXT-ML-02 [#3](https://github.com/KonmaORG/HaskLedger/issues/3), closed as fixed; EXT-ML-03 [#4](https://github.com/KonmaORG/HaskLedger/issues/4) and EXT-ML-04 [#5](https://github.com/KonmaORG/HaskLedger/issues/5), open for the remaining work
+- New reviews come in on GitHub: pinned issue [#6 Review HaskLedger v1.0.0](https://github.com/KonmaORG/HaskLedger/issues/6), and every finding carries the [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview)
 - Changes made for EXT-ML-01 to EXT-ML-04: commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92)
 - Documentation produced in response: [docs index](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/README.md), [getting started](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/getting-started.md), [API reference](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/api-reference.md), [compilation](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/compilation.md), [testing](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/testing.md), [comparison](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/comparison.md)
 
