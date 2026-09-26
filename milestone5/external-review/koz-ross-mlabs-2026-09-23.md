@@ -2,7 +2,7 @@
 
 This is the record of an external technical review of the finished HaskLedger prototype, carried out for Milestone 5. It holds the review as the reviewer wrote it, the feedback items taken from it, and the changes made in response, each linked to its commit and to the files it produced.
 
-An official copy of this review on MLabs letterhead is to follow and will be added to this folder. Its content is the same as the text below.
+The official copy of this review, on MLabs letterhead and signed off by the reviewer, is in this folder: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf). Its content is the same as the text below.
 
 This review is separate from Koz Ross's 2024 review of the Milestone 2 design document, which assessed a document before any prototype existed. That earlier review is recorded in the [MLabs Validation](https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0) record and is not part of this one.
 

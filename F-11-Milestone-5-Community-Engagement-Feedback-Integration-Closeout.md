@@ -57,7 +57,7 @@ Those efforts did not produce a completed, attributable review of the finished p
 | -------- | --------------------- | ---- | ----------------- | ------ |
 | Koz Ross | MLabs; consultant, head developer for Covenant | 23 September 2026 | HaskLedger's Haskell implementation and its documentation, public repository at commit [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 
-The reviewer assessed the finished prototype and found it "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken. These are logged as feedback items EXT-ML-01 to EXT-ML-04 under Criterion 2, each with the change made in response. An official copy of the review on MLabs letterhead is to follow, with the same content.
+The reviewer assessed the finished prototype and found it "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken. These are logged as feedback items EXT-ML-01 to EXT-ML-04 under Criterion 2, each with the change made in response. The review is also available as an official letter on MLabs letterhead: [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 
 This review is separate from the design-stage consultations below, including Koz Ross's own 2024 review of the Milestone 2 design document.
 
@@ -111,6 +111,7 @@ Karbon Ledger, Konma's climate-tech product for emissions and compliance trackin
 | Evidence | Link |
 | -------- | ---- |
 | External prototype review, Koz Ross (MLabs), 23 September 2026 | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
+| Same review, official letter on MLabs letterhead | [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf) |
 | Community and Expert Validation record (expert feedback, meeting takeaways, outreach screenshots) | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
 | MLabs Validation record (written review, video review, revised design documents V1.0 and V1.1) | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
 | Internal review: version tested | [Commit `14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0) |
@@ -330,7 +331,7 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | Repository | https://github.com/KonmaORG/HaskLedger |
 | Evidence index (all Milestone 5 evidence on one page) | [`milestone5/evidence-index.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/evidence-index.md) |
 | Release tag | [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0) |
-| External prototype review, Koz Ross (MLabs) | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
+| External prototype review, Koz Ross (MLabs) | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md); official letter: [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf) |
 | Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Final Project Closeout Video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
 | Final Project Closeout Video (archival original, Google Drive) | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |

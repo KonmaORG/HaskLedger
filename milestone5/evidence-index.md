@@ -14,7 +14,7 @@ These reviews tested the finished prototype. They are separate from the 2024 des
 | 2 | to be added | | | | | |
 | 3 | to be added | | | | | |
 
-An official copy of review 1 on MLabs letterhead is to follow, with the same content.
+Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 
 ## Feedback, responses and changes
 
