@@ -77,7 +77,14 @@ HaskLedger is young. Datums are read by field index rather than through typed re
 
 # External review
 
-Koz Ross, head developer for Covenant at MLabs, reviewed HaskLedger on 23 September 2026: [his review and our responses](milestone5/external-review/koz-ross-mlabs-2026-09-23.md), and the [official letter](milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
+Four external engineers have reviewed HaskLedger v1.0.0. Each review is published with our response to every point:
+
+- Koz Ross, head developer for Covenant at MLabs, 23 September 2026: [review and responses](milestone5/external-review/koz-ross-mlabs-2026-09-23.md), [official letter](milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf)
+- Suganya Raju, Cardano tooling developer, 25 September 2026: [review and responses](milestone5/external-review/suganya-raju-2026-09-25.md)
+- Harun Mwangi, Cardano smart-contract developer and architect, 26 September 2026: [review and responses](milestone5/external-review/harun-mwangi-2026-09-26.md)
+- Sourabh Agarwal, Haskell developer at zkFold, 26 September 2026: [review and responses](milestone5/external-review/sourabh-agarwal-2026-09-26.md)
+
+Every finding is a GitHub issue with the [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview).
 
 Want to review HaskLedger too? See [Reviewing HaskLedger](docs/reviewing.md): open an issue for each thing you find, and leave your overall view on the [pinned review issue](https://github.com/KonmaORG/HaskLedger/issues/6).
 
@@ -116,13 +123,13 @@ Nix with flakes. The Nix dev shell handles everything else. We build with GHC 9.
 
 | Platform         | Status                               |
 | ---------------- | ------------------------------------ |
-| `x86_64-linux`   | Primary development and CI           |
+| `x86_64-linux`   | Primary development                  |
 | `aarch64-linux`  | ARM64 Linux                          |
 | `x86_64-darwin`  | macOS Intel                          |
 | `aarch64-darwin` | macOS Apple Silicon                  |
 | `riscv64-linux`  | Validated on GHC 9.12.2 (RISC-V NCG) |
 
-The full pipeline is pure Haskell with no platform-specific code.
+The full pipeline is pure Haskell with no platform-specific code. [Compatibility](docs/compatibility.md) lists the exact GHC, Covenant, c2uplc and Plutus versions.
 
 # Documentation
 

@@ -121,6 +121,17 @@ To spend, the owner signs the transaction and lists their key hash with `--requi
 
 A contract you have not run against a bad transaction is not tested. The [testing guide](testing.md) shows how to build a fake transaction in Haskell, run your contract against it, and assert that the owner can spend and a stranger cannot. It takes a few minutes and catches most mistakes long before a node sees them.
 
+## If something goes wrong
+
+| Problem | What to do |
+| --- | --- |
+| The first `nix develop` takes hours | Nix is compiling GHC and the Plutus libraries from source. Accept the flake's binary cache when Nix asks. |
+| `cabal build` fails to resolve dependencies | Build inside `nix develop`. HaskLedger is tested with one set of versions, listed in [Compatibility](compatibility.md). |
+| Your contract refuses a transaction and you do not know which check failed | `require` labels are not in the script. See [Debugging](user-guide.md#debugging). |
+| `cardano-cli` or a deploy script fails | See [Troubleshooting](deployment-guide.md#troubleshooting) in the deployment guide. |
+
+To start a new contract, copy the closest one from the [example contracts](contracts.md): `vesting` for a time lock with a beneficiary, `escrow` for two parties, `multisig` for signatures, `one-shot-nft` for minting.
+
 ## Where to go next
 
 - [User guide](user-guide.md) for reading datum fields, time ranges, values, outputs and lists.

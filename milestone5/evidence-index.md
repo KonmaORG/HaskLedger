@@ -6,13 +6,14 @@ Release reviewed and delivered: [`v1.0.0`](https://github.com/KonmaORG/HaskLedge
 
 ## External review of the final prototype (Milestone 5)
 
-These reviews tested the finished prototype. They are separate from the 2024 design-stage feedback listed at the end.
+These reviews assessed the finished prototype. They are separate from the 2024 design-stage feedback listed at the end.
 
 | # | Reviewer | Organisation | Date | Version reviewed | Record | Feedback items |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Koz Ross | MLabs (head developer for Covenant) | 23 Sep 2026 | [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) | EXT-ML-01 to EXT-ML-04 |
-| 2 | to be added | | | | | |
-| 3 | to be added | | | | | |
+| 2 | Suganya Raju | Cardano tooling developer ([GitHub](https://github.com/SuganyaAK)) | 25 Sep 2026 | public repository | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md) | EXT-SR-01 to EXT-SR-04 |
+| 3 | Harun Mwangi | Cardano smart-contract developer and architect ([GitHub](https://github.com/HarunJr)) | 26 Sep 2026 | public repository | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md) | EXT-HM-01 to EXT-HM-04 |
+| 4 | Sourabh Agarwal | zkFold ([GitHub](https://github.com/sourabhxyz)) | 26 Sep 2026 | final repository snapshot | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) | EXT-SA-01 to EXT-SA-04 |
 
 Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 
@@ -20,6 +21,8 @@ Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://git
 
 - Feedback table with responses and outcomes: [PoA, Criterion 2](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md#prototype-review-feedback-milestone-5)
 - Each feedback item as a public GitHub issue with our response: EXT-ML-01 [#2](https://github.com/KonmaORG/HaskLedger/issues/2) and EXT-ML-02 [#3](https://github.com/KonmaORG/HaskLedger/issues/3), closed as fixed; EXT-ML-03 [#4](https://github.com/KonmaORG/HaskLedger/issues/4) and EXT-ML-04 [#5](https://github.com/KonmaORG/HaskLedger/issues/5), open for the remaining work
+- Findings from reviews 2 to 4, one issue per finding, merged where reviewers raised the same point: [#7](https://github.com/KonmaORG/HaskLedger/issues/7) onboarding (EXT-SR-01, EXT-HM-01), [#8](https://github.com/KonmaORG/HaskLedger/issues/8) debugging and tooling (EXT-HM-02, EXT-SA-02), [#9](https://github.com/KonmaORG/HaskLedger/issues/9) benchmark coverage (EXT-SA-01, EXT-HM-03), [#10](https://github.com/KonmaORG/HaskLedger/issues/10) compatibility (EXT-SR-02, EXT-SA-03), [#11](https://github.com/KonmaORG/HaskLedger/issues/11) CI (EXT-SR-03), [#12](https://github.com/KonmaORG/HaskLedger/issues/12) API stability (EXT-SR-04), [#13](https://github.com/KonmaORG/HaskLedger/issues/13) independent developers (EXT-HM-04, EXT-SA-04)
+- Changes made for reviews 2 to 4: new [compatibility](https://github.com/KonmaORG/HaskLedger/blob/main/docs/compatibility.md) page, [API stability](https://github.com/KonmaORG/HaskLedger/blob/main/docs/api-reference.md#what-is-stable) section, [troubleshooting](https://github.com/KonmaORG/HaskLedger/blob/main/docs/getting-started.md#if-something-goes-wrong) in getting started, README platform table corrected
 - New reviews come in on GitHub: pinned issue [#6 Review HaskLedger v1.0.0](https://github.com/KonmaORG/HaskLedger/issues/6), and every finding carries the [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview)
 - Changes made for EXT-ML-01 to EXT-ML-04: commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92)
 - Documentation produced in response: [docs index](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/README.md), [getting started](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/getting-started.md), [API reference](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/api-reference.md), [compilation](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/compilation.md), [testing](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/testing.md), [comparison](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/comparison.md)

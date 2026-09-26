@@ -9,6 +9,17 @@ Two types appear everywhere:
 
 Most functions take and return `Contract Expr`. When you have a bound `Expr` (from `<-`), pass it as `pure x`.
 
+## What is stable
+
+The public API is what `import HaskLedger` gives you, as listed on this page. That is what contracts should depend on.
+
+Two kinds of exported code are not part of it:
+
+- `HaskLedger.Internal.Builtin` and `HaskLedger.Internal.Data` are exposed modules so the library's own modules can use them, but `HaskLedger` does not re-export them. They can change in any release.
+- The building blocks listed under [Writing your own combinators](#writing-your-own-combinators) are exported from `HaskLedger.Contract`, but they follow how HaskLedger emits Covenant nodes and will change when that does.
+
+If you need something from either group in a contract, open an issue so it can be added to the public API.
+
 ## Defining a contract
 
 `HaskLedger.Contract`

@@ -14,6 +14,21 @@
 
 ---
 
+## Resubmission Summary
+
+This resubmission answers both reviewers' concerns.
+
+| Reviewer concern | Action taken | Where |
+| ---------------- | ------------ | ----- |
+| A new, substantive external review of the completed prototype, by more than one reviewer | Four external engineers reviewed the finished prototype between 23 and 26 September 2026: Koz Ross (MLabs), Suganya Raju, Harun Mwangi and Sourabh Agarwal (zkFold) | Criterion 1 |
+| Clear reviewer identity, scope, feedback, response and resulting changes | Each review has a public record with the reviewer, role, public profile, date, scope and full text, and a response and status for every feedback item. Every item is also a public GitHub issue | Criterion 1 and 2 |
+| Historical feedback should not stand in for Milestone 5 validation | The 2024 design-stage feedback sits in separate sections marked historical, as context only | Criterion 1 and 2 |
+| A publicly accessible closeout video | The closeout video is public on YouTube, with no access request or sign-in | Criterion 5 |
+
+For every feedback item the evidence follows the same chain: external prototype review, specific feedback, HaskLedger's response, the action taken, and the public commit, document or issue that shows it. The [evidence chain](#evidence-chain) at the end maps each requirement to its evidence.
+
+---
+
 ## Milestone Outputs
 
 Milestone 5 is the community-validation and closeout milestone that follows completion of the HaskLedger prototype. It delivers:
@@ -43,6 +58,8 @@ The project sought expert scrutiny throughout, not only at closeout:
 
 Those efforts did not produce a completed, attributable review of the finished prototype from Well-Typed, Tweag or Hasura. These are independent third parties, and their availability several years after the proposal was written is outside the project's control. Rather than represent reviews that did not occur, this PoA documents transparently the engagement that did happen, how the project responded to it, and the evidence for the completed prototype. The MLabs engagement and the wider expert feedback are presented as what they are, and **are not represented as reviews of the final prototype by Well-Typed, Tweag or Hasura.**
 
+In their place, the finished prototype was reviewed by four external engineers with complementary expertise (Criterion 1). The first group is represented by the internal developer review, carried out by a developer from the Fund 7 Konma Labz Haskell cohort together with Konma's head of technology.
+
 ---
 
 ## Acceptance Criteria
@@ -56,17 +73,30 @@ Those efforts did not produce a completed, attributable review of the finished p
 | Reviewer | Organisation and role | Date | What was reviewed | Record |
 | -------- | --------------------- | ---- | ----------------- | ------ |
 | Koz Ross | MLabs; consultant, head developer for Covenant | 23 September 2026 | HaskLedger's Haskell implementation and its documentation, public repository at commit [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
+| Suganya Raju ([GitHub](https://github.com/SuganyaAK)) | Cardano tooling developer (Haskell, TypeScript), open-source developer tooling | 25 September 2026 | Repository layout, eDSL API, build and developer workflow, tests, benchmark, documentation, contributor tooling | [Review and feedback log](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md) |
+| Harun Mwangi ([GitHub](https://github.com/HarunJr)) | Cardano smart-contract developer and architect | 26 September 2026 | Developer experience, example contracts, contract architecture, tests and Preview evidence, benchmark method, security hardening | [Review and feedback log](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md) |
+| Sourabh Agarwal ([GitHub](https://github.com/sourabhxyz)) | Haskell developer, zkFold | 26 September 2026 | eDSL and developer model, compilation architecture, contracts, benchmark, tests and Preview evidence, security hardening, from a snapshot of the final repository | [Review and feedback log](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) |
 
-The reviewer assessed the finished prototype and found it "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken. These are logged as feedback items EXT-ML-01 to EXT-ML-04 under Criterion 2, each with the change made in response. The review is also available as an official letter on MLabs letterhead: [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
+**Outcome:** the completed prototype was reviewed by an internal developer group and by four technically qualified external reviewers with complementary expertise: the Covenant back end HaskLedger compiles through (Koz Ross), open-source tooling and contributor workflow (Suganya Raju), application contract development (Harun Mwangi), and Haskell architecture and benchmarking (Sourabh Agarwal).
 
-This review is separate from the design-stage consultations below, including Koz Ross's own 2024 review of the Milestone 2 design document.
+Koz Ross assessed the finished prototype and found it "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken. These are logged as feedback items EXT-ML-01 to EXT-ML-04 under Criterion 2, each with the change made in response. The review is also available as an official letter on MLabs letterhead: [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
+
+Three more engineers reviewed the finished prototype on 25 and 26 September 2026. Suganya Raju found it ready for wider technical evaluation, and Harun Mwangi and Sourabh Agarwal found no issue that would stop it being used today. Each wrote up strengths and concerns:
+
+- **Suganya Raju** (Cardano tooling, open-source developer experience) found the front end and back end well separated, the claims reproducible, and the test suites and negative cases convincing. Concerns: user documentation as its own entry point, a compatibility table for GHC, Covenant, c2uplc and Plutus, CI for contributors, and a clear line between stable and internal APIs.
+- **Harun Mwangi** (Cardano smart-contract developer and architect) found the API concise, the contract set broad, and the hardening and rejection testing the right priorities. Concerns: onboarding and templates, error reporting that does not require reading UPLC, keeping benchmark claims scoped, and adoption by independent developers.
+- **Sourabh Agarwal** (Haskell developer, zkFold) found the architecture the most interesting part and the benchmark results strong within their scope. Concerns: PlutusTx baselines for the application contracts, tooling at the level of Aiken and Plutarch, documenting the Covenant and c2uplc dependency, and independent applications.
+
+Their feedback is logged as EXT-SR-01 to EXT-SR-04, EXT-HM-01 to EXT-HM-04 and EXT-SA-01 to EXT-SA-04 under Criterion 2. Sourabh Agarwal was also consulted at design stage in 2024, with no written feedback recorded then.
+
+These reviews are separate from the design-stage consultations below, including Koz Ross's own 2024 review of the Milestone 2 design document.
 
 #### Internal developer review
 
 | Review detail | Value |
 | ------------- | ----- |
 | Date | 19 July 2026 |
-| Participants | Vinit Inamke, HaskLedger core developer ([LinkedIn](https://www.linkedin.com/in/vinit-inamke/)); Sangeet Muralidhar ([LinkedIn](https://www.linkedin.com/in/gitgat/)) |
+| Participants | Vinit Inamke, HaskLedger core developer from the Fund 7 Konma Labz Haskell cohort ([LinkedIn](https://www.linkedin.com/in/vinit-inamke/)): testing, contracts, benchmarks, developer experience; Sangeet Muralidhar, Head of Technology, Konma ([LinkedIn](https://www.linkedin.com/in/gitgat/)): technical oversight |
 | Version reviewed | Commit [`14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0) (17 July 2026), the release carrying the c2uplc fixes and contract efficiency improvements |
 | Scope | Setup from the project documentation, execution of the example contracts and the benchmark harness, and deliberate failure cases with invalid datum and redeemer inputs |
 
@@ -112,6 +142,10 @@ Karbon Ledger, Konma's climate-tech product for emissions and compliance trackin
 | -------- | ---- |
 | External prototype review, Koz Ross (MLabs), 23 September 2026 | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 | Same review, official letter on MLabs letterhead | [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf) |
+| External prototype review, Suganya Raju, 25 September 2026 | [`milestone5/external-review/suganya-raju-2026-09-25.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md) |
+| External prototype review, Harun Mwangi, 26 September 2026 | [`milestone5/external-review/harun-mwangi-2026-09-26.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md) |
+| External prototype review, Sourabh Agarwal, 26 September 2026 | [`milestone5/external-review/sourabh-agarwal-2026-09-26.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) |
+| All four reviews posted publicly, one GitHub issue per finding | [#6 Review HaskLedger v1.0.0](https://github.com/KonmaORG/HaskLedger/issues/6), [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview) |
 | Community and Expert Validation record (expert feedback, meeting takeaways, outreach screenshots) | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
 | MLabs Validation record (written review, video review, revised design documents V1.0 and V1.1) | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
 | Internal review: version tested | [Commit `14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0) |
@@ -124,11 +158,11 @@ Karbon Ledger, Konma's climate-tech product for emissions and compliance trackin
 
 > The Feedback Integration Report includes specific developer and community feedback, HaskLedger's responses to that feedback, and actions taken to integrate applicable feedback into the prototype.
 
-Feedback is set out in two parts: the external review of the finished prototype, then the earlier design-stage feedback. Identifiers: `EXT-ML-##` MLabs prototype review (2026), `EXT-WT-##` Well-Typed, `COM-##` other technical community, including MLabs' 2024 design review.
+Feedback is set out in two parts: the external review of the finished prototype, then the earlier design-stage feedback. Identifiers: `EXT-ML-##` MLabs prototype review (2026), `EXT-SR-##`, `EXT-HM-##` and `EXT-SA-##` the prototype reviews by Suganya Raju, Harun Mwangi and Sourabh Agarwal (2026), `EXT-WT-##` Well-Typed, `COM-##` other technical community, including MLabs' 2024 design review. Every item has a response and one status: Implemented, Partially implemented, Not implemented (with the reason), Planned (roadmap), or Ongoing.
 
 #### Prototype review feedback (Milestone 5)
 
-From Koz Ross's review of the finished prototype on 23 September 2026. The full review text, the responses and links to every changed page are in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). All four responses were delivered in commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92), part of release [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0). Each item is also a public GitHub issue carrying our response: EXT-ML-01 [#2](https://github.com/KonmaORG/HaskLedger/issues/2) and EXT-ML-02 [#3](https://github.com/KonmaORG/HaskLedger/issues/3) are closed as fixed; EXT-ML-03 [#4](https://github.com/KonmaORG/HaskLedger/issues/4) and EXT-ML-04 [#5](https://github.com/KonmaORG/HaskLedger/issues/5) stay open for the remaining work. Further reviews come in the same way, through the pinned issue [#6](https://github.com/KonmaORG/HaskLedger/issues/6).
+From Koz Ross's review of the finished prototype on 23 September 2026. The full review text, the responses and links to every changed page are in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). All four responses were delivered in commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92), part of release [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0). Each item is also a public GitHub issue carrying our response: EXT-ML-01 [#2](https://github.com/KonmaORG/HaskLedger/issues/2) and EXT-ML-02 [#3](https://github.com/KonmaORG/HaskLedger/issues/3) are closed as fixed; EXT-ML-03 [#4](https://github.com/KonmaORG/HaskLedger/issues/4) and EXT-ML-04 [#5](https://github.com/KonmaORG/HaskLedger/issues/5) stay open for the remaining work. The three further prototype reviews are logged the same way below, and further reviews keep coming in through the pinned issue [#6](https://github.com/KonmaORG/HaskLedger/issues/6).
 
 | ID | Feedback (faithful summary) | Team response and action | Evidence | Status |
 | -- | --------------------------- | ------------------------ | -------- | ------ |
@@ -137,7 +171,25 @@ From Koz Ross's review of the finished prototype on 23 September 2026. The full 
 | EXT-ML-03 | Provide helper tools similar to those in Plutarch and Aiken, for example for testing. | Testing guide documenting the off-chain test helpers with a complete worked test, a reference for every helper, the cases to test, cost measurement and on-chain negative tests. Shipping the helpers as a library module and property-based testing are not done yet. | [`testing.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/testing.md) | Partially implemented |
 | EXT-ML-04 | Aim for documentation and tooling at the level of Aiken. | Adopted as the long-term target. The documentation follows the getting started, guide, reference and testing structure, and a comparison page states where HaskLedger is behind Aiken, Plutarch and PlutusTx (typed datums, a built-in test runner, CIP-57 blueprints); those gaps are the tooling roadmap. | [`comparison.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/comparison.md) | Partially implemented, long-term target |
 
-Prototype review outcome totals: 2 implemented, 2 partially implemented.
+
+From the reviews by Suganya Raju (25 September 2026), Harun Mwangi and Sourabh Agarwal (26 September 2026). Where two reviewers raised the same point, one GitHub issue carries both IDs.
+
+| ID | Reviewer | Feedback (faithful summary) | Team response and action | Evidence | Status |
+| -- | -------- | --------------------------- | ------------------------ | -------- | ------ |
+| EXT-SR-01 | Suganya Raju | User documentation as its own entry point, apart from milestone material: installation, first validator, testing, deployment, generated output, troubleshooting, compatibility. | User docs live in `docs/` behind a documentation index, separate from the milestone reports. Getting started now ends with a troubleshooting table; version information has its own page. | [`getting-started.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/getting-started.md#if-something-goes-wrong), [#7](https://github.com/KonmaORG/HaskLedger/issues/7) | Implemented |
+| EXT-SR-02 | Suganya Raju | State which GHC, Covenant, c2uplc and Plutus versions are supported. | New compatibility page with the tested versions and where each is set, platforms, known upstream issues and what to check when changing versions. | [`compatibility.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/compatibility.md), [#10](https://github.com/KonmaORG/HaskLedger/issues/10) | Implemented |
+| EXT-SR-03 | Suganya Raju | CI and contributor checks for build, tests, benchmark regressions, generated scripts and formatting. | Accepted for the roadmap. The README wrongly listed CI on the platform table; corrected. Contributors check changes with the documented build, test, bench and examples commands. | [#11](https://github.com/KonmaORG/HaskLedger/issues/11) | Planned (roadmap) |
+| EXT-SR-04 | Suganya Raju | Say which APIs are stable and which are internal. | New section in the API reference: the public API is what `import HaskLedger` exports; `HaskLedger.Internal.*` and the low-level combinator pieces can change. | [`api-reference.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/api-reference.md#what-is-stable), [#12](https://github.com/KonmaORG/HaskLedger/issues/12) | Implemented |
+| EXT-HM-01 | Harun Mwangi | A stronger quickstart, contract templates and practical examples. | Getting started covers installation to a tested contract of your own, now with troubleshooting and which example to start from. The thirteen examples act as templates; a template generator is not built. | [`getting-started.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/getting-started.md), [#7](https://github.com/KonmaORG/HaskLedger/issues/7) | Partially implemented |
+| EXT-HM-02 | Harun Mwangi | Explain why a validator failed without reading UPLC. | The user guide's debugging section covers today's approach (off-chain tests per condition, `traceMsg`). Automatic reporting of the failing `require` is the next-stage focus. | [`user-guide.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/user-guide.md#debugging), [#8](https://github.com/KonmaORG/HaskLedger/issues/8) | Planned (roadmap) |
+| EXT-HM-03 | Harun Mwangi | Keep benchmark ratios scoped to the measured contracts. | Already stated that way in the README, the performance page and the closeout report's limitations. | [`performance.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/performance.md), [#9](https://github.com/KonmaORG/HaskLedger/issues/9) | Implemented |
+| EXT-HM-04 | Harun Mwangi | Independent developers writing their own contracts. | The review guide asks every reviewer to write and test their own contract; the pinned review issue stays open. | [`reviewing.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/reviewing.md), [#13](https://github.com/KonmaORG/HaskLedger/issues/13) | Ongoing |
+| EXT-SA-01 | Sourabh Agarwal | Extend the PlutusTx baseline to escrow, treasury, multisig, vesting and similar contracts. | Accepted for the roadmap. All thirteen contracts are measured on the HaskLedger side; PlutusTx versions of the application contracts are the missing half. | [#9](https://github.com/KonmaORG/HaskLedger/issues/9) | Planned (roadmap) |
+| EXT-SA-02 | Sourabh Agarwal | Tooling for testing, debugging, script inspection, deployment and generated output, at the level of Aiken and Plutarch. | In place: testing guide and helpers, output inspection for each pipeline stage, deploy scripts. Still to build: helpers as a library module (#4), failure reporting (#8), Aiken-level target (#5). | [`testing.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/testing.md), [#8](https://github.com/KonmaORG/HaskLedger/issues/8) | Partially implemented |
+| EXT-SA-03 | Sourabh Agarwal | Keep the Covenant and c2uplc dependency and upstream behaviour documented. | The compatibility page lists the pinned versions, the local c2uplc fixes and each known upstream issue with its workaround. | [`compatibility.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/compatibility.md#known-upstream-issues), [#10](https://github.com/KonmaORG/HaskLedger/issues/10) | Implemented |
+| EXT-SA-04 | Sourabh Agarwal | Independent applications beyond the supplied examples. | HaskLedger already runs outside the examples in Karbon Ledger; the pinned review issue and review guide invite outside developers to build their own. | [#13](https://github.com/KonmaORG/HaskLedger/issues/13) | Ongoing |
+
+Prototype review outcome totals across all four reviews (16 items): 7 implemented, 4 partially implemented, 3 accepted for the roadmap, 2 ongoing. Every item has a public issue.
 
 #### Design-stage feedback (historical)
 
@@ -171,6 +223,9 @@ Design-stage outcome totals: 8 implemented, 5 partially implemented, 4 not imple
 | -------- | ---- |
 | External prototype review record and feedback log | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 | Documentation changes made in response (EXT-ML-01 to EXT-ML-04) | Commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92) |
+| Prototype review records, reviews 2 to 4 | [Suganya Raju](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [Harun Mwangi](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md), [Sourabh Agarwal](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) |
+| Changes made in response to reviews 2 to 4 | [`compatibility.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/compatibility.md), [API stability](https://github.com/KonmaORG/HaskLedger/blob/main/docs/api-reference.md#what-is-stable), [troubleshooting](https://github.com/KonmaORG/HaskLedger/blob/main/docs/getting-started.md#if-something-goes-wrong) |
+| Review findings as GitHub issues | [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview) |
 | Community and Expert Validation record | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
 | MLabs Validation record, including the revised design documents | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
 | Revised design document in the repository | [`F-11-Milestone-2-POA-Design-Document-Validation.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-2-POA-Design-Document-Validation.md) |
@@ -188,6 +243,13 @@ Expert feedback, internal review, the project's own contract security audit, and
 - Investigation and documentation of Covenant/c2uplc Transform-pipeline defects
 - Locally developed c2uplc fixes where appropriate
 - Adoption of a builtin-only compilation policy in response to the identified code-generation behaviour
+
+#### Documentation from the prototype reviews
+
+- User documentation rewritten for library users in response to MLabs (EXT-ML-01 to EXT-ML-04): getting started, user guide, API reference, compilation, testing, security and comparison pages
+- A compatibility page with tested versions and known upstream issues (EXT-SR-02, EXT-SA-03)
+- A statement of which APIs are stable (EXT-SR-04)
+- Troubleshooting and starting-point contracts in getting started (EXT-SR-01, EXT-HM-01)
 
 #### Contract security hardening
 
@@ -210,6 +272,9 @@ Each contract also documents its threat model and known limitations at the sourc
 | On-chain validation | Positive and negative cases for every contract on the Cardano Preview testnet |
 | Automated tests | 7 test suites, 420 tests passing |
 | Benchmark | Reproducible offline harness with a committed idiomatic PlutusTx baseline |
+| Security hardening | Four attack classes closed by construction, with guard combinators |
+| Review-driven documentation | Complete for every implemented review item (Criterion 2) |
+| Review-driven tooling and adoption work | Roadmap where not yet done, each tracked in a public issue |
 
 #### Benchmark results
 
@@ -224,6 +289,8 @@ Same contract logic, byte-identical inputs, measured with the plutus-core 1.51 c
 | hash-lock | 11.5x | 6.9x | 7.5x |
 
 Across the benchmarked contracts this is roughly 8-16x smaller scripts, 2.6-26x fewer CPU steps and 3.7-16x lower memory use. Under the block execution budget, 6,416 HaskLedger redeemer-match validations fit in one block against 604 for the PlutusTx equivalent.
+
+These figures apply to the five measured contracts. They are not a claim of protocol-level Cardano throughput improvement.
 
 Milestone 4 was approved after resubmission with the dedicated Throughput and Efficiency Addendum, which supplied the comparative baseline and reproducibility methodology.
 
@@ -316,11 +383,24 @@ Across the funding period the project delivered the HaskLedger eDSL and compiler
 
 The project sought expert scrutiny from its design stage onward. It consulted Duncan Coutts of Well-Typed, received a formal written and recorded design review from MLabs, gathered feedback from engineers and researchers across IOHK, Composewell, the University of Birmingham, Mindgrove Technologies and Intersect MBO, and contacted more than 30 further experts. Every recorded feedback item has a documented response and outcome, and the delivered prototype reflects that feedback: a Haskell-only toolchain built with Nix, standard Plutus V3 scripts on unmodified Cardano, measured rather than asserted performance, and GHC's native RISC-V support. HaskLedger is also the underlying technology for Karbon Ledger, which UNDP features in its snapshot of blockchain practice for a compliance-monitoring pilot in India.
 
-For Milestone 5, the proposal anticipated review by developers or consultants associated with Well-Typed, Tweag and Hasura. A completed, attributable review of the finished prototype from those three organisations could not be secured. The finished prototype was reviewed instead by Koz Ross, head developer of Covenant at MLabs, on 23 September 2026; his feedback and the documentation changes made in response are logged as EXT-ML-01 to EXT-ML-04. Participation by independent organisations cannot be guaranteed years after they were named at proposal stage, and the ecosystem around the project has changed materially in that time. We have chosen not to create an appearance of compliance by representing reviews that did not occur; this submission presents the evidence that exists and keeps that distinction explicit.
+For Milestone 5, the proposal anticipated review by developers or consultants associated with Well-Typed, Tweag and Hasura. A completed, attributable review of the finished prototype from those three organisations could not be secured. The finished prototype was reviewed instead by four external engineers: Koz Ross, head developer of Covenant at MLabs, on 23 September 2026, and Suganya Raju, Harun Mwangi and Sourabh Agarwal (zkFold) on 25 and 26 September 2026. Their 16 feedback items are logged with a response each, and every item is a public GitHub issue. Participation by independent organisations cannot be guaranteed years after they were named at proposal stage, and the ecosystem around the project has changed materially in that time. We have chosen not to create an appearance of compliance by representing reviews that did not occur; this submission presents the evidence that exists and keeps that distinction explicit.
 
 The project team can be held accountable for building the funded solution, publishing it, making it independently inspectable, testing it, demonstrating it on Cardano, measuring it against a reproducible baseline, seeking external scrutiny, responding to technical feedback, documenting its limitations and providing complete closeout evidence. All of that has been delivered. Further delay would not add HaskLedger development; it would only leave completion dependent on organisations outside the project.
 
-We respectfully request assessment of Milestone 5 on the body of work delivered, the evidence provided, the expert and technical-community engagement that did occur, and the reasonable efforts made toward the original external-review intention. If a formal change request is the preferred way to record this adjustment, the team is ready to submit one.
+We respectfully request reassessment of Milestone 5 against the updated evidence: four external reviews of the finished prototype, a response and outcome for every feedback item, the changes made in response, and the public closeout report and video. If a formal change request is the preferred way to record the change of reviewers, the team is ready to submit one.
+
+### Evidence chain
+
+| Requirement | Evidence |
+| ----------- | -------- |
+| External prototype review | Koz Ross (MLabs), Suganya Raju, Harun Mwangi and Sourabh Agarwal (zkFold): [review records](https://github.com/KonmaORG/HaskLedger/tree/main/milestone5/external-review), also posted on [#6](https://github.com/KonmaORG/HaskLedger/issues/6) |
+| Specific external feedback | 16 items: EXT-ML-01 to 04, EXT-SR-01 to 04, EXT-HM-01 to 04, EXT-SA-01 to 04 (Criterion 2) |
+| Project response | A response and status for every item, in each review record and in its GitHub issue ([`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview)) |
+| Integration and action | Commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92) for EXT-ML-01 to 04; the compatibility page, API stability section and troubleshooting table for reviews 2 to 4; roadmap items open as issues |
+| Internal review | Konma Labz developer and Konma head of technology, commit [`14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0) (Criterion 1) |
+| Closeout report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
+| Public closeout video | https://www.youtube.com/watch?v=rUCvvvjgJSc |
+| Final repository | https://github.com/KonmaORG/HaskLedger, release [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0) |
 
 ---
 
@@ -332,6 +412,8 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | Evidence index (all Milestone 5 evidence on one page) | [`milestone5/evidence-index.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/evidence-index.md) |
 | Release tag | [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0) |
 | External prototype review, Koz Ross (MLabs) | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md); official letter: [`koz-ross-mlabs-2026-09-23-letter.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf) |
+| External prototype reviews, Suganya Raju, Harun Mwangi, Sourabh Agarwal | [`suganya-raju-2026-09-25.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [`harun-mwangi-2026-09-26.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md), [`sourabh-agarwal-2026-09-26.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) |
+| Review findings as public issues | [#6 Review HaskLedger v1.0.0](https://github.com/KonmaORG/HaskLedger/issues/6), [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview) |
 | Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
 | Final Project Closeout Video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
 | Final Project Closeout Video (archival original, Google Drive) | [Video](https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing) |
@@ -361,7 +443,7 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | Benchmark cost model | plutus-core 1.51 default CEK parameters |
 | Testnet | Cardano Preview (testnet-magic 2) |
 | Node / CLI | cardano-node 11.0.1, cardano-cli 11.0.0.0 |
-| Supported platforms | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux |
+| Supported platforms | x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin, riscv64-linux ([compatibility](https://github.com/KonmaORG/HaskLedger/blob/main/docs/compatibility.md)) |
 | License | Apache-2.0 |
 
 ---

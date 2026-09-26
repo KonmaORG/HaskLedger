@@ -33,6 +33,7 @@ Then keep these open while you work:
 - [API reference](api-reference.md): every exported function, grouped by what you are trying to do.
 - [Testing](testing.md): how to test a contract off-chain before it goes near a node.
 - [Deployment guide](deployment-guide.md): putting contracts on the Preview testnet.
+- [Compatibility](compatibility.md): the GHC, Covenant, c2uplc and Plutus versions HaskLedger is tested with, and known upstream issues.
 
 ## How it works
 
