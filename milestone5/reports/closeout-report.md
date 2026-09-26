@@ -100,7 +100,7 @@ Full tables (all contracts, fees, capacity bounds): `haskledger/bench/bench-resu
 
 HaskLedger sought outside scrutiny from its design stage onward, not only at closeout.
 
-**External review of the final prototype.** On 23 September 2026, Koz Ross, head developer of Covenant at MLabs, reviewed HaskLedger's Haskell implementation and documentation (public repository at commit `84078da`). He found HaskLedger "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a separate front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken, with Aiken-level documentation and tooling as the long-term target. The review and the response to each point are published in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). An official copy on MLabs letterhead is to follow, with the same content.
+**External review of the final prototype.** On 23 September 2026, Koz Ross, head developer of Covenant at MLabs, reviewed HaskLedger's Haskell implementation and documentation (public repository at commit `84078da`). He found HaskLedger "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a separate front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken, with Aiken-level documentation and tooling as the long-term target. The review and the response to each point are published in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). An official copy on MLabs letterhead is to follow, with the same content.
 
 **Internal developer review.** On 19 July 2026, Vinit Inamke (HaskLedger core developer) and Sangeet Muralidhar reviewed the prototype at commit [`14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0), covering setup from the project documentation, the example contracts and benchmark harness, and deliberate failure cases with invalid datum and redeemer inputs.
 
@@ -214,8 +214,8 @@ Stated in the source and docs, not discovered by users:
 | Item | Link |
 | ---- | ---- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
-| Release | [`v1.0.0-catalyst-closeout`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0-catalyst-closeout) |
-| External prototype review, Koz Ross (MLabs) | [review record and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
+| Release | [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0) |
+| External prototype review, Koz Ross (MLabs) | [review record and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 | Closeout video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
 | Closeout video (archival original, Google Drive) | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing |
 | Milestone 5 PoA | [`F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md) |

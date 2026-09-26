@@ -2,7 +2,7 @@
 
 Everything submitted for Project Catalyst Fund 11, Milestone 5 (project 1100154), in one place. Each line links straight to the evidence.
 
-Release reviewed and delivered: [`v1.0.0-catalyst-closeout`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0-catalyst-closeout).
+Release reviewed and delivered: [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0).
 
 ## External review of the final prototype (Milestone 5)
 
@@ -10,7 +10,7 @@ These reviews tested the finished prototype. They are separate from the 2024 des
 
 | # | Reviewer | Organisation | Date | Version reviewed | Record | Feedback items |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Koz Ross | MLabs (head developer for Covenant) | 23 Sep 2026 | [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) | EXT-ML-01 to EXT-ML-04 |
+| 1 | Koz Ross | MLabs (head developer for Covenant) | 23 Sep 2026 | [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) | EXT-ML-01 to EXT-ML-04 |
 | 2 | to be added | | | | | |
 | 3 | to be added | | | | | |
 
@@ -20,7 +20,7 @@ An official copy of review 1 on MLabs letterhead is to follow, with the same con
 
 - Feedback table with responses and outcomes: [PoA, Criterion 2](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md#prototype-review-feedback-milestone-5)
 - Changes made for EXT-ML-01 to EXT-ML-04: commit [`7141aa6`](https://github.com/KonmaORG/HaskLedger/commit/7141aa64518d7b0e548888c515ba52b6c4d81b92)
-- Documentation produced in response: [docs index](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/README.md), [getting started](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/getting-started.md), [API reference](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/api-reference.md), [compilation](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/compilation.md), [testing](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/testing.md), [comparison](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/comparison.md)
+- Documentation produced in response: [docs index](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/README.md), [getting started](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/getting-started.md), [API reference](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/api-reference.md), [compilation](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/compilation.md), [testing](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/testing.md), [comparison](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/comparison.md)
 
 ## Internal review
 
@@ -29,11 +29,11 @@ An official copy of review 1 on MLabs letterhead is to follow, with the same con
 ## The prototype
 
 - Repository: [https://github.com/KonmaORG/HaskLedger](https://github.com/KonmaORG/HaskLedger)
-- Example contracts and what each guarantees: [contracts](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/contracts.md)
-- Security review of the contracts: [security](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/security.md), [hardening notes](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/contract-hardening.md)
-- Test suites: [`haskledger/test`](https://github.com/KonmaORG/HaskLedger/tree/v1.0.0-catalyst-closeout/haskledger/test)
-- Preview testnet deploy logs, accepted and refused transactions: [`deploy-out`](https://github.com/KonmaORG/HaskLedger/tree/v1.0.0-catalyst-closeout/deploy-out)
-- Benchmark against PlutusTx: [performance](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/docs/performance.md), [full results](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/haskledger/bench/bench-results.md)
+- Example contracts and what each guarantees: [contracts](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/contracts.md)
+- Security review of the contracts: [security](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/security.md), [hardening notes](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/contract-hardening.md)
+- Test suites: [`haskledger/test`](https://github.com/KonmaORG/HaskLedger/tree/v1.0.0/haskledger/test)
+- Preview testnet deploy logs, accepted and refused transactions: [`deploy-out`](https://github.com/KonmaORG/HaskLedger/tree/v1.0.0/deploy-out)
+- Benchmark against PlutusTx: [performance](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/docs/performance.md), [full results](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/haskledger/bench/bench-results.md)
 
 ## Closeout deliverables
 
