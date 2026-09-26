@@ -306,7 +306,7 @@ packages: .
 source-repository-package
   type: git
   location: https://github.com/KonmaORG/HaskLedger.git
-  tag: v1.0.0-catalyst-closeout
+  tag: v1.0.0
   subdir: haskledger covenant c2uplc
 ```
 

@@ -75,9 +75,9 @@ The comparison covers five contracts. It measures execution budget per validatio
 
 HaskLedger is young. Datums are read by field index rather than through typed records, `.&&` and `.||` evaluate both sides, the payout guards count lovelace only, the test helpers are not yet part of the library, and there is no CIP-57 blueprint output. The [user guide](docs/user-guide.md#current-limits) lists these, and [HaskLedger compared](docs/comparison.md) sets them against Aiken, Plutarch and PlutusTx.
 
-# Has it been reviewed?
+# External review
 
-Koz Ross, head developer for Covenant at MLabs, reviewed the finished prototype on 23 September 2026. His review, word for word, and what changed in response are in [milestone5/external-review](milestone5/external-review/koz-ross-mlabs-2026-09-23.md). Further external reviews are in progress; to take part, open an issue or see the [evidence index](milestone5/evidence-index.md).
+Koz Ross, head developer for Covenant at MLabs, reviewed HaskLedger on 23 September 2026. His review, word for word, and what changed in response are [here](milestone5/external-review/koz-ross-mlabs-2026-09-23.md). More reviews are in progress. If you want to review HaskLedger, open an issue.
 
 # What does the project look like?
 
@@ -136,6 +136,10 @@ Start at the [documentation index](docs/README.md). The main pages:
 - [Deployment guide](docs/deployment-guide.md): Cardano node setup and the Preview testnet
 - [Performance](docs/performance.md): sizes and costs against PlutusTx, and how to reproduce them
 - [Haddock API docs](https://konmaorg.github.io/HaskLedger/haddock/index.html)
+
+# Background
+
+HaskLedger started with a Project Catalyst Fund 11 grant. The grant's milestone reports are kept in the `F-11-*` files at the repository root and in `milestone5/`.
 
 # License
 
