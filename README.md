@@ -59,6 +59,26 @@ Thirteen contracts, spanning spending validators and a minting policy, all valid
 
 Each has a deploy script under `haskledger/deploy/` that runs positive and negative tests against a local `cardano-node`. See the [Deployment Guide](docs/deployment-guide.md) for node setup.
 
+# How fast is it?
+
+Measured against the same contracts written in idiomatic PlutusTx, on identical inputs, with the chain's own cost model (plutus-core 1.51):
+
+| | HaskLedger vs PlutusTx |
+| --- | --- |
+| Script size | 8 to 16 times smaller |
+| CPU steps | 2.6 to 26 times fewer |
+| Memory | 3.7 to 16 times less |
+
+The comparison covers five contracts. It measures execution budget per validation; it is not a claim about protocol-level throughput. The method, the full tables and the commands to reproduce them are in [Performance](docs/performance.md).
+
+# What are the limits?
+
+HaskLedger is young. Datums are read by field index rather than through typed records, `.&&` and `.||` evaluate both sides, the payout guards count lovelace only, the test helpers are not yet part of the library, and there is no CIP-57 blueprint output. The [user guide](docs/user-guide.md#current-limits) lists these, and [HaskLedger compared](docs/comparison.md) sets them against Aiken, Plutarch and PlutusTx.
+
+# Has it been reviewed?
+
+Koz Ross, head developer for Covenant at MLabs, reviewed the finished prototype on 23 September 2026. His review, word for word, and what changed in response are in [milestone5/external-review](milestone5/external-review/koz-ross-mlabs-2026-09-23.md). Further external reviews are in progress; to take part, open an issue or see the [evidence index](milestone5/evidence-index.md).
+
 # What does the project look like?
 
 ```

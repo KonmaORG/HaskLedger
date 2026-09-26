@@ -328,6 +328,7 @@ We respectfully request assessment of Milestone 5 on the body of work delivered,
 | Evidence | Link / Location |
 | -------- | --------------- |
 | Repository | https://github.com/KonmaORG/HaskLedger |
+| Evidence index (all Milestone 5 evidence on one page) | [`milestone5/evidence-index.md`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/evidence-index.md) |
 | Release tag | [`v1.0.0-catalyst-closeout`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0-catalyst-closeout) |
 | External prototype review, Koz Ross (MLabs) | [`milestone5/external-review/koz-ross-mlabs-2026-09-23.md`](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0-catalyst-closeout/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
 | Final Project Closeout Report | [`closeout-report.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/reports/closeout-report.pdf) |
