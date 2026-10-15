@@ -13,7 +13,6 @@ These reviews assessed the finished prototype. They are separate from the 2024 d
 | 1 | Koz Ross | MLabs (head developer for Covenant) | 23 Sep 2026 | [`84078da`](https://github.com/KonmaORG/HaskLedger/commit/84078dac3609160068466b5bdb64787430b59763) | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) | EXT-ML-01 to EXT-ML-04 |
 | 2 | Suganya Raju | Cardano tooling developer ([GitHub](https://github.com/SuganyaAK)) | 25 Sep 2026 | public repository | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md) | EXT-SR-01 to EXT-SR-04 |
 | 3 | Harun Mwangi | Cardano smart-contract developer and architect ([GitHub](https://github.com/HarunJr)) | 26 Sep 2026 | public repository | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md) | EXT-HM-01 to EXT-HM-04 |
-| 4 | Sourabh Agarwal | zkFold ([GitHub](https://github.com/sourabhxyz)) | 26 Sep 2026 | final repository snapshot | [Review and responses](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) | EXT-SA-01 to EXT-SA-04 |
 
 Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 

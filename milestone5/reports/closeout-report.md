@@ -10,15 +10,15 @@ Five milestones: (1) Cardano ecosystem analysis, (2) design document and validat
 
 Repository: https://github.com/KonmaORG/HaskLedger (Apache-2.0). Contact: techteam@konma.io.
 
-| Item | Value |
-| ---- | ----- |
-| Catalyst project ID | 1100154 |
-| Challenge | F11: Cardano Open: Developers |
-| Budget | ADA 200,000 |
-| Funds distributed (at Milestone 5 submission) | ADA 170,000 |
-| Start date | March 11, 2024 |
-| Change requests | August 27, 2024; August 27, 2025 |
-| Delivery | September 2026 |
+| Item                                          | Value                            |
+| --------------------------------------------- | -------------------------------- |
+| Catalyst project ID                           | 1100154                          |
+| Challenge                                     | F11: Cardano Open: Developers    |
+| Budget                                        | ADA 200,000                      |
+| Funds distributed (at Milestone 5 submission) | ADA 170,000                      |
+| Start date                                    | March 11, 2024                   |
+| Change requests                               | August 27, 2024; August 27, 2025 |
+| Delivery                                      | September 2026                   |
 
 ## 2. Original problem and proposed solution
 
@@ -50,13 +50,13 @@ HaskLedger eDSL -> Covenant ASG -> Covenant JSON -> c2uplc -> UPLC -> .plutus en
 
 ## 4. Work completed per milestone
 
-| Milestone | Delivered |
-| --- | --- |
-| M1 - Ecosystem analysis | Cardano ecosystem gap analysis: SWOT, technical analysis of onboarding, script cost/performance, hardware compatibility, EUTxO concurrency; identified the opportunity for a typed eDSL with leaner output |
-| M2 - Design & validation | Architecture and design document, rewritten after MLabs' design review: eDSL -> Plutus Core compilation pipeline, tabulated deterministic validator subset, competitive positioning (PlutusTx / Plutarch / Aiken / Helios / Covenant-style), testing strategy (golden / round-trip / differential), build-profile plan incl. riscv64 via QEMU; expert consultations recorded |
-| M3 - Core functionality | Working toolchain: eDSL -> Covenant IR -> c2uplc -> UPLC -> `.plutus`; contract-construction and combinator API; first 4 contracts (always-succeeds, redeemer-match, deadline, guarded-deadline) compiled, deployed, and spent on Preview testnet (cardano-node 10.5.4); docs + test suite |
-| M4 - Prototype & internal testing | 9 contracts validated on-chain with positive and negative cases each (cardano-node 11.0.1, Plutus V3); minting-policy support (one-shot NFT); reproducible deploy scripts with raw logs in `deploy-out/`; offline throughput/efficiency benchmark vs idiomatic PlutusTx (initially not approved; approved after the benchmark addendum - see section 9) |
-| M5 - Community engagement & closeout | Final 13-contract set with security hardening; four external reviews of the finished prototype; internal developer review; documented expert validation and outreach; a response and outcome for every recorded feedback item; this report; closeout video |
+| Milestone                            | Delivered                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1 - Ecosystem analysis              | Cardano ecosystem gap analysis: SWOT, technical analysis of onboarding, script cost/performance, hardware compatibility, EUTxO concurrency; identified the opportunity for a typed eDSL with leaner output                                                                                                                                                                   |
+| M2 - Design & validation             | Architecture and design document, rewritten after MLabs' design review: eDSL -> Plutus Core compilation pipeline, tabulated deterministic validator subset, competitive positioning (PlutusTx / Plutarch / Aiken / Helios / Covenant-style), testing strategy (golden / round-trip / differential), build-profile plan incl. riscv64 via QEMU; expert consultations recorded |
+| M3 - Core functionality              | Working toolchain: eDSL -> Covenant IR -> c2uplc -> UPLC -> `.plutus`; contract-construction and combinator API; first 4 contracts (always-succeeds, redeemer-match, deadline, guarded-deadline) compiled, deployed, and spent on Preview testnet (cardano-node 10.5.4); docs + test suite                                                                                   |
+| M4 - Prototype & internal testing    | 9 contracts validated on-chain with positive and negative cases each (cardano-node 11.0.1, Plutus V3); minting-policy support (one-shot NFT); reproducible deploy scripts with raw logs in `deploy-out/`; offline throughput/efficiency benchmark vs idiomatic PlutusTx (initially not approved; approved after the benchmark addendum - see section 9)                      |
+| M5 - Community engagement & closeout | Final 13-contract set with security hardening; four external reviews of the finished prototype; internal developer review; documented expert validation and outreach; a response and outcome for every recorded feedback item; this report; closeout video                                                                                                                   |
 
 Milestone PoA documents are in the repository root (section 14).
 
@@ -74,23 +74,23 @@ Milestone PoA documents are in the repository root (section 14).
 
 Same logic, byte-identical ScriptContext inputs, measured with the chain's cost model (plutus-core 1.51 default CEK parameters) against idiomatic PlutusTx compiled with the official plugin at the same plutus version. Ratios are PlutusTx over HaskLedger.
 
-| Contract | HL bytes | PlutusTx bytes | size ratio | HL steps | PlutusTx steps | steps ratio | HL mem | PlutusTx mem | mem ratio |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| always-succeeds | 161 | 2,533 | 15.7x | 976,100 | 25,561,498 | 26.2x | 6,200 | 101,575 | 16.4x |
-| redeemer-match | 192 | 2,545 | 13.3x | 1,984,619 | 25,794,575 | 13.0x | 9,662 | 102,608 | 10.6x |
-| deadline | 372 | 3,258 | 8.8x | 10,710,190 | 30,778,058 | 2.9x | 32,383 | 132,941 | 4.1x |
-| guarded-deadline | 407 | 3,269 | 8.0x | 11,860,171 | 31,118,972 | 2.6x | 36,349 | 134,375 | 3.7x |
-| hash-lock | 223 | 2,561 | 11.5x | 3,833,672 | 26,528,932 | 6.9x | 14,082 | 105,077 | 7.5x |
+| Contract         | HL bytes | PlutusTx bytes | size ratio | HL steps   | PlutusTx steps | steps ratio | HL mem | PlutusTx mem | mem ratio |
+| ---------------- | -------- | -------------- | ---------- | ---------- | -------------- | ----------- | ------ | ------------ | --------- |
+| always-succeeds  | 161      | 2,533          | 15.7x      | 976,100    | 25,561,498     | 26.2x       | 6,200  | 101,575      | 16.4x     |
+| redeemer-match   | 192      | 2,545          | 13.3x      | 1,984,619  | 25,794,575     | 13.0x       | 9,662  | 102,608      | 10.6x     |
+| deadline         | 372      | 3,258          | 8.8x       | 10,710,190 | 30,778,058     | 2.9x        | 32,383 | 132,941      | 4.1x      |
+| guarded-deadline | 407      | 3,269          | 8.0x       | 11,860,171 | 31,118,972     | 2.6x        | 36,349 | 134,375      | 3.7x      |
+| hash-lock        | 223      | 2,561          | 11.5x      | 3,833,672  | 26,528,932     | 6.9x        | 14,082 | 105,077      | 7.5x      |
 
 Per-block script capacity under Cardano's block execution budget (62,000,000 memory units, 20,000,000,000 steps):
 
-| Contract | HaskLedger scripts/block | PlutusTx scripts/block |
-| --- | --- | --- |
-| always-succeeds | 10,000 | 610 |
-| redeemer-match | 6,416 | 604 |
-| deadline | 1,867 | 466 |
-| guarded-deadline | 1,686 | 461 |
-| hash-lock | 4,402 | 590 |
+| Contract         | HaskLedger scripts/block | PlutusTx scripts/block |
+| ---------------- | ------------------------ | ---------------------- |
+| always-succeeds  | 10,000                   | 610                    |
+| redeemer-match   | 6,416                    | 604                    |
+| deadline         | 1,867                    | 466                    |
+| guarded-deadline | 1,686                    | 461                    |
+| hash-lock        | 4,402                    | 590                    |
 
 Headline: 8-16x smaller scripts, 2.6-26x fewer CPU steps, 3.7-16x less memory. The structural cause is field-selective destructuring - idiomatic PlutusTx pays a ~25.5M-step floor decoding the whole ScriptContext on every execution. The heaviest contract (treasury withdraw) uses 1.5% of one transaction's memory budget and 0.7% of its step budget. Everything reproduces offline with `cabal run haskledger-bench`; the harness exits nonzero if any validator rejects its positive case, so published numbers cannot come from a silently failing script.
 
@@ -102,22 +102,21 @@ HaskLedger sought outside scrutiny from its design stage onward, not only at clo
 
 **External review of the final prototype.** On 23 September 2026, Koz Ross, head developer of Covenant at MLabs, reviewed HaskLedger's Haskell implementation and documentation (public repository at commit `84078da`). He found HaskLedger "usable and useful today", with very strong performance, an eDSL that is easy to follow, and a separate front end and back end that can improve independently. His concerns were sparse user-facing documentation, too little explanation of the compilation strategy and outputs, and the lack of testing helpers comparable to Plutarch and Aiken, with Aiken-level documentation and tooling as the long-term target. The review and the response to each point are published in the [review record](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md). The review is also available as an official letter on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 
-**Three more external reviews of the final prototype.** On 25 and 26 September 2026 the prototype was reviewed by Suganya Raju (Cardano tooling and open-source developer experience), Harun Mwangi (Cardano smart-contract developer and architect) and Sourabh Agarwal (Haskell developer, zkFold). Suganya Raju found it ready for wider technical evaluation, with a clean front-end/back-end split, reproducible claims and convincing negative tests, and asked for user documentation as its own entry point, a compatibility table, CI for contributors and a stated line between stable and internal APIs. Harun Mwangi found no technical issue that would stop it being used today as an experimental to early-production framework, and asked for better onboarding, error reporting that does not require reading UPLC, benchmark claims kept to the measured contracts, and adoption by independent developers. Sourabh Agarwal found no architectural issue preventing its use, called the benchmark results strong within their scope, and asked for PlutusTx baselines for the application contracts, Aiken- and Plutarch-level tooling, a documented Covenant and c2uplc dependency, and independent applications. The reviews and responses are published: [Suganya Raju](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [Harun Mwangi](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md), [Sourabh Agarwal](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md). Every finding from all four reviews is a public GitHub issue with the `review` label, and the reviews are also posted on the pinned review issue.
+**Three more external reviews of the final prototype.** On 25 and 26 September 2026 the prototype was reviewed by Suganya Raju (Cardano tooling and open-source developer experience), Harun Mwangi (Cardano smart-contract developer and architect). Suganya Raju found it ready for wider technical evaluation, with a clean front-end/back-end split, reproducible claims and convincing negative tests, and asked for user documentation as its own entry point, a compatibility table, CI for contributors and a stated line between stable and internal APIs. Harun Mwangi found no technical issue that would stop it being used today as an experimental to early-production framework, and asked for better onboarding, error reporting that does not require reading UPLC, benchmark claims kept to the measured contracts, and adoption by independent developers. The reviews and responses are published: [Suganya Raju](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [Harun Mwangi](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md). Every finding from all four reviews is a public GitHub issue with the `review` label, and the reviews are also posted on the pinned review issue.
 
 **Internal developer review.** On 19 July 2026, Vinit Inamke (HaskLedger core developer, from the Fund 7 Konma Labz Haskell cohort) and Sangeet Muralidhar (Head of Technology, Konma) reviewed the prototype at commit [`14999b8`](https://github.com/KonmaORG/HaskLedger/commit/14999b8352204e05d86c998d6c66b763c1c1e3b0), covering setup from the project documentation, the example contracts and benchmark harness, and deliberate failure cases with invalid datum and redeemer inputs.
 
 **Design-stage expert validation (2024).** Before the prototype existed, feedback on the design was gathered from engineers and researchers across the Haskell and Cardano ecosystem. This is historical context and was assessed under Milestone 2:
 
-| Expert | Background | Engagement |
-| ------ | ---------- | ---------- |
-| Duncan Coutts | Well-Typed; IOHK | Consultation meeting, September 2024 (not recorded, at his request; key takeaways documented) |
-| Koz Ross | Software Development Lead, MLabs | Written and recorded review of the Milestone 2 design document |
-| Björn Kihlberg | Former Haskell and Marlowe developer, IOHK | Written feedback on the technical stack, August 2024 |
-| Adithya Obilisetty | Haskell engineer, Composewell | Written feedback on the technical stack, August 2024 |
-| Claudio Hermida | Honorary Research Fellow, University of Birmingham | Written feedback on scope and formal semantics, October 2024 |
-| Kapil Shyam | System Software Engineer, Mindgrove Technologies (Shakti RISC-V) | Written feedback on RISC-V and security, October 2024 |
-| Intersect MBO | Cardano member-based organisation | Recorded sessions with feedback on data management and education |
-| Sourabh Agarwal, Sebastian Pereira | zkFold (formerly Genius Yield); EMURGO | Consulted; no written feedback recorded |
+| Expert             | Background                                                       | Engagement                                                                                    |
+| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Duncan Coutts      | Well-Typed; IOHK                                                 | Consultation meeting, September 2024 (not recorded, at his request; key takeaways documented) |
+| Koz Ross           | Software Development Lead, MLabs                                 | Written and recorded review of the Milestone 2 design document                                |
+| Björn Kihlberg     | Former Haskell and Marlowe developer, IOHK                       | Written feedback on the technical stack, August 2024                                          |
+| Adithya Obilisetty | Haskell engineer, Composewell                                    | Written feedback on the technical stack, August 2024                                          |
+| Claudio Hermida    | Honorary Research Fellow, University of Birmingham               | Written feedback on scope and formal semantics, October 2024                                  |
+| Kapil Shyam        | System Software Engineer, Mindgrove Technologies (Shakti RISC-V) | Written feedback on RISC-V and security, October 2024                                         |
+| Intersect MBO      | Cardano member-based organisation                                | Recorded sessions with feedback on data management and education                              |
 
 **Outreach.** Between August 2024 and February 2025 the team also contacted more than 30 further researchers and engineers on LinkedIn and X, sharing the design document and a structured feedback form. Most did not respond or declined, citing existing commitments.
 
@@ -169,7 +168,7 @@ Every recorded feedback item has a documented response and outcome in the Milest
 
 **M4 rejection and resubmission.** M4 was initially not approved (July 24, 2026) for not evidencing "improvements in transaction throughput and efficiency" - the original PoA reported on-chain fees but defined no baseline. The response was the offline benchmark harness plus a committed idiomatic-PlutusTx baseline compiled with the official plugin on byte-identical inputs, with limitations stated up front. Approved on resubmission, August 2026.
 
-**The external review pathway.** The proposal named Well-Typed, Tweag and Hasura as external reviewers. The Haskell and Cardano ecosystem, and the availability of those independent organisations, changed materially between Fund 11 and closeout. Despite a design-stage consultation with Well-Typed's Duncan Coutts, direct feedback from other experts, and outreach to more than 30 more, a completed review of the finished prototype from the three named organisations could not be secured. The finished prototype was instead reviewed by four external engineers: Koz Ross (MLabs), Suganya Raju, Harun Mwangi and Sourabh Agarwal (zkFold). This is documented openly rather than papered over.
+**The external review pathway.** The proposal named Well-Typed, Tweag and Hasura as external reviewers. The Haskell and Cardano ecosystem, and the availability of those independent organisations, changed materially between Fund 11 and closeout. Despite a design-stage consultation with Well-Typed's Duncan Coutts, direct feedback from other experts, and outreach to more than 30 more, a completed review of the finished prototype from the three named organisations could not be secured. The finished prototype was instead reviewed by four external engineers: Koz Ross (MLabs), Suganya Raju, Harun Mwangi. This is documented openly rather than papered over.
 
 **Covenant/c2uplc Transform pipeline defects.** Five distinct defects in c2uplc's Transform pipeline corrupt UPLC output for Covenant's `match`/`ctor'`/`lazyLam` forms (strict ChooseData branches, duplicate projections on hash-consed nodes, wrong let-nesting order, scope confusion across handler boundaries, name-counter collision). Rather than block, the project documented them and adopted the builtin-only compilation policy. A further mismatch (cata handler argument order between Covenant's typechecker and c2uplc's codegen) was found during the hardening pass and reported to the Covenant maintainers with a minimal reproduction.
 
@@ -181,22 +180,22 @@ Every recorded feedback item has a documented response and outcome in the Milest
 
 ## 10. Open-source outputs
 
-| Output | Link |
-| --- | --- |
-| Repository (Apache-2.0) | https://github.com/KonmaORG/HaskLedger |
-| Contracts, tests and deploy scripts | [`haskledger/examples/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/examples), [`haskledger/test/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/test), [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy) |
-| On-chain deployment logs | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out) |
-| Benchmark harness + results + PlutusTx baseline | [`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench) |
-| Documentation | README, user guide, architecture, deployment guide, [advanced contracts](https://github.com/KonmaORG/HaskLedger/blob/main/docs/advanced-contracts.md), [contract hardening](https://github.com/KonmaORG/HaskLedger/blob/main/docs/contract-hardening.md), [Haddock API docs](https://konmaorg.github.io/HaskLedger/haddock/index.html) |
-| Capture-bug fix design | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md) |
-| Vendored MLabs toolchain, with local c2uplc fixes | [covenant/](https://github.com/KonmaORG/HaskLedger/tree/main/covenant), [c2uplc/](https://github.com/KonmaORG/HaskLedger/tree/main/c2uplc) |
-| Milestone PoAs incl. throughput addendum | `F-11-Milestone-*.md` in the repository root (section 14) |
+| Output                                            | Link                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository (Apache-2.0)                           | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                 |
+| Contracts, tests and deploy scripts               | [`haskledger/examples/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/examples), [`haskledger/test/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/test), [`haskledger/deploy/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/deploy)                                                     |
+| On-chain deployment logs                          | [`deploy-out/`](https://github.com/KonmaORG/HaskLedger/tree/main/deploy-out)                                                                                                                                                                                                                                                           |
+| Benchmark harness + results + PlutusTx baseline   | [`haskledger/bench/`](https://github.com/KonmaORG/HaskLedger/tree/main/haskledger/bench)                                                                                                                                                                                                                                               |
+| Documentation                                     | README, user guide, architecture, deployment guide, [advanced contracts](https://github.com/KonmaORG/HaskLedger/blob/main/docs/advanced-contracts.md), [contract hardening](https://github.com/KonmaORG/HaskLedger/blob/main/docs/contract-hardening.md), [Haddock API docs](https://konmaorg.github.io/HaskLedger/haddock/index.html) |
+| Capture-bug fix design                            | [`docs/option-a-depth-tracked-expr.md`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/option-a-depth-tracked-expr.md)                                                                                                                                                                                                          |
+| Vendored MLabs toolchain, with local c2uplc fixes | [covenant/](https://github.com/KonmaORG/HaskLedger/tree/main/covenant), [c2uplc/](https://github.com/KonmaORG/HaskLedger/tree/main/c2uplc)                                                                                                                                                                                             |
+| Milestone PoAs incl. throughput addendum          | `F-11-Milestone-*.md` in the repository root (section 14)                                                                                                                                                                                                                                                                              |
 
 ## 11. Benefits to the Cardano ecosystem
 
 Working Haskell developers get an on-ramp to Cardano without PlutusTx's cost profile: ordinary Haskell in, scripts 8-16x smaller out, which translates directly to lower fees and more validating transactions per block on unmodified Cardano. The benchmark harness gives the ecosystem a reproducible method for comparing contract toolchains - committed baseline, chain cost model, offline reproduction - that any other toolchain can drop its own envelopes into. The documented Covenant/c2uplc defects and the reported `cata` mismatch help everyone building on MLabs' IR. The security-hardening pass documents four attack classes (datum hijack, token smuggling, double satisfaction, dust payout) with by-construction defenses that other eDSL authors can copy.
 
-HaskLedger is also in real-world use as the underlying smart-contract technology for Karbon Ledger, Konma's climate-tech product for emissions and compliance tracking. UNDP features Karbon Ledger in *New Tech, New Partners: Transforming Development in the Digital Era*, its snapshot of blockchain practice from the UNDP Alternative Finance Lab, as the solution maker for a UNDP India pilot: Streamline, which connects IoT sensors, analytics and a blockchain-based compliance log to give Common Effluent Treatment Plant operators and regulators real-time visibility, starting with the plastic recycling and textile clusters.
+HaskLedger is also in real-world use as the underlying smart-contract technology for Karbon Ledger, Konma's climate-tech product for emissions and compliance tracking. UNDP features Karbon Ledger in _New Tech, New Partners: Transforming Development in the Digital Era_, its snapshot of blockchain practice from the UNDP Alternative Finance Lab, as the solution maker for a UNDP India pilot: Streamline, which connects IoT sensors, analytics and a blockchain-based compliance log to give Common Effluent Treatment Plant operators and regulators real-time visibility, starting with the plastic recycling and textile clusters.
 
 ## 12. Current limitations
 
@@ -224,22 +223,22 @@ Stated in the source and docs, not discovered by users:
 
 ## 14. Links
 
-| Item | Link |
-| ---- | ---- |
-| Repository | https://github.com/KonmaORG/HaskLedger |
-| Release | [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0) |
-| External prototype review, Koz Ross (MLabs) | [review record and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md) |
-| External prototype reviews, Suganya Raju, Harun Mwangi, Sourabh Agarwal | [Suganya Raju](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [Harun Mwangi](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md), [Sourabh Agarwal](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/sourabh-agarwal-2026-09-26.md) |
-| Review findings as GitHub issues | [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview) |
-| Closeout video (public, YouTube) | https://www.youtube.com/watch?v=rUCvvvjgJSc |
-| Closeout video (archival original, Google Drive) | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing |
-| Milestone 5 PoA | [`F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md) |
-| Milestone 4 PoA and throughput addendum | [`F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md), [`F-11-Milestone-4-Throughput-Efficiency-Addendum.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Throughput-Efficiency-Addendum.md) |
-| Milestone 3 PoA | [`F-11-Milestone-3-POA-Core-Functionality-Development.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-3-POA-Core-Functionality-Development.md) |
-| Milestone 2 PoA | [`F-11-Milestone-2-POA-Design-Document-Validation.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-2-POA-Design-Document-Validation.md) |
-| Milestone 1 PoA | [`F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md) |
-| Community and Expert Validation | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3 |
-| MLabs Validation | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0 |
-| UNDP publication featuring Karbon Ledger | [`docs/undp-new-tech-new-partners-transforming-development-in-the-digital-era.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/undp-new-tech-new-partners-transforming-development-in-the-digital-era.pdf) (page 57) |
-| M3 demo video | https://drive.google.com/file/d/1J12H415zmsEjZNNFyXoWDJ7tMknttHSD/view |
-| M4 demo video | https://drive.google.com/file/d/1YxsfksK8i5yn1sVuGS-GSZX6RDj60Hz1/view |
+| Item                                                   | Link                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Repository                                             | https://github.com/KonmaORG/HaskLedger                                                                                                                                                                                                                                                                                                           |
+| Release                                                | [`v1.0.0`](https://github.com/KonmaORG/HaskLedger/releases/tag/v1.0.0)                                                                                                                                                                                                                                                                           |
+| External prototype review, Koz Ross (MLabs)            | [review record and feedback log](https://github.com/KonmaORG/HaskLedger/blob/v1.0.0/milestone5/external-review/koz-ross-mlabs-2026-09-23.md)                                                                                                                                                                                                     |
+| External prototype reviews, Suganya Raju, Harun Mwangi | [Suganya Raju](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/suganya-raju-2026-09-25.md), [Harun Mwangi](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/harun-mwangi-2026-09-26.md)                                                                                                   |
+| Review findings as GitHub issues                       | [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview)                                                                                                                                                                                                                                                                 |
+| Closeout video (public, YouTube)                       | https://www.youtube.com/watch?v=rUCvvvjgJSc                                                                                                                                                                                                                                                                                                      |
+| Closeout video (archival original, Google Drive)       | https://drive.google.com/file/d/1UBPChPF602Y4wYDq03usrs1qU4d96eSj/view?usp=sharing                                                                                                                                                                                                                                                               |
+| Milestone 5 PoA                                        | [`F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md)                                                                                                                                              |
+| Milestone 4 PoA and throughput addendum                | [`F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Prototype-Development-and-Internal-Testing.md), [`F-11-Milestone-4-Throughput-Efficiency-Addendum.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-4-Throughput-Efficiency-Addendum.md) |
+| Milestone 3 PoA                                        | [`F-11-Milestone-3-POA-Core-Functionality-Development.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-3-POA-Core-Functionality-Development.md)                                                                                                                                                                              |
+| Milestone 2 PoA                                        | [`F-11-Milestone-2-POA-Design-Document-Validation.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-2-POA-Design-Document-Validation.md)                                                                                                                                                                                      |
+| Milestone 1 PoA                                        | [`F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md`](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-1-POA-Cardano-ecosystem-analysis.md)                                                                                                                                                                                      |
+| Community and Expert Validation                        | https://konmadao.notion.site/Community-and-Expert-Validation-for-HaskLedger-6e5fd20d028847618fd44a4d50b1f5e3                                                                                                                                                                                                                                     |
+| MLabs Validation                                       | https://konmadao.notion.site/MLabs-Validation-28d468b438dc80d4be83e4cd2ab02ea0                                                                                                                                                                                                                                                                   |
+| UNDP publication featuring Karbon Ledger               | [`docs/undp-new-tech-new-partners-transforming-development-in-the-digital-era.pdf`](https://github.com/KonmaORG/HaskLedger/blob/main/docs/undp-new-tech-new-partners-transforming-development-in-the-digital-era.pdf) (page 57)                                                                                                                  |
+| M3 demo video                                          | https://drive.google.com/file/d/1J12H415zmsEjZNNFyXoWDJ7tMknttHSD/view                                                                                                                                                                                                                                                                           |
+| M4 demo video                                          | https://drive.google.com/file/d/1YxsfksK8i5yn1sVuGS-GSZX6RDj60Hz1/view                                                                                                                                                                                                                                                                           |
