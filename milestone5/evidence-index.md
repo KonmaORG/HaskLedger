@@ -16,6 +16,8 @@ These reviews assessed the finished prototype. They are separate from the 2024 d
 
 Review 1 on MLabs letterhead: [koz-ross-mlabs-2026-09-23-letter.pdf](https://github.com/KonmaORG/HaskLedger/blob/main/milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf).
 
+Review 3, written assessment: [harun-mwangi-2026-09-26.pdf](external-review/harun-mwangi-2026-09-26.pdf).
+
 ## Feedback, responses and changes
 
 - Feedback table with responses and outcomes: [PoA, Criterion 2](https://github.com/KonmaORG/HaskLedger/blob/main/F-11-Milestone-5-Community-Engagement-Feedback-Integration-Closeout.md#prototype-review-feedback-milestone-5)
