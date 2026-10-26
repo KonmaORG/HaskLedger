@@ -77,11 +77,11 @@ HaskLedger is young. Datums are read by field index rather than through typed re
 
 # External review
 
-Four external engineers have reviewed HaskLedger v1.0.0. Each review is published with our response to every point:
+Three external engineers have reviewed HaskLedger v1.0.0. Each review is published with our response to every point:
 
 - Koz Ross, head developer for Covenant at MLabs, 23 September 2026: [review and responses](milestone5/external-review/koz-ross-mlabs-2026-09-23.md), [official letter](milestone5/external-review/koz-ross-mlabs-2026-09-23-letter.pdf)
 - Suganya Raju, Cardano tooling developer, 25 September 2026: [review and responses](milestone5/external-review/suganya-raju-2026-09-25.md)
-- Harun Mwangi, Cardano smart-contract developer and architect, 26 September 2026: [review and responses](milestone5/external-review/harun-mwangi-2026-09-26.md)
+- Harun Mwangi, Cardano smart-contract developer and architect, 26 September 2026: [review and responses](milestone5/external-review/harun-mwangi-2026-09-26.md), [original review](milestone5/external-review/harun-mwangi-2026-09-26.pdf)
 
 Every finding is a GitHub issue with the [`review` label](https://github.com/KonmaORG/HaskLedger/issues?q=label%3Areview).
 
